@@ -1,0 +1,29 @@
+[package]
+name = "roundedcorners"
+version = "0.0.1"
+description = "Rounded Corners"
+authors = ["Nikola Hristov <nikola@playform.cloud>"]
+license-file = "LICENSE"
+repository = "https://github.com/RoundedCorners/app"
+default-run = "roundedcorners"
+edition = "2021"
+rust-version = "1.57"
+
+[patch.crates-io]
+tao = { path = "packages/tao" }
+
+[build-dependencies]
+tauri-build = { version = "1.0.4", features = [] }
+
+[dependencies]
+serde_json = "1.0.82"
+serde = { version = "1.0.140", features = ["derive"] }
+tauri = { version = "1.0.5", features = ["system-tray", "window-set-position"] }
+
+[features]
+# by default Tauri runs in production mode
+# when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL
+default = ["custom-protocol"]
+# this feature is used used for production builds where `devPath` points to the filesystem
+# DO NOT remove this
+custom-protocol = ["tauri/custom-protocol"]
