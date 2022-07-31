@@ -10,7 +10,7 @@ edition = "2021"
 rust-version = "1.57"
 
 [patch.crates-io]
-tao = { path = "packages/tao" }
+tao = { path = "../../tao" }
 
 [build-dependencies]
 tauri-build = { version = "1.0.4", features = [] }
