@@ -1,3 +1,0 @@
-[submodule "src-tauri/packages/tao"]
-	path = src-tauri/packages/tao
-	url = ssh://git@github.com/RoundedCorners/tao.git
