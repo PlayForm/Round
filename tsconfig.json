@@ -1,16 +1,13 @@
 {
+	"extends": "@playform/config/tsconfig.json",
+	"include": [
+		"src"
+	],
 	"compilerOptions": {
-		"target": "ESNext",
-		"module": "ESNext",
-		"moduleResolution": "node",
-		"allowSyntheticDefaultImports": true,
-		"esModuleInterop": true,
-		"jsx": "preserve",
+		"outDir": "dist",
 		"jsxImportSource": "solid-js",
 		"types": [
 			"vite/client"
 		],
-		"noEmit": true,
-		"isolatedModules": true
 	}
 }

@@ -24,6 +24,7 @@
 		"solid-js": "1.4.8"
 	},
 	"devDependencies": {
+		"@playform/config": "0.0.1",
 		"@tauri-apps/cli": "1.0.5",
 		"autoprefixer": "10.4.8",
 		"postcss": "8.4.16",
