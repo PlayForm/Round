@@ -1,8 +1,9 @@
-import { appWindow } from "@tauri-apps/api/window";
-
 import type { Component } from "solid-js";
+
+import { appWindow } from "@tauri-apps/api/window";
 import { createSignal, For, lazy } from "solid-js";
 import { render } from "solid-js/web";
+
 import "./../assets/css/window.css";
 
 const Corner = lazy(() => import("./corner"));
