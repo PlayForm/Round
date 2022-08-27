@@ -4,7 +4,7 @@
 	"description": "",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/RoundedCorners/app.git"
+		"url": "https://github.com/RoundedCorners/app.git"
 	},
 	"homepage": "https://github.com/RoundedCorners/app#readme",
 	"bugs": {
@@ -24,7 +24,7 @@
 		"solid-js": "1.5.1"
 	},
 	"devDependencies": {
-		"@playform/config": "0.0.2",
+		"@playform/config": "0.0.3",
 		"@tauri-apps/cli": "1.0.5",
 		"autoprefixer": "10.4.8",
 		"postcss": "8.4.16",
