@@ -9,7 +9,7 @@ export default (): UserConfig => {
 			target: "esnext",
 			rollupOptions: {
 				input: {
-					window: resolve(__dirname, "src/windows/window.html"),
+					window: resolve("src/windows/window.html"),
 				},
 			},
 		},
