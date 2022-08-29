@@ -1,13 +1,13 @@
 {
+	"compilerOptions": {
+		"jsxImportSource": "solid-js",
+		"outDir": "dist",
+		"types": [
+			"vite/client"
+		]
+	},
 	"extends": "@playform/config/tsconfig.json",
 	"include": [
 		"src"
-	],
-	"compilerOptions": {
-		"outDir": "dist",
-		"jsxImportSource": "solid-js",
-		"types": [
-			"vite/client"
-		],
-	}
+	]
 }
