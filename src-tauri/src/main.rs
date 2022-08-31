@@ -1,6 +1,8 @@
 #![cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
 
-use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
+use tauri::{
+	CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
+};
 
 fn main() {
 	tauri::Builder::default()
@@ -8,7 +10,8 @@ fn main() {
 			SystemTray::new().with_menu(
 				SystemTrayMenu::new()
 					.add_item(CustomMenuItem::new("dark".to_string(), "Dark"))
-					.add_item(CustomMenuItem::new("white".to_string(), "White"))
+					.add_item(CustomMenuItem::new("light".to_string(), "Light"))
+					.add_native_item(SystemTrayMenuItem::Separator)
 					.add_item(CustomMenuItem::new("show".to_string(), "Show"))
 					.add_item(CustomMenuItem::new("hide".to_string(), "Hide"))
 					.add_item(CustomMenuItem::new("exit".to_string(), "Exit")),
@@ -18,14 +21,14 @@ fn main() {
 			if let SystemTrayEvent::MenuItemClick { id, .. } = event {
 				match id.as_str() {
 					"dark" => {
-						app.windows().into_iter().for_each(|(_label, window)| {
-							window.with_webview(move |webview| webview.controller())
-						});
+						// app.windows().into_iter().for_each(|(_label, window)| {
+						// 	window.with_webview(move |webview| webview.controller())
+						// });
 					}
-					"white" => {
-						app.windows().into_iter().for_each(|(_label, window)| {
-							window.show().unwrap();
-						});
+					"light" => {
+						// app.windows().into_iter().for_each(|(_label, window)| {
+						// 	window.show().unwrap();
+						// });
 					}
 					"show" => {
 						app.windows().into_iter().for_each(|(_label, window)| {

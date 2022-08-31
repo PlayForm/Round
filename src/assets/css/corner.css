@@ -12,8 +12,12 @@
 	@apply absolute inset-auto bg-black;
 
 	&[data-id="top_right"] {
+		@apply left-0 top-0;
+	}
+
+	&[data-id="top_right"] {
 		transform: rotate(90deg);
-		@apply right-0;
+		@apply right-0 top-0;
 	}
 
 	&[data-id="bottom_right"] {

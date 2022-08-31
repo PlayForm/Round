@@ -21,7 +21,7 @@
 	},
 	"dependencies": {
 		"@tauri-apps/api": "1.0.2",
-		"solid-js": "1.5.2"
+		"solid-js": "1.5.3"
 	},
 	"devDependencies": {
 		"@playform/config": "0.0.3",
