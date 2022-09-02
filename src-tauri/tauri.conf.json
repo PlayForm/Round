@@ -20,14 +20,14 @@
 		"bundle": {
 			"active": true,
 			"category": "DeveloperTool",
-			"copyright": "Copyright (c) lightrix 2022. All rights reserved.",
+			"copyright": "Copyright (c) Nikola R. Hristov 2022. All rights reserved.",
 			"externalBin": [],
 			"icon": [
 				"src/img/16x16.png",
 				"src/img/32x32.png",
 				"src/img/icon.ico"
 			],
-			"identifier": "com.lightrix.roundedcorners",
+			"identifier": "com.NikolaRHristov.roundedcorners",
 			"longDescription": "Rounded Corners app for Windows",
 			"resources": [],
 			"shortDescription": "Rounded Corners",

@@ -6,7 +6,7 @@
 			"vite/client"
 		]
 	},
-	"extends": "@lightrix/config/tsconfig.json",
+	"extends": "@nikolarhristov/config/tsconfig.json",
 	"include": [
 		"src"
 	]
