@@ -10,7 +10,7 @@
 	"bugs": {
 		"url": "https://github.com/RoundedCorners/app/issues"
 	},
-	"author": "Nikola Hristov <nikola@lightrix.dev>",
+	"author": "nikolarhristov",
 	"license": "MIT",
 	"private": true,
 	"scripts": {
