@@ -46,8 +46,8 @@
 			"csp": null
 		},
 		"systemTray": {
-			"iconPath": "src/img/icon.ico",
-			"iconAsTemplate": true
+			"iconAsTemplate": true,
+			"iconPath": "src/img/icon.ico"
 		},
 		"updater": {
 			"active": false
