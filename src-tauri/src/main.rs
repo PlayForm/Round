@@ -20,16 +20,8 @@ fn main() {
 		.on_system_tray_event(|app, event| {
 			if let SystemTrayEvent::MenuItemClick { id, .. } = event {
 				match id.as_str() {
-					"dark" => {
-						// app.windows().into_iter().for_each(|(_label, window)| {
-						// 	window.with_webview(move |webview| webview.controller())
-						// });
-					}
-					"light" => {
-						// app.windows().into_iter().for_each(|(_label, window)| {
-						// 	window.show().unwrap();
-						// });
-					}
+					"dark" => {}
+					"light" => {}
 					"show" => {
 						app.windows().into_iter().for_each(|(_label, window)| {
 							window.show().unwrap();

@@ -2,12 +2,8 @@
 	"compilerOptions": {
 		"jsxImportSource": "solid-js",
 		"outDir": "dist",
-		"types": [
-			"vite/client"
-		]
+		"types": ["vite/client"]
 	},
 	"extends": "@nikolarhristov/config/tsconfig.json",
-	"include": [
-		"src"
-	]
+	"include": ["src"]
 }
