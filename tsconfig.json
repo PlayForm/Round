@@ -1,8 +1,10 @@
 {
 	"compilerOptions": {
+		"jsx": "preserve",
 		"jsxImportSource": "solid-js",
 		"outDir": "dist",
-		"types": ["vite/client"]
+		"types": ["vite/client"],
+		"lib": ["DOM", "ESNext"]
 	},
 	"extends": "@nikolarhristov/config/tsconfig.json",
 	"include": ["src"]

@@ -4,6 +4,11 @@ use tauri::{
 	CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
 };
 
+#[derive(Clone, serde::Serialize)]
+struct Payload {
+	message: String,
+}
+
 fn main() {
 	tauri::Builder::default()
 		.system_tray(
@@ -20,8 +25,18 @@ fn main() {
 		.on_system_tray_event(|app, event| {
 			if let SystemTrayEvent::MenuItemClick { id, .. } = event {
 				match id.as_str() {
-					"dark" => {}
-					"light" => {}
+					"light" => {
+						app.windows().into_iter().for_each(|(_label, window)| {
+							window
+								.emit("switch-mode", Payload { message: "light".into() })
+								.unwrap();
+						});
+					}
+					"dark" => {
+						app.windows().into_iter().for_each(|(_label, window)| {
+							window.emit("switch-mode", Payload { message: "dark".into() }).unwrap();
+						});
+					}
 					"show" => {
 						app.windows().into_iter().for_each(|(_label, window)| {
 							window.show().unwrap();

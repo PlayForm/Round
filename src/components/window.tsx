@@ -1,12 +1,11 @@
 import type { Component } from "solid-js";
-
-import { appWindow } from "@tauri-apps/api/window";
-import { createSignal, For, lazy } from "solid-js";
+import { For, createSignal } from "solid-js";
 import { render } from "solid-js/web";
 
-import "./../assets/css/window.css";
+import { appWindow } from "@tauri-apps/api/window";
 
-const Corner = lazy(() => import("./corner"));
+import "./../assets/css/window.css";
+import Corner from "./corner";
 
 const Window: Component = () => {
 	const [corners] = createSignal([
@@ -18,9 +17,7 @@ const Window: Component = () => {
 
 	return (
 		<div class="Window" data-label={appWindow.label}>
-			<For each={corners()}>
-				{(corner, i) => <Corner id={corner.id} />}
-			</For>
+			<For each={corners()}>{(corner) => <Corner id={corner.id} />}</For>
 		</div>
 	);
 };
