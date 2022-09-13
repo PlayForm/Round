@@ -1,5 +1,5 @@
 import type { Component } from "solid-js";
-import { For, createSignal } from "solid-js";
+import { createSignal, For } from "solid-js";
 import { render } from "solid-js/web";
 
 import { appWindow } from "@tauri-apps/api/window";
