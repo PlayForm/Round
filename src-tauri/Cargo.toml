@@ -10,13 +10,13 @@ edition = "2021"
 rust-version = "1.57"
 
 [build-dependencies]
-tauri-build = { version = "1.0.4", features = [] }
+tauri-build = { version = "1.1.1", features = [] }
 
 [dependencies]
 wry = { path = "../../wry" }
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.0.5", features = ["system-tray", "window-set-position"] }
+tauri = { version = "1.1.1", features = ["system-tray", "window-set-position"] }
 
 [features]
 default = ["custom-protocol"]

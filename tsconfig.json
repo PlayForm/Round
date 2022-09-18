@@ -6,6 +6,6 @@
 		"types": ["vite/client"],
 		"lib": ["DOM", "ESNext"]
 	},
-	"extends": "@nikolarhristov/config/tsconfig.json",
+	"extends": "@lightrix/config/tsconfig.json",
 	"include": ["src"]
 }
