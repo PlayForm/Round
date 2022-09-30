@@ -27,7 +27,7 @@
 				"src/img/32x32.png",
 				"src/img/icon.ico"
 			],
-			"identifier": "com.NikolaRHristov.roundedcorners",
+			"identifier": "com.nikolahristov.roundedcorners",
 			"longDescription": "Rounded Corners app for Windows",
 			"resources": [],
 			"shortDescription": "Rounded Corners",
