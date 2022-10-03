@@ -2,7 +2,7 @@
 name = "roundedcorners"
 version = "0.0.1"
 description = "Rounded Corners"
-authors = ["Nikola R. Hristov <nikola@nikolahristov.tech>"]
+authors = ["Nikola Hristov <nikola@nikolahristov.tech>"]
 license-file = "LICENSE"
 repository = "https://github.com/RoundedCorners/app"
 default-run = "roundedcorners"
