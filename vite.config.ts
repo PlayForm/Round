@@ -2,7 +2,7 @@ import { resolve } from "path";
 import type { UserConfig } from "vite";
 import solidPlugin from "vite-plugin-solid";
 
-export default {
+export default (): UserConfig => ({
 	plugins: [solidPlugin()],
 	build: {
 		target: "esnext",
@@ -12,4 +12,4 @@ export default {
 			},
 		},
 	},
-} satisfies UserConfig;
+});
