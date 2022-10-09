@@ -1,13 +1,6 @@
 [package]
 name = "roundedcorners"
 version = "0.0.1"
-description = "Rounded Corners"
-authors = ["nikolaxhristov"]
-license-file = "LICENSE"
-repository = "https://github.com/RoundedCorners/app"
-default-run = "roundedcorners"
-edition = "2021"
-rust-version = "1.57"
 
 [build-dependencies]
 tauri-build = { version = "1.1.1", features = [] }

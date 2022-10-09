@@ -10,8 +10,6 @@
 	"bugs": {
 		"url": "https://github.com/RoundedCorners/app/issues"
 	},
-	"author": "roundedcorners",
-	"license": "MIT",
 	"private": true,
 	"scripts": {
 		"build": "vite build",

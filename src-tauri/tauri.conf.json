@@ -20,7 +20,7 @@
 		"bundle": {
 			"active": true,
 			"category": "DeveloperTool",
-			"copyright": "Copyright (c) 2022 Nikola @nikolahristov.tech. All rights reserved.",
+			"copyright": "Copyright (c) 2022 Nikola Hristov. All rights reserved.",
 			"externalBin": [],
 			"icon": [
 				"src/img/16x16.png",
