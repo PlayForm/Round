@@ -4,11 +4,14 @@ updates:
       directory: "/"
       schedule:
           interval: "daily"
+
     - package-ecosystem: "npm"
       directory: "/"
       schedule:
           interval: "daily"
-      versioning-strategy: increase    - package-ecosystem: "cargo"
+      versioning-strategy: increase
+
+    - package-ecosystem: "cargo"
       directory: "/src-tauri"
       schedule:
           interval: "daily"
