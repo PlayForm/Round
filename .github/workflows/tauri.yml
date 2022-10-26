@@ -9,9 +9,6 @@ on:
     workflow_call:
 
 jobs:
-    prepare:
-        uses: roundedcorners/app/.github/workflows/node.yml
-
     build:
         strategy:
             matrix:
@@ -35,6 +32,7 @@ jobs:
                   key:
                       ${{ runner.os }}-cargo-${{
                       hashFiles('./src-tauri/Cargo.toml') }}
+            - uses: roundedcorners/app/.github/workflows/node.yml
             - uses: actions-rs/cargo@v1.0.3
               with:
                   command: build
