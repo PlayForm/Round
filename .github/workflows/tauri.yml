@@ -36,11 +36,13 @@ jobs:
                       ${{ runner.os }}-cargo-${{
                       hashFiles('./src-tauri/Cargo.toml') }}
             - uses: actions/download-artifact@v3
+              id: download
               with:
                   name: node-18-dist-.
-            - uses: actions-rs/cargo@v1.0.3
-              with:
-                  command: build
-                  args:
-                      --release --all-features --manifest-path
-                      ./src-tauri/Cargo.toml
+            - run: echo ${{steps.download.outputs.download-path}}
+            # - uses: actions-rs/cargo@v1.0.3
+            #   with:
+            #       command: build
+            #       args:
+            #           --release --all-features --manifest-path
+            #           ./src-tauri/Cargo.toml
