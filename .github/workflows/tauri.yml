@@ -39,10 +39,11 @@ jobs:
               id: download
               with:
                   name: node-18-dist-.
+                  working-directory: "C:\\Users\\runneradmin\\.cargo\\"
             - run: echo ${{steps.download.outputs.download-path}}
-            # - uses: actions-rs/cargo@v1.0.3
-            #   with:
-            #       command: build
-            #       args:
-            #           --release --all-features --manifest-path
-            #           ./src-tauri/Cargo.toml
+            - uses: actions-rs/cargo@v1.0.3
+              with:
+                  command: build
+                  args:
+                      --release --all-features --manifest-path
+                      ./src-tauri/Cargo.toml
