@@ -19,7 +19,6 @@ jobs:
               with:
                   profile: minimal
                   toolchain: ${{ matrix.toolchain }}
-
             - uses: actions/cache@v3
               with:
                   path: |
@@ -28,8 +27,15 @@ jobs:
                       ~/.cargo/registry/cache/
                       ~/.cargo/git/db/
                       target/
-                  key: ${{ runner.os }}-cargo-${{ hashFiles('./src-tauri/Cargo.toml') }}
+                  key:
+                      ${{ runner.os }}-cargo-${{
+                      hashFiles('./src-tauri/Cargo.toml') }}
+            - run: |
+                  sudo apt-get update
+                  sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libappindicator3-dev librsvg2-dev patchelf
             - uses: actions-rs/cargo@v1.0.3
               with:
-                command: build
-                args: --release --all-features --manifest-path ./src-tauri/Cargo.toml
+                  command: build
+                  args:
+                      --release --all-features --manifest-path
+                      ./src-tauri/Cargo.toml
