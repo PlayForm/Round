@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"jsx": "preserve",
+		"moduleResolution": "Node",
 		"jsxImportSource": "solid-js",
 		"lib": ["DOM", "ESNext"],
 		"outDir": "dist",

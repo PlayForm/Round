@@ -1,15 +1,15 @@
 [package]
 name = "roundedcorners"
-version = "0.0.1"
+version = "0.0.2"
 
 [build-dependencies]
 tauri-build = { version = "1.1.1", features = [] }
 
 [dependencies]
-wry = { path = "../../wry" }
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.1.1", features = ["system-tray", "window-set-position"] }
+tauri = { git = "https://github.com/withpatches/tauri", branch = "click-through", features = ["system-tray", "window-set-position"] }
+tauri-plugin-store = { path = "../../tauri-plugin-store" }
 
 [features]
 default = ["custom-protocol"]

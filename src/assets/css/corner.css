@@ -11,7 +11,7 @@
 
 	@apply absolute inset-auto bg-black;
 
-	&[data-id="top_right"] {
+	&[data-id="top_left"] {
 		@apply left-0 top-0;
 	}
 
@@ -28,5 +28,9 @@
 	&[data-id="bottom_left"] {
 		transform: rotate(270deg);
 		@apply left-0 bottom-0;
+	}
+
+	.Window[data-mode="light"] & {
+		@apply bg-white;
 	}
 }

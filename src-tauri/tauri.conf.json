@@ -1,14 +1,14 @@
 {
-	"$schema": "..\\node_modules/@tauri-apps/cli\\schema.json",
 	"build": {
 		"beforeBuildCommand": "npm run build",
 		"beforeDevCommand": "npm run dev",
 		"devPath": "http://localhost:3000",
-		"distDir": "../dist"
+		"distDir": "../dist",
+		"withGlobalTauri": false
 	},
 	"package": {
 		"productName": "Rounded Corners",
-		"version": "0.0.1"
+		"version": "0.0.2"
 	},
 	"tauri": {
 		"allowlist": {
