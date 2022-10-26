@@ -1,6 +1,5 @@
-import { mergeProps } from "solid-js";
-import { createSignal } from "solid-js";
 import { listen } from "@tauri-apps/api/event";
+import { createSignal, mergeProps } from "solid-js";
 
 import "./../assets/css/corner.css";
 

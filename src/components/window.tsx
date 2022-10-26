@@ -1,8 +1,8 @@
+import { listen } from "@tauri-apps/api/event";
+import { appWindow } from "@tauri-apps/api/window";
 import type { Component } from "solid-js";
 import { createSignal, For } from "solid-js";
 import { render } from "solid-js/web";
-import { listen } from "@tauri-apps/api/event";
-import { appWindow } from "@tauri-apps/api/window";
 import Corner from "./corner";
 
 import "./../assets/css/window.css";
