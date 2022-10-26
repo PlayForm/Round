@@ -37,7 +37,7 @@ jobs:
                       hashFiles('./src-tauri/Cargo.toml') }}
             - uses: actions/download-artifact@v3
               with:
-                  name: node-18-dist
+                  name: node-18-dist-.
             - uses: actions-rs/cargo@v1.0.3
               with:
                   command: build
