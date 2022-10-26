@@ -9,9 +9,7 @@ on:
 
 jobs:
     prepare:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: roundedcorners/app/.github/workflows/node.yml@main
+        uses: roundedcorners/app/.github/workflows/node.yml@main
 
     build:
         strategy:
