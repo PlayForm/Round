@@ -32,7 +32,7 @@ jobs:
                   key:
                       ${{ runner.os }}-cargo-${{
                       hashFiles('./src-tauri/Cargo.toml') }}
-            - uses: roundedcorners/app/.github/workflows/node.yml
+            - uses: roundedcorners/app/.github/workflows/node.yml@main
             - uses: actions-rs/cargo@v1.0.3
               with:
                   command: build
