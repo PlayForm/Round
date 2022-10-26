@@ -12,6 +12,7 @@ jobs:
         uses: roundedcorners/app/.github/workflows/node.yml@main
 
     build:
+        needs: prepare
         strategy:
             matrix:
                 toolchain: ["stable", "nightly"]
@@ -34,6 +35,9 @@ jobs:
                   key:
                       ${{ runner.os }}-cargo-${{
                       hashFiles('./src-tauri/Cargo.toml') }}
+            - uses: actions/download-artifact@v3
+              with:
+                  name: node-18-dist
             - uses: actions-rs/cargo@v1.0.3
               with:
                   command: build
