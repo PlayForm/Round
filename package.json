@@ -9,6 +9,7 @@
 	"bugs": {
 		"url": "https://github.com/roundedcorners/app/issues"
 	},
+	"private": false,
 	"scripts": {
 		"build": "vite build",
 		"dev": "vite",
@@ -36,5 +37,8 @@
 		"typescript": "4.8.4",
 		"vite": "3.2.3",
 		"vite-plugin-solid": "2.4.0"
+	},
+	"publishConfig": {
+		"access": "public"
 	}
 }
