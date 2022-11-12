@@ -1,6 +1,6 @@
 [package]
 name = "roundedcorners"
-version = "0.0.2"
+version = "0.0.3"
 
 [build-dependencies]
 tauri-build = { version = "1.2.0", features = [] }
