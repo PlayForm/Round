@@ -1,0 +1,39 @@
+name: Rust
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+on:
+    workflow_dispatch:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                toolchain: ["stable", "nightly"]
+        steps:
+            - uses: actions/checkout@v3.1.0
+            - uses: actions-rs/toolchain@v1.0.3
+              with:
+                  profile: minimal
+                  toolchain: ${{ matrix.toolchain }}
+
+            - uses: actions/cache@v3.0.11
+              with:
+                  path: |
+                      ~/.cargo/bin/
+                      ~/.cargo/registry/index/
+                      ~/.cargo/registry/cache/
+                      ~/.cargo/git/db/
+                      target/
+                  key: ${{ runner.os }}-cargo-${{ hashFiles('./src-tauri/Cargo.toml') }}
+            - uses: actions-rs/cargo@v1.0.3
+              with:
+                command: build
+                args: --release --all-features --manifest-path ./src-tauri/Cargo.toml
