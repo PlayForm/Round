@@ -20,17 +20,20 @@ await listen(
 		};
 	}) => {
 		switch (event.payload.message) {
-			case "increase":
+			case "increase": {
 				setSize((s) => s + 3);
 				break;
+			}
 
-			case "decrease":
-				setSize((s) => (s - 3 == 0 ? s : s - 3));
+			case "decrease": {
+				setSize((s) => (s - 3 === 0 ? s : s - 3));
 				break;
+			}
 
-			case "reset":
+			case "reset": {
 				setSize(23);
 				break;
+			}
 
 			default:
 				break;
@@ -44,7 +47,8 @@ const Corner = (props: any) => (
 	<div
 		class="Corner"
 		data-id={mergeProps({ id: "default" }, props).id}
-		style={{ "--corner-size": `${size()}px` }}></div>
+		style={{ "--corner-size": `${size()}px` }}
+	/>
 );
 
 export default Corner;
