@@ -1,8 +1,8 @@
 {
 	"compilerOptions": {
-		"moduleResolution": "Node",
 		"jsxImportSource": "solid-js",
 		"lib": ["DOM", "ESNext"],
+		"moduleResolution": "Node",
 		"outDir": "dist",
 		"types": ["vite/client"]
 	},
