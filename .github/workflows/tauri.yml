@@ -1,11 +1,16 @@
 name: Tauri
 
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
 on:
     workflow_dispatch:
     push:
         branches: [main]
     pull_request:
         branches: [main]
+    workflow_call:
 
 jobs:
     prepare:
@@ -41,9 +46,9 @@ jobs:
                   name: .-node-18-dist
             - uses: jossef/action-set-json-field@v2
               with:
-                file: ./src-tauri/tauri.conf.json
-                field: build.distDir
-                value: ${{steps.download.outputs.download-path}}\dist
+                  file: ./src-tauri/tauri.conf.json
+                  field: build.distDir
+                  value: ${{steps.download.outputs.download-path}}\dist
             - uses: actions-rs/cargo@v1.0.3
               with:
                   command: build
