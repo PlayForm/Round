@@ -3,7 +3,7 @@ name = "roundedcorners"
 version = "0.0.3"
 
 [build-dependencies]
-tauri-build = { version = "1.2.0", features = [] }
+tauri-build = { version = "1.2.1", features = [] }
 
 [dependencies]
 serde_json = "1.0"
