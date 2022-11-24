@@ -15,4 +15,4 @@ updates:
       directory: "/src-tauri"
       schedule:
           interval: "daily"
-      versioning-strategy: increase
+      versioning-strategy: lockfile-only
