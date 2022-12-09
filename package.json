@@ -24,7 +24,7 @@
 	},
 	"devDependencies": {
 		"@lightrix/config": "0.0.6",
-		"@tauri-apps/cli": "1.2.1",
+		"@tauri-apps/cli": "1.2.2",
 		"autoprefixer": "10.4.13",
 		"cssnano": "5.1.14",
 		"cssnano-preset-advanced": "5.3.9",
