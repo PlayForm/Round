@@ -5,6 +5,7 @@ import solidPlugin from "vite-plugin-solid";
 export default (): UserConfig => ({
 	plugins: [solidPlugin()],
 	server: {
+		// rome-ignore lint/nursery/noPrecisionLoss:
 		port: 3000,
 	},
 	build: {
