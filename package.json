@@ -19,7 +19,7 @@
 	},
 	"dependencies": {
 		"@tauri-apps/api": "1.2.0",
-		"solid-js": "1.6.4",
+		"solid-js": "1.6.5",
 		"tauri-plugin-store-api": "github:roundedcorners/tauri-plugin-store"
 	},
 	"devDependencies": {
