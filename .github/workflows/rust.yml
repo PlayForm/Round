@@ -4,19 +4,25 @@ concurrency:
     group: rust-${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 
+permissions:
+    security-events: write
+
 on:
     workflow_dispatch:
     push:
         branches: [main]
     pull_request:
         branches: [main]
+    workflow_call:
 
 jobs:
-    build:
+    rust:
         runs-on: ubuntu-latest
+
         strategy:
             matrix:
                 toolchain: ["stable", "nightly"]
+
         steps:
             - uses: actions/checkout@v3.2.0
             - uses: actions-rs/toolchain@v1.0.7

@@ -1,7 +1,7 @@
 name: Tauri
 
 concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
+    group: tauri-${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 
 on:
@@ -18,11 +18,14 @@ jobs:
 
     build:
         needs: prepare
+
         strategy:
             matrix:
                 toolchain: ["stable", "nightly"]
                 platform: ["windows-latest"]
+
         runs-on: ${{ matrix.platform }}
+
         steps:
             - uses: actions/checkout@v3.2.0
             - uses: actions-rs/toolchain@v1.0.7
