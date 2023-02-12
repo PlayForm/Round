@@ -42,7 +42,7 @@ jobs:
                       target/
                   key:
                       ${{ runner.os }}-cargo-${{
-                      hashFiles('./src-tauri/Cargo.toml') }}
+                      hash('./src-tauri/Cargo.toml') }}
             - uses: actions/download-artifact@v3.0.2
               id: download
               with:

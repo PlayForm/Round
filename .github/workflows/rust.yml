@@ -67,7 +67,7 @@ jobs:
                       ~/.cargo/registry/cache/
                       ~/.cargo/git/db/
                       target/
-                  key: ${{ runner.os }}-cargo-${{ hashFiles('./src-tauri/Cargo.toml') }}
+                  key: ${{ runner.os }}-cargo-${{ hash('./src-tauri/Cargo.toml') }}
             - uses: actions-rs/cargo@v1.0.3
               with:
                 command: build
