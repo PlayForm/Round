@@ -59,7 +59,7 @@ jobs:
                   profile: minimal
                   toolchain: ${{ matrix.toolchain }}
 
-            - uses: actions/cache@v3.2.3
+            - uses: actions/cache@v3.2.5
               with:
                   path: |
                       ~/.cargo/bin/
