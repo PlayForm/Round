@@ -21,10 +21,9 @@ jobs:
 
         strategy:
             matrix:
-                toolchain: ["stable", "nightly"]
-                platform: ["windows-latest"]
+                toolchain: [stable, nightly]
 
-        runs-on: ${{ matrix.platform }}
+        runs-on: [self-hosted, windows-latest]
 
         steps:
             - uses: actions/checkout@v3.3.0
@@ -41,8 +40,8 @@ jobs:
                       ~/.cargo/git/db/
                       target/
                   key:
-                      ${{ runner.os }}-cargo-${{
-                      hash('./src-tauri/Cargo.toml') }}
+                      ${{ runner.os }}-cargo-${{ hash('./src-tauri/Cargo.toml')
+                      }}
             - uses: actions/download-artifact@v3.0.2
               id: download
               with:
