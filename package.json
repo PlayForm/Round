@@ -28,7 +28,7 @@
 		"@tauri-apps/cli": "1.2.3",
 		"autoprefixer": "10.4.13",
 		"cssnano": "5.1.15",
-		"cssnano-preset-advanced": "5.3.9",
+		"cssnano-preset-advanced": "5.3.10",
 		"postcss": "8.4.21",
 		"postcss-combine-duplicated-selectors": "10.0.3",
 		"postcss-combine-media-query": "1.0.1",
