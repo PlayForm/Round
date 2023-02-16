@@ -23,7 +23,7 @@ jobs:
             matrix:
                 toolchain: [stable, nightly]
 
-        runs-on: [self-hosted, windows-latest]
+        runs-on: windows-latest
 
         steps:
             - uses: actions/checkout@v3.3.0
