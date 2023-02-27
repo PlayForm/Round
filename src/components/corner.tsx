@@ -43,7 +43,7 @@ await listen(
 		await store.save();
 	}
 );
-const Corner = (props: any) => (
+const Corner = (props: unknown) => (
 	<div
 		class="Corner"
 		data-id={mergeProps({ id: "default" }, props).id}
