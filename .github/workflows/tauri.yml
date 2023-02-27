@@ -40,7 +40,7 @@ jobs:
                       ~/.cargo/git/db/
                       target/
                   key:
-                      ${{ runner.os }}-cargo-${{ hash('./src-tauri/Cargo.toml')
+                      ${{ runner.os }}-cargo-${{ hashFiles('./src-tauri/Cargo.toml')
                       }}
             - uses: actions/download-artifact@v3.0.2
               id: download
