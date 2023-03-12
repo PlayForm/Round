@@ -19,7 +19,7 @@ fn main() {
 	let mut app = tauri::Builder::default()
 		.plugin(
 			PluginBuilder::default()
-				.stores([StoreBuilder::new(".settings.dat".parse().unwrap()).build()])
+				.stores([StoreBuilder::new(".settings.dat").build()])
 				.freeze()
 				.build(),
 		)
