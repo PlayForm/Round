@@ -1,19 +1,25 @@
-import { resolve } from "path";
-import type { UserConfig } from "vite";
+import { defineConfig } from "vite";
 import solidPlugin from "vite-plugin-solid";
 
-export default {
+// https://vitejs.dev/config/
+export default defineConfig(async () => ({
 	plugins: [solidPlugin()],
+
+	// Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
+	// prevent vite from obscuring rust errors
+	clearScreen: false,
+	// tauri expects a fixed port, fail if that port is not available
 	server: {
-		// rome-ignore lint/nursery/noPrecisionLoss:
-		port: 3000,
+		port: 1420,
+		strictPort: true,
 	},
+	// to make use of `TAURI_DEBUG` and other env variables
+	// https://tauri.studio/v1/api/config#buildconfig.beforedevcommand
+	envPrefix: ["VITE_", "TAURI_"],
 	build: {
-		target: "esnext",
-		rollupOptions: {
-			input: {
-				window: resolve("src/windows/window.html"),
-			},
-		},
+		target:
+			process.env.TAURI_PLATFORM === "windows" ? "chrome105" : "safari13",
+		minify: true,
+		sourcemap: !!process.env.TAURI_DEBUG,
 	},
-} satisfies UserConfig;
+}));
