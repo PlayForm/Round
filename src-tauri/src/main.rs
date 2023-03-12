@@ -2,6 +2,8 @@
 
 extern crate tauri;
 extern crate tauri_plugin_store;
+extern crate screen;
+
 
 use tauri::{
 	CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
@@ -15,7 +17,9 @@ struct Payload {
 }
 
 fn main() {
-	tauri::Builder::default()
+let monitors = screen::get_monitors().unwrap();
+
+tauri::Builder::default()
 		.plugin(
 			PluginBuilder::default()
 				.stores([StoreBuilder::new(".settings.dat".parse().unwrap()).build()])
