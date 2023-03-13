@@ -7,42 +7,25 @@ import "../assets/css/corner.css";
 
 const [size, setSize] = createSignal(23);
 
-await listen("boot", async (event: {
-	payload: {
-		message: string;
-	};
-}) => {
-	console.log(event.payload.message)
-});
-
 await listen(
-	"switch-size",
+	"boot",
 	async (event: {
 		payload: {
 			message: string;
 		};
 	}) => {
-		switch (event.payload.message) {
-			case "increase": {
-				// rome-ignore lint/nursery/noPrecisionLoss:
-				setSize((s: number) => s + 3);
-				break;
-			}
+		console.log(event.payload.message);
+	}
+);
 
-			case "decrease": {
-				// rome-ignore lint/nursery/noPrecisionLoss:
-				setSize((s: number) => (s - 3 === 0 ? s : s - 3));
-				break;
-			}
-
-			case "reset": {
-				setSize(23);
-				break;
-			}
-
-			default:
-				break;
-		}
+await listen(
+	"set-size",
+	async (event: {
+		payload: {
+			message: number;
+		};
+	}) => {
+		setSize(event.payload.message);
 	}
 );
 

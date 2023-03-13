@@ -7,13 +7,17 @@ use tauri::{
 };
 
 #[derive(Clone, serde::Serialize)]
+enum Message {
+	String(String),
+	Number(i32),
+}
+
+#[derive(Clone, serde::Serialize)]
 struct Payload {
-	message: String,
+	message: Message,
 }
 
 fn main() {
-
-
 	tauri::Builder::default()
 		.system_tray(
 			SystemTray::new().with_menu(
@@ -30,40 +34,53 @@ fn main() {
 					.add_item(CustomMenuItem::new("exit".to_string(), "❌ Exit")),
 			),
 		)
+		.on_page_load(|app, _event| {
+			app.windows().into_iter().for_each(|(_label, window)| {
+				window.emit("boot", Payload { message: "booot".into() }).unwrap();
+			})
+		})
 		.on_system_tray_event(|app, event| {
 			if let SystemTrayEvent::MenuItemClick { id, .. } = event {
 				match id.as_str() {
 					"increase" => {
 						app.windows().into_iter().for_each(|(_label, window)| {
 							window
-								.emit("switch-size", Payload { message: "increase".into() })
+								.emit("set-size", Payload { message: Message::Number(23) })
 								.unwrap();
 						});
 					}
 					"decrease" => {
 						app.windows().into_iter().for_each(|(_label, window)| {
 							window
-								.emit("switch-size", Payload { message: "decrease".into() })
+								.emit("set-size", Payload { message: Message::Number(23) })
 								.unwrap();
 						});
 					}
 					"reset-size" => {
 						app.windows().into_iter().for_each(|(_label, window)| {
 							window
-								.emit("switch-size", Payload { message: "reset".into() })
+								.emit("set-size", Payload { message: Message::Number(23) })
 								.unwrap();
 						});
 					}
 					"light" => {
 						app.windows().into_iter().for_each(|(_label, window)| {
 							window
-								.emit("switch-mode", Payload { message: "light".into() })
+								.emit(
+									"set-mode",
+									Payload { message: Message::String("light".to_string()) },
+								)
 								.unwrap();
 						});
 					}
 					"dark" => {
 						app.windows().into_iter().for_each(|(_label, window)| {
-							window.emit("switch-mode", Payload { message: "dark".into() }).unwrap();
+							window
+								.emit(
+									"set-mode",
+									Payload { message: Message::String("dark".to_string()) },
+								)
+								.unwrap();
 						});
 					}
 					"show" => {
