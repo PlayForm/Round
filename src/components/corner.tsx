@@ -5,15 +5,15 @@ import { createSignal, mergeProps } from "solid-js";
 
 import "../assets/css/corner.css";
 
-// @ts-ignore
-import { Store } from "tauri-plugin-store-api";
-const store = new Store(".settings.dat");
+const [size, setSize] = createSignal(23);
 
-const storeSize: {
-	value: number;
-} | null = await store.get("size");
-
-const [size, setSize] = createSignal(storeSize ? storeSize.value : 23);
+await listen("boot", async (event: {
+	payload: {
+		message: string;
+	};
+}) => {
+	console.log(event.payload.message)
+});
 
 await listen(
 	"switch-size",
@@ -43,9 +43,6 @@ await listen(
 			default:
 				break;
 		}
-
-		await store.set("size", { value: size() });
-		await store.save();
 	}
 );
 

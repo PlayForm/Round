@@ -2,7 +2,6 @@
 
 extern crate tauri;
 
-use std::{ffi::OsString, os::windows::ffi::OsStringExt};
 use tauri::{
 	CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
 };
@@ -13,18 +12,7 @@ struct Payload {
 }
 
 fn main() {
-	for monitor in monitors::enumerate_monitors() {
-		let name = match &monitor.szDevice[..].iter().position(|c| *c == 0) {
-			Some(len) => OsString::from_wide(&monitor.szDevice[0..*len]),
-			None => OsString::from_wide(&monitor.szDevice[0..monitor.szDevice.len()]),
-		};
 
-		println!("Display name = {}", name.to_str().unwrap());
-		println!("    Left: {}", monitor.rcWork.left);
-		println!("   Right: {}", monitor.rcWork.right);
-		println!("     Top: {}", monitor.rcWork.top);
-		println!("  Bottom: {}", monitor.rcWork.bottom);
-	}
 
 	tauri::Builder::default()
 		.system_tray(

@@ -62,7 +62,7 @@
 				"focus": false,
 				"fullscreen": true,
 				"label": "window",
-				"maximized": true,
+				"maximized": false,
 				"resizable": false,
 				"skipTaskbar": true,
 				"title": "",

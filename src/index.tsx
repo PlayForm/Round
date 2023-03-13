@@ -7,15 +7,9 @@ import Corner from "./components/corner";
 
 import "./assets/css/window.css";
 
-// @ts-ignore
-import { Store } from "tauri-plugin-store-api";
+const [mode, setMode] = createSignal("dark");
 
-const store = new Store(".settings.dat");
-const storeMode: {
-	value: string;
-} | null = await store.get("mode");
-
-const [mode, setMode] = createSignal(storeMode ? storeMode.value : "dark");
+await appWindow.setIgnoreCursorEvents(true);
 
 await listen(
 	"switch-mode",
@@ -25,9 +19,6 @@ await listen(
 		};
 	}) => {
 		setMode(event.payload.message);
-
-		await store.set("mode", { value: mode() });
-		await store.save();
 	}
 );
 
