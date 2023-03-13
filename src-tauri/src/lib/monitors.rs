@@ -1,5 +1,3 @@
-extern crate winapi;
-
 use winapi::{
 	shared::{
 		minwindef::{BOOL, LPARAM, TRUE},
@@ -7,14 +5,17 @@ use winapi::{
 	},
 	um::{
 		wingdi::{GetDeviceCaps, HORZRES, VERTRES},
-		winuser::{EnumDisplayMonitors, GetMonitorInfoW, MONITORINFOEXW},
+		winuser::{
+			EnumDisplayMonitors, GetMonitorInfoW, GetSystemMetrics, MONITORINFOEXW, SM_CMONITORS,
+		},
 	},
 };
 
 use std::{io::Error, mem, ptr};
 
 pub fn enumerate_monitors() -> Vec<MONITORINFOEXW> {
-	let mut monitors = Vec::<MONITORINFOEXW>::new();
+	let num_monitors = unsafe { GetSystemMetrics(SM_CMONITORS) };
+	let mut monitors = Vec::<MONITORINFOEXW>::with_capacity(num_monitors as usize);
 	let userdata = &mut monitors as *mut _;
 
 	let result = unsafe {
