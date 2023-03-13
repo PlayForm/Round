@@ -29,7 +29,7 @@ fn main() {
 	}
 
 	tauri::Builder::default()
-		.plugin(tauri_plugin_store::Builder::default().build())
+		.plugin(Builder::default().build())
 		.system_tray(
 			SystemTray::new().with_menu(
 				SystemTrayMenu::new()
