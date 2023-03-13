@@ -1,14 +1,16 @@
 #![cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
 
-extern crate screen;
+extern crate winapi;
+
 extern crate tauri;
 extern crate tauri_plugin_store;
 
-use tauri::{
-	CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
-};
+use winapi::shared::minwindef::{LPARAM, TRUE, BOOL};
+use winapi::shared::windef::{HMONITOR, HDC, LPRECT, RECT};
+use winapi::um::winuser::{EnumDisplayMonitors, GetMonitorInfoW, MONITORINFOEXW};
 
-use tauri_plugin_store::{PluginBuilder, StoreBuilder};
+use tauri::{Manager, CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
+use tauri_plugin_store::{Builder, StoreBuilder};
 
 #[derive(Clone, serde::Serialize)]
 struct Payload {
@@ -16,14 +18,26 @@ struct Payload {
 }
 
 fn main() {
-	let mut app = tauri::Builder::default()
+	for monitor in monitors::enumerate_monitors() {
+		let name = match &monitor.szDevice[..].iter().position(|c| *c == 0) {
+			Some(len) => OsString::from_wide(&monitor.szDevice[0..*len]),
+			None => OsString::from_wide(&monitor.szDevice[0..monitor.szDevice.len()]),
+		};
+
+		println!("Display name = {}", name.to_str().unwrap());
+		println!("    Left: {}", monitor.rcWork.left);
+		println!("   Right: {}", monitor.rcWork.right);
+		println!("     Top: {}", monitor.rcWork.top);
+		println!("  Bottom: {}", monitor.rcWork.bottom);
+	}
+
+	tauri::Builder::default()
 		.plugin(
-			PluginBuilder::default()
-				.stores([StoreBuilder::new(".settings.dat").build()])
-				.freeze()
+			Builder::default()
+			.stores([StoreBuilder::new(".settings.dat".parse().unwrap()).build()])
+			.freeze()
 				.build(),
 		)
-		.build(tauri::generate_context!())
 		.system_tray(
 			SystemTray::new().with_menu(
 				SystemTrayMenu::new()
@@ -38,63 +52,51 @@ fn main() {
 					.add_item(CustomMenuItem::new("hide".to_string(), "🥷🏽 Hide"))
 					.add_item(CustomMenuItem::new("exit".to_string(), "❌ Exit")),
 			),
-		)
-		.unwrap();
-
-	let monitors = screen::get_monitors().unwrap();
-
-	for monitor in monitors {
-		let label = monitor.name().unwrap_or("Main".to_string());
-		let window = app.create_window(label.clone(), tauri::WindowUrl::Blank).unwrap();
-		window.set_position(monitor.position().x, monitor.position().y).unwrap();
-		window.set_size(monitor.size().width, monitor.size().height).unwrap();
-	}
-
-	app.on_system_tray_event(|app, event| {
-		if let SystemTrayEvent::MenuItemClick { id, .. } = event {
-			match id.as_str() {
-				"increase" => {
-					app.windows().into_iter().for_each(|(_label, window)| {
-						window.emit("switch-size", Payload { message: "increase".into() }).unwrap();
-					});
+		).on_system_tray_event(|app, event| {
+			if let SystemTrayEvent::MenuItemClick { id, .. } = event {
+				match id.as_str() {
+					"increase" => {
+						app.windows().into_iter().for_each(|(_label, window)| {
+							window.emit("switch-size", Payload { message: "increase".into() }).unwrap();
+						});
+					}
+					"decrease" => {
+						app.windows().into_iter().for_each(|(_label, window)| {
+							window.emit("switch-size", Payload { message: "decrease".into() }).unwrap();
+						});
+					}
+					"reset-size" => {
+						app.windows().into_iter().for_each(|(_label, window)| {
+							window.emit("switch-size", Payload { message: "reset".into() }).unwrap();
+						});
+					}
+					"light" => {
+						app.windows().into_iter().for_each(|(_label, window)| {
+							window.emit("switch-mode", Payload { message: "light".into() }).unwrap();
+						});
+					}
+					"dark" => {
+						app.windows.into_iter().for_each(|(_label, window)| {
+							window.emit("switch-mode", Payload { message: "dark".into() }).unwrap();
+						});
+					}
+					"show" => {
+						app.windows().into_iter().for_each(|(_label, window)| {
+							window.show().unwrap();
+						});
+					}
+					"hide" => {
+						app.windows().into_iter().for_each(|(_label, window)| {
+							window.hide().unwrap();
+						});
+					}
+					"exit" => {
+						std::process::exit(0);
+					}
+					_ => {}
 				}
-				"decrease" => {
-					app.windows().into_iter().for_each(|(_label, window)| {
-						window.emit("switch-size", Payload { message: "decrease".into() }).unwrap();
-					});
-				}
-				"reset-size" => {
-					app.windows().into_iter().for_each(|(_label, window)| {
-						window.emit("switch-size", Payload { message: "reset".into() }).unwrap();
-					});
-				}
-				"light" => {
-					app.windows().into_iter().for_each(|(_label, window)| {
-						window.emit("switch-mode", Payload { message: "light".into() }).unwrap();
-					});
-				}
-				"dark" => {
-					app.windows.into_iter().for_each(|(_label, window)| {
-						window.emit("switch-mode", Payload { message: "dark".into() }).unwrap();
-					});
-				}
-				"show" => {
-					app.windows().into_iter().for_each(|(_label, window)| {
-						window.show().unwrap();
-					});
-				}
-				"hide" => {
-					app.windows().into_iter().for_each(|(_label, window)| {
-						window.hide().unwrap();
-					});
-				}
-				"exit" => {
-					std::process::exit(0);
-				}
-				_ => {}
 			}
-		}
-	});
-
-	app.run().unwrap();
+		})
+		.build(tauri::generate_context!())
+		.unwrap();
 }
