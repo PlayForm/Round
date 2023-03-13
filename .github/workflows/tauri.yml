@@ -31,7 +31,7 @@ jobs:
               with:
                   profile: minimal
                   toolchain: ${{ matrix.toolchain }}
-            - uses: actions/cache@v3.3.0
+            - uses: actions/cache@v3.3.1
               with:
                   path: |
                       ~/.cargo/bin/
