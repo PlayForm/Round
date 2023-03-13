@@ -6,12 +6,12 @@ import { createSignal, mergeProps } from "solid-js";
 import "../assets/css/corner.css";
 
 // @ts-ignore
-// import { Store } from "tauri-plugin-store-api";
-// const store = new Store(".settings.dat");
+import { Store } from "tauri-plugin-store-api";
+const store = new Store(".settings.dat");
 
-// const storeSize: {
-// 	value: number;
-// } | null = await store.get("size");
+const storeSize: {
+	value: number;
+} | null = await store.get("size");
 
 const [size, setSize] = createSignal(23);
 
@@ -44,8 +44,8 @@ await listen(
 				break;
 		}
 
-		// await store.set("size", { value: size() });
-		// await store.save();
+		await store.set("size", { value: size() });
+		await store.save();
 	}
 );
 
