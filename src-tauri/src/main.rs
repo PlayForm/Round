@@ -29,16 +29,7 @@ fn main() {
 	}
 
 	tauri::Builder::default()
-		.plugin(Builder::default().build())
-		.setup(|app| {
-			let _store = StoreBuilder::new(app.handle(), ".settings.dat".parse()?).build();
-
-			app.windows().into_iter().for_each(|(label, _window)| {
-				println!("{:?}", label);
-			});
-
-			Ok(())
-		})
+		.plugin(tauri_plugin_store::Builder::default().build())
 		.system_tray(
 			SystemTray::new().with_menu(
 				SystemTrayMenu::new()
