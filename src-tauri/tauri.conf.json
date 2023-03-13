@@ -15,7 +15,7 @@
 			"all": false,
 			"window": {
 				"setPosition": true,
-				""
+				"setIgnoreCursorEvents": true
 			}
 		},
 		"bundle": {
@@ -60,7 +60,7 @@
 				"decorations": false,
 				"fileDropEnabled": false,
 				"focus": true,
-				"fullscreen": true,
+				"fullscreen": false,
 				"label": "window",
 				"maximized": false,
 				"resizable": false,
