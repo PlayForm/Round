@@ -11,13 +11,16 @@ const [mode, setMode] = createSignal("dark");
 
 await appWindow.setIgnoreCursorEvents(true);
 
-await listen("boot", async (event: {
-	payload: {
-		message: string;
-	};
-}) => {
-	console.log(event.payload.message);
-});
+await listen(
+	"boot",
+	async (event: {
+		payload: {
+			message: string;
+		};
+	}) => {
+		console.log(event.payload.message);
+	}
+);
 
 await listen(
 	"set-mode",
@@ -26,6 +29,7 @@ await listen(
 			message: string;
 		};
 	}) => {
+		console.log(event.payload.message);
 		setMode(event.payload.message);
 	}
 );
@@ -40,7 +44,9 @@ const Window: Component = () => {
 
 	return (
 		<div class="Window" data-label={appWindow.label} data-mode={mode()}>
-			<For each={corners()}>{(corner) => <Corner id={corner.id} />}</For>
+			<For each={corners()}>
+				{(corner: { id: string }) => <Corner id={corner.id} />}
+			</For>
 		</div>
 	);
 };

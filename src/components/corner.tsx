@@ -25,6 +25,7 @@ await listen(
 			message: number;
 		};
 	}) => {
+		console.log(event.payload.message);
 		setSize(event.payload.message);
 	}
 );

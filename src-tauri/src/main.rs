@@ -34,11 +34,6 @@ fn main() {
 					.add_item(CustomMenuItem::new("exit".to_string(), "❌ Exit")),
 			),
 		)
-		.on_page_load(|app, _event| {
-			app.windows().into_iter().for_each(|(_label, window)| {
-				window.emit("boot", Payload { message: "booot".into() }).unwrap();
-			})
-		})
 		.on_system_tray_event(|app, event| {
 			if let SystemTrayEvent::MenuItemClick { id, .. } = event {
 				match id.as_str() {
