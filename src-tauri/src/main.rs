@@ -24,10 +24,6 @@ fn main() {
 		println!("   Right: {}", monitor.rcWork.right);
 		println!("     Top: {}", monitor.rcWork.top);
 		println!("  Bottom: {}", monitor.rcWork.bottom);
-		println!("   Monitor Left: {}", monitor.rcMonitor.left);
-		println!("   Monitor Right: {}", monitor.rcMonitor.right);
-		println!("   Monitor Top: {}", monitor.rcMonitor.top);
-		println!("   Monitor Bottom: {}", monitor.rcMonitor.bottom);
 	}
 
 	tauri::Builder::default()
