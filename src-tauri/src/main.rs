@@ -24,6 +24,21 @@ fn main() {
 				.build(),
 		)
 		.build(tauri::generate_context!())
+		.system_tray(
+			SystemTray::new().with_menu(
+				SystemTrayMenu::new()
+					.add_item(CustomMenuItem::new("increase".to_string(), "➕ Increase Size"))
+					.add_item(CustomMenuItem::new("decrease".to_string(), "➖ Decrease Size"))
+					.add_item(CustomMenuItem::new("reset-size".to_string(), "↩️ Reset"))
+					.add_native_item(SystemTrayMenuItem::Separator)
+					.add_item(CustomMenuItem::new("dark".to_string(), "🌑 Dark"))
+					.add_item(CustomMenuItem::new("light".to_string(), "☀️ Light"))
+					.add_native_item(SystemTrayMenuItem::Separator)
+					.add_item(CustomMenuItem::new("show".to_string(), "👨🏻 Show"))
+					.add_item(CustomMenuItem::new("hide".to_string(), "🥷🏽 Hide"))
+					.add_item(CustomMenuItem::new("exit".to_string(), "❌ Exit")),
+			),
+		)
 		.unwrap();
 
 	let monitors = screen::get_monitors().unwrap();
