@@ -14,7 +14,8 @@
 		"allowlist": {
 			"all": false,
 			"window": {
-				"setPosition": true
+				"setPosition": true,
+				""
 			}
 		},
 		"bundle": {
