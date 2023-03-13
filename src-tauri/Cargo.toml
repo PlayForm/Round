@@ -6,11 +6,11 @@ version = "0.0.4"
 tauri-build = { version = "1.2.1", features = [] }
 
 [dependencies]
+regex = "1.7.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tauri = { version ="1.1", features = ["system-tray", "window-set-ignore-cursor-events", "window-set-position"] }
 tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
-winapi = { version = "0.3.9", features = ["winuser", "wingdi"] }
 
 [features]
 custom-protocol = ["tauri/custom-protocol"]
