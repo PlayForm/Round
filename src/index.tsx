@@ -25,8 +25,9 @@ await listen(
 		};
 	}) => {
 		setMode(event.payload.message);
-		// await store.set("mode", { value: mode() });
-		// await store.save();
+
+		await store.set("mode", { value: mode() });
+		await store.save();
 	}
 );
 
