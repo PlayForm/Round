@@ -5,11 +5,17 @@ extern crate winapi;
 extern crate tauri;
 extern crate tauri_plugin_store;
 
-use winapi::shared::minwindef::{LPARAM, TRUE, BOOL};
-use winapi::shared::windef::{HMONITOR, HDC, LPRECT, RECT};
-use winapi::um::winuser::{EnumDisplayMonitors, GetMonitorInfoW, MONITORINFOEXW};
+use winapi::{
+	shared::{
+		minwindef::{BOOL, LPARAM, TRUE},
+		windef::{HDC, HMONITOR, LPRECT, RECT},
+	},
+	um::winuser::{EnumDisplayMonitors, GetMonitorInfoW, MONITORINFOEXW},
+};
 
-use tauri::{Manager, CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
+use tauri::{
+	CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
+};
 use tauri_plugin_store::{Builder, StoreBuilder};
 
 #[derive(Clone, serde::Serialize)]
@@ -34,8 +40,8 @@ fn main() {
 	tauri::Builder::default()
 		.plugin(
 			Builder::default()
-			.stores([StoreBuilder::new(".settings.dat".parse().unwrap()).build()])
-			.freeze()
+				.stores([StoreBuilder::new(".settings.dat".parse().unwrap()).build()])
+				.freeze()
 				.build(),
 		)
 		.system_tray(
@@ -52,27 +58,36 @@ fn main() {
 					.add_item(CustomMenuItem::new("hide".to_string(), "🥷🏽 Hide"))
 					.add_item(CustomMenuItem::new("exit".to_string(), "❌ Exit")),
 			),
-		).on_system_tray_event(|app, event| {
+		)
+		.on_system_tray_event(|app, event| {
 			if let SystemTrayEvent::MenuItemClick { id, .. } = event {
 				match id.as_str() {
 					"increase" => {
 						app.windows().into_iter().for_each(|(_label, window)| {
-							window.emit("switch-size", Payload { message: "increase".into() }).unwrap();
+							window
+								.emit("switch-size", Payload { message: "increase".into() })
+								.unwrap();
 						});
 					}
 					"decrease" => {
 						app.windows().into_iter().for_each(|(_label, window)| {
-							window.emit("switch-size", Payload { message: "decrease".into() }).unwrap();
+							window
+								.emit("switch-size", Payload { message: "decrease".into() })
+								.unwrap();
 						});
 					}
 					"reset-size" => {
 						app.windows().into_iter().for_each(|(_label, window)| {
-							window.emit("switch-size", Payload { message: "reset".into() }).unwrap();
+							window
+								.emit("switch-size", Payload { message: "reset".into() })
+								.unwrap();
 						});
 					}
 					"light" => {
 						app.windows().into_iter().for_each(|(_label, window)| {
-							window.emit("switch-mode", Payload { message: "light".into() }).unwrap();
+							window
+								.emit("switch-mode", Payload { message: "light".into() })
+								.unwrap();
 						});
 					}
 					"dark" => {

@@ -1,4 +1,4 @@
-fn enumerate_monitors() -> Vec<MONITORINFOEXW> {
+pub fn enumerate_monitors() -> Vec<MONITORINFOEXW> {
     // Define the vector where we will store the result
     let mut monitors = Vec::<MONITORINFOEXW>::new();
     let userdata = &mut monitors as *mut _;
