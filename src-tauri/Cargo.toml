@@ -17,4 +17,4 @@ custom-protocol = ["tauri/custom-protocol"]
 
 [lib]
 name = "monitors"
-path = "src/lib/main.rs"
+path = "src/lib/monitors.rs"

@@ -1,22 +1,14 @@
 #![cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
 
-extern crate winapi;
-
 extern crate tauri;
 extern crate tauri_plugin_store;
 
-use winapi::{
-	shared::{
-		minwindef::{BOOL, LPARAM, TRUE},
-		windef::{HDC, HMONITOR, LPRECT, RECT},
-	},
-	um::winuser::{EnumDisplayMonitors, GetMonitorInfoW, MONITORINFOEXW},
-};
+use std::{ffi::OsString, os::windows::ffi::OsStringExt};
 
 use tauri::{
-	CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
+	CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem, Wry,
 };
-use tauri_plugin_store::{Builder, StoreBuilder};
+use tauri_plugin_store::{ Builder, StoreBuilder};
 
 #[derive(Clone, serde::Serialize)]
 struct Payload {
@@ -38,12 +30,13 @@ fn main() {
 	}
 
 	tauri::Builder::default()
-		.plugin(
-			Builder::default()
-				.stores([StoreBuilder::new(".settings.dat".parse().unwrap()).build()])
-				.freeze()
-				.build(),
-		)
+		.plugin(Builder::default().build())
+		.setup(|app| {
+			let store = StoreBuilder::new(app.handle(), ".settings.dat".parse()?).build();
+			println!("{:?}", store.len());
+
+			Ok(())
+		})
 		.system_tray(
 			SystemTray::new().with_menu(
 				SystemTrayMenu::new()
@@ -91,7 +84,7 @@ fn main() {
 						});
 					}
 					"dark" => {
-						app.windows.into_iter().for_each(|(_label, window)| {
+						app.windows().into_iter().for_each(|(_label, window)| {
 							window.emit("switch-mode", Payload { message: "dark".into() }).unwrap();
 						});
 					}
