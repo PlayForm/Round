@@ -1,0 +1,36 @@
+.Corner {
+	--corner-size: 23px;
+	width: var(--corner-size);
+	height: var(--corner-size);
+
+	-webkit-mask-image: radial-gradient(
+		circle at var(--corner-size) var(--corner-size),
+		transparent calc(var(--corner-size) + -0.7px),
+		rgba(255, 255, 255, 1) calc(var(--corner-size) + 0.7px)
+	);
+
+	@apply absolute inset-auto bg-black;
+
+	&[data-id="top_left"] {
+		@apply left-0 top-0;
+	}
+
+	&[data-id="top_right"] {
+		transform: rotate(90deg);
+		@apply right-0 top-0;
+	}
+
+	&[data-id="bottom_right"] {
+		transform: rotate(180deg);
+		@apply right-0 bottom-0;
+	}
+
+	&[data-id="bottom_left"] {
+		transform: rotate(270deg);
+		@apply left-0 bottom-0;
+	}
+
+	.Window[data-mode="light"] & {
+		@apply bg-white;
+	}
+}
