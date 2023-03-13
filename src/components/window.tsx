@@ -16,6 +16,8 @@ const storeMode: {
 
 const [mode, setMode] = createSignal(storeMode ? storeMode.value : "dark");
 
+await appWindow.setIgnoreCursorEvents(true);
+
 await listen(
 	"switch-mode",
 	async (event: {
