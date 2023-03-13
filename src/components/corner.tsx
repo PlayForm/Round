@@ -13,7 +13,7 @@ const storeSize: {
 	value: number;
 } | null = await store.get("size");
 
-const [size, setSize] = createSignal(23);
+const [size, setSize] = createSignal(storeSize ? storeSize.value : 23);
 
 await listen(
 	"switch-size",

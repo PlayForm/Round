@@ -15,7 +15,7 @@ const storeMode: {
 	value: string;
 } | null = await store.get("mode");
 
-const [mode, setMode] = createSignal("dark");
+const [mode, setMode] = createSignal(storeMode ? storeMode.value : "dark");
 
 await listen(
 	"switch-mode",
