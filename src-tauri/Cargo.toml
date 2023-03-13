@@ -8,10 +8,7 @@ tauri-build = { version = "1.2.1", features = [] }
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-tauri = { git = "https://github.com/withpatches/tauri", branch = "click-through", features = [
-	"api-all",
-	"system-tray"
-] }
+tauri = { git = "https://github.com/withpatches/tauri", branch = "click-through", features = ["api-all", "system-tray"] }
 tauri-plugin-store = { git = "https://github.com/roundedcorners/plugins-workspace", branch = "main" }
 winapi = { version = "0.3.9", features = ["winuser"] }
 
