@@ -1,13 +1,11 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 extern crate tauri;
-extern crate tauri_plugin_store;
 
 use std::{ffi::OsString, os::windows::ffi::OsStringExt};
 use tauri::{
 	CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
 };
-use tauri_plugin_store::{Builder, StoreBuilder};
 
 #[derive(Clone, serde::Serialize)]
 struct Payload {
@@ -29,7 +27,6 @@ fn main() {
 	}
 
 	tauri::Builder::default()
-		.plugin(Builder::default().build())
 		.system_tray(
 			SystemTray::new().with_menu(
 				SystemTrayMenu::new()
