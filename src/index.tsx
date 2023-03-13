@@ -16,7 +16,7 @@ import "./assets/css/window.css";
 // } | null = await store.get("mode");
 
 const [mode, setMode] = createSignal("dark");
-
+appWindow
 await listen(
 	"switch-mode",
 	async (event: {

@@ -14,8 +14,7 @@
 		"allowlist": {
 			"all": false,
 			"window": {
-				"setPosition": true,
-				"setIgnoreCursorEvents": true
+				"setPosition": true
 			}
 		},
 		"bundle": {
