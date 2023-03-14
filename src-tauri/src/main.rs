@@ -32,7 +32,6 @@ fn main() {
 			let mut store =
 				StoreBuilder::new(app.app_handle(), PathBuf::from(".settings.dat")).build();
 
-			store.save().unwrap();
 			store.load().unwrap();
 
 			if let None = store.get("size") {
@@ -67,8 +66,8 @@ fn main() {
 						.decorations(false)
 						.disable_file_drop_handler()
 						.accept_first_mouse(false)
-						.focused(false)
-						.fullscreen(true)
+						.focused(true)
+						.fullscreen(false)
 						.maximized(false)
 						.resizable(false)
 						.skip_taskbar(true)
@@ -80,7 +79,6 @@ fn main() {
 						.build()?;
 
 				window.set_cursor_grab(false).unwrap();
-
 				window.show().unwrap();
 			}
 
@@ -105,7 +103,6 @@ fn main() {
 			let mut store =
 				StoreBuilder::new(app.app_handle(), PathBuf::from(".settings.dat")).build();
 
-			store.save().unwrap();
 			store.load().unwrap();
 
 			let mut new_size: i64 = match store.get("size") {
@@ -121,14 +118,10 @@ fn main() {
 			if let SystemTrayEvent::MenuItemClick { id, .. } = event {
 				match id.as_str() {
 					"increase" => {
-						if let Some(size) = store.get("size") {
-							new_size = size.as_i64().unwrap() + 3;
-						}
+						new_size = new_size + 6;
 					}
 					"decrease" => {
-						if let Some(size) = store.get("size") {
-							new_size = size.as_i64().unwrap() - 3;
-						}
+						new_size = new_size - 6;
 					}
 					"reset-size" => {
 						new_size = 23;
@@ -154,35 +147,34 @@ fn main() {
 					}
 					_ => {}
 				}
+
+				store.insert("size".to_string(), json!(new_size)).unwrap();
+				store.insert("mode".to_string(), json!(new_mode)).unwrap();
+
+				store.save().unwrap();
+
+				app.windows().into_iter().for_each(|(_label, window)| {
+					if let Some(set_size) = store.get("size") {
+						window
+							.emit(
+								"set-size",
+								Payload { message: Message::Size(set_size.as_i64().unwrap()) },
+							)
+							.unwrap();
+					}
+
+					if let Some(set_mode) = store.get("mode") {
+						window
+							.emit(
+								"set-mode",
+								Payload {
+									message: Message::Mode(set_mode.as_str().unwrap().to_owned()),
+								},
+							)
+							.unwrap();
+					}
+				});
 			}
-
-			store.insert("size".to_string(), json!(new_size)).unwrap();
-			store.insert("mode".to_string(), json!(new_mode)).unwrap();
-
-			store.save().unwrap();
-			store.load().unwrap();
-
-			app.windows().into_iter().for_each(|(_label, window)| {
-				if let Some(set_size) = store.get("size") {
-					window
-						.emit(
-							"set-size",
-							Payload { message: Message::Size(set_size.as_i64().unwrap()) },
-						)
-						.unwrap();
-				}
-
-				if let Some(set_mode) = store.get("mode") {
-					window
-						.emit(
-							"set-mode",
-							Payload {
-								message: Message::Mode(set_mode.as_str().unwrap().to_owned()),
-							},
-						)
-						.unwrap();
-				}
-			});
 		})
 		.run(tauri::generate_context!())
 		.expect("Error! Failed to run Rounded Corners.");
