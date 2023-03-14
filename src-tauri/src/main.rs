@@ -95,6 +95,7 @@ fn main() {
 			}
 
 			sample_window.hide().unwrap();
+			sample_window.close().unwrap();
 
 			Ok(())
 		})
