@@ -14,7 +14,3 @@ tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", 
 
 [features]
 custom-protocol = ["tauri/custom-protocol"]
-
-[lib]
-name = "monitors"
-path = "src/lib/monitors.rs"

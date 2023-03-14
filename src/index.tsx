@@ -12,25 +12,9 @@ const [mode, setMode] = createSignal("dark");
 await appWindow.setIgnoreCursorEvents(true);
 
 await listen(
-	"boot",
-	async (event: {
-		payload: {
-			message: string;
-		};
-	}) => {
-		console.log(event.payload.message);
-	}
-);
-
-await listen(
 	"set-mode",
-	async (event: {
-		payload: {
-			message: string;
-		};
-	}) => {
-		console.log(event.payload.message);
-		setMode(event.payload.message);
+	async (event: { payload: { message: { Mode: string } } }) => {
+		setMode(event.payload.message.Mode);
 	}
 );
 

@@ -8,25 +8,9 @@ import "../assets/css/corner.css";
 const [size, setSize] = createSignal(23);
 
 await listen(
-	"boot",
-	async (event: {
-		payload: {
-			message: string;
-		};
-	}) => {
-		console.log(event.payload.message);
-	}
-);
-
-await listen(
 	"set-size",
-	async (event: {
-		payload: {
-			message: number;
-		};
-	}) => {
-		console.log(event.payload.message);
-		setSize(event.payload.message);
+	async (event: { payload: { message: { Size: number } } }) => {
+		setSize(event.payload.message.Size);
 	}
 );
 
