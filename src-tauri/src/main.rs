@@ -27,19 +27,22 @@ struct Payload {
 }
 
 fn main() {
+	let default_size = 23;
+	let default_mode = "dark";
+
 	tauri::Builder::default()
-		.setup(|app| {
+		.setup(move |app| {
 			let mut store =
 				StoreBuilder::new(app.app_handle(), PathBuf::from(".settings.dat")).build();
 
 			store.load().unwrap();
 
 			if let None = store.get("size") {
-				store.insert("size".to_string(), json!(23)).unwrap();
+				store.insert("size".to_string(), json!(default_size)).unwrap();
 			}
 
 			if let None = store.get("mode") {
-				store.insert("mode".to_string(), json!("dark")).unwrap();
+				store.insert("mode".to_string(), json!(default_mode)).unwrap();
 			}
 
 			store.save().unwrap();
@@ -100,20 +103,20 @@ fn main() {
 					.add_item(CustomMenuItem::new("exit".to_string(), "❌ Exit")),
 			),
 		)
-		.on_system_tray_event(|app, event| {
+		.on_system_tray_event(move |app, event| {
 			let mut store =
 				StoreBuilder::new(app.app_handle(), PathBuf::from(".settings.dat")).build();
 
 			store.load().unwrap();
 
 			let mut new_size: i64 = match store.get("size") {
-				Some(size) => size.as_i64().unwrap_or(23),
-				None => 23,
+				Some(size) => size.as_i64().unwrap_or(default_size),
+				None => default_size,
 			};
 
 			let mut new_mode: String = match store.get("mode") {
-				Some(mode) => mode.as_str().unwrap_or("dark").to_string(),
-				None => "dark".to_string(),
+				Some(mode) => mode.as_str().unwrap_or(default_mode).to_string(),
+				None => default_mode.to_string(),
 			};
 
 			if let SystemTrayEvent::MenuItemClick { id, .. } = event {
@@ -129,7 +132,7 @@ fn main() {
 						}
 					}
 					"reset-size" => {
-						new_size = 23;
+						new_size = default_size;
 					}
 					"light" => {
 						new_mode = "light".to_string();
