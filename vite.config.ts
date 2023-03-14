@@ -1,13 +1,15 @@
 import { defineConfig } from "vite";
 import solidPlugin from "vite-plugin-solid";
 
-
-export default defineConfig(async () => ({
+export default defineConfig({
 	plugins: [solidPlugin()],
 	clearScreen: false,
 	server: {
 		port: 1420,
 		strictPort: true,
+		hmr: {
+			overlay: false,
+		},
 	},
 	envPrefix: ["VITE_", "TAURI_"],
 	build: {
@@ -15,4 +17,4 @@ export default defineConfig(async () => ({
 		minify: "esbuild",
 		sourcemap: !!process.env.TAURI_DEBUG,
 	},
-}));
+});

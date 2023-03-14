@@ -1,6 +1,6 @@
 # 0.0.4
 
--   Add multi-monitor setup
+-   Adds multi-monitor setup
 
 # 0.0.3
 

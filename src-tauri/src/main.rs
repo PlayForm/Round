@@ -32,6 +32,7 @@ fn main() {
 			let mut store =
 				StoreBuilder::new(app.app_handle(), PathBuf::from(".settings.dat")).build();
 
+			store.save().unwrap();
 			store.load().unwrap();
 
 			if let None = store.get("size") {
@@ -44,6 +45,16 @@ fn main() {
 
 			store.save().unwrap();
 			store.load().unwrap();
+
+			let mut init_script = r#"window.settings = {};"#.to_string();
+
+			if let Some(size) = store.get("size") {
+				init_script = init_script + &format!(r#"window.settings.size = {};"#, size);
+			}
+
+			if let Some(size) = store.get("mode") {
+				init_script = init_script + &format!(r#"window.settings.mode = {};"#, size);
+			}
 
 			let sample_window =
 				WindowBuilder::new(app, "sample", tauri::WindowUrl::App("sample.html".into()))
@@ -76,11 +87,14 @@ fn main() {
 						.visible(true)
 						.inner_size(monitor.size().width.into(), monitor.size().height.into())
 						.position(monitor.position().x.into(), monitor.position().y.into())
+						.initialization_script(&init_script)
 						.build()?;
 
 				window.set_cursor_grab(false).unwrap();
 				window.show().unwrap();
 			}
+
+			sample_window.hide().unwrap();
 
 			Ok(())
 		})
@@ -89,7 +103,7 @@ fn main() {
 				SystemTrayMenu::new()
 					.add_item(CustomMenuItem::new("increase".to_string(), "➕ Increase Size"))
 					.add_item(CustomMenuItem::new("decrease".to_string(), "➖ Decrease Size"))
-					.add_item(CustomMenuItem::new("reset-size".to_string(), "↩️ Reset"))
+					.add_item(CustomMenuItem::new("reset".to_string(), "↩️ Reset"))
 					.add_native_item(SystemTrayMenuItem::Separator)
 					.add_item(CustomMenuItem::new("dark".to_string(), "🌑 Dark"))
 					.add_item(CustomMenuItem::new("light".to_string(), "☀️ Light"))
@@ -103,6 +117,7 @@ fn main() {
 			let mut store =
 				StoreBuilder::new(app.app_handle(), PathBuf::from(".settings.dat")).build();
 
+			store.save().unwrap();
 			store.load().unwrap();
 
 			let mut new_size: i64 = match store.get("size") {
@@ -123,7 +138,7 @@ fn main() {
 					"decrease" => {
 						new_size = new_size - 6;
 					}
-					"reset-size" => {
+					"reset" => {
 						new_size = 23;
 					}
 					"light" => {
@@ -152,23 +167,24 @@ fn main() {
 				store.insert("mode".to_string(), json!(new_mode)).unwrap();
 
 				store.save().unwrap();
+				store.load().unwrap();
 
 				app.windows().into_iter().for_each(|(_label, window)| {
-					if let Some(set_size) = store.get("size") {
+					if let Some(size) = store.get("size") {
 						window
 							.emit(
-								"set-size",
-								Payload { message: Message::Size(set_size.as_i64().unwrap()) },
+								"size",
+								Payload { message: Message::Size(size.as_i64().unwrap()) },
 							)
 							.unwrap();
 					}
 
-					if let Some(set_mode) = store.get("mode") {
+					if let Some(size) = store.get("mode") {
 						window
 							.emit(
-								"set-mode",
+								"mode",
 								Payload {
-									message: Message::Mode(set_mode.as_str().unwrap().to_owned()),
+									message: Message::Mode(size.as_str().unwrap().to_owned()),
 								},
 							)
 							.unwrap();
