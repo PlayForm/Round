@@ -118,7 +118,6 @@ fn main() {
 			let mut store =
 				StoreBuilder::new(app.app_handle(), PathBuf::from(".settings.dat")).build();
 
-			store.save().unwrap();
 			store.load().unwrap();
 
 			let mut new_size: i64 = match store.get("size") {
@@ -168,7 +167,6 @@ fn main() {
 				store.insert("mode".to_string(), json!(new_mode)).unwrap();
 
 				store.save().unwrap();
-				store.load().unwrap();
 
 				app.windows().into_iter().for_each(|(_label, window)| {
 					if let Some(size) = store.get("size") {
