@@ -30,9 +30,12 @@ fn main() {
 	tauri::Builder::default()
 		.setup(|app| {
 			let mut store =
-				StoreBuilder::new(app.app_handle(), PathBuf::from(".settings.dat")).build();
+				StoreBuilder::new(app.app_handle(), PathBuf::from("settings.json")).build();
 
-			store.save().unwrap();
+			if let Err(_e) = store.load() {
+				store.save().unwrap();
+			};
+
 			store.load().unwrap();
 
 			if let None = store.get("size") {
@@ -41,6 +44,10 @@ fn main() {
 
 			if let None = store.get("mode") {
 				store.insert("mode".to_string(), json!("dark")).unwrap();
+			}
+
+			if let None = store.get("hidden") {
+				store.insert("hidden".to_string(), json!(false)).unwrap();
 			}
 
 			store.save().unwrap();
@@ -52,8 +59,8 @@ fn main() {
 				init_script = init_script + &format!(r#"window.settings.size = {};"#, size);
 			}
 
-			if let Some(size) = store.get("mode") {
-				init_script = init_script + &format!(r#"window.settings.mode = {};"#, size);
+			if let Some(mode) = store.get("mode") {
+				init_script = init_script + &format!(r#"window.settings.mode = {};"#, mode);
 			}
 
 			let sample_window =
@@ -84,14 +91,19 @@ fn main() {
 						.skip_taskbar(true)
 						.title("")
 						.transparent(true)
-						.visible(true)
+						.visible(false)
 						.inner_size(monitor.size().width.into(), monitor.size().height.into())
 						.position(monitor.position().x.into(), monitor.position().y.into())
 						.initialization_script(&init_script)
 						.build()?;
 
 				window.set_cursor_grab(false).unwrap();
-				window.show().unwrap();
+
+				if let Some(hidden) = store.get("hidden") {
+					if hidden != true {
+						window.show().unwrap();
+					}
+				}
 			}
 
 			sample_window.hide().unwrap();
@@ -116,7 +128,7 @@ fn main() {
 		)
 		.on_system_tray_event(|app, event| {
 			let mut store =
-				StoreBuilder::new(app.app_handle(), PathBuf::from(".settings.dat")).build();
+				StoreBuilder::new(app.app_handle(), PathBuf::from("settings.json")).build();
 
 			store.load().unwrap();
 
@@ -128,6 +140,11 @@ fn main() {
 			let mut new_mode: String = match store.get("mode") {
 				Some(mode) => mode.as_str().unwrap_or("dark").to_string(),
 				None => "dark".to_string(),
+			};
+
+			let mut new_hidden: bool = match store.get("hidden") {
+				Some(hidden) => hidden.as_bool().unwrap_or(false),
+				None => false,
 			};
 
 			if let SystemTrayEvent::MenuItemClick { id, .. } = event {
@@ -148,14 +165,10 @@ fn main() {
 						new_mode = "dark".to_string();
 					}
 					"show" => {
-						app.windows().into_iter().for_each(|(_label, window)| {
-							window.show().unwrap();
-						});
+						new_hidden = false;
 					}
 					"hide" => {
-						app.windows().into_iter().for_each(|(_label, window)| {
-							window.hide().unwrap();
-						});
+						new_hidden = true;
 					}
 					"exit" => {
 						std::process::exit(0);
@@ -165,6 +178,7 @@ fn main() {
 
 				store.insert("size".to_string(), json!(new_size)).unwrap();
 				store.insert("mode".to_string(), json!(new_mode)).unwrap();
+				store.insert("hidden".to_string(), json!(new_hidden)).unwrap();
 
 				store.save().unwrap();
 
@@ -178,15 +192,23 @@ fn main() {
 							.unwrap();
 					}
 
-					if let Some(size) = store.get("mode") {
+					if let Some(mode) = store.get("mode") {
 						window
 							.emit(
 								"mode",
 								Payload {
-									message: Message::Mode(size.as_str().unwrap().to_owned()),
+									message: Message::Mode(mode.as_str().unwrap().to_owned()),
 								},
 							)
 							.unwrap();
+					}
+
+					if let Some(hidden) = store.get("hidden") {
+						if hidden == true {
+							window.hide().unwrap();
+						} else {
+							window.show().unwrap();
+						}
 					}
 				});
 			}
