@@ -19,17 +19,11 @@ await listen(
 );
 
 const Window: Component = () => {
-	const [corners] = createSignal([
-		{ id: "top_left" },
-		{ id: "top_right" },
-		{ id: "bottom_right" },
-		{ id: "bottom_left" },
-	]);
-
 	return (
 		<div class="Window" data-label={appWindow.label} data-mode={mode()}>
-			<For each={corners()}>
-				{(corner: { id: string }) => <Corner id={corner.id} />}
+			<For
+				each={["top_left", "top_right", "bottom_right", "bottom_left"]}>
+				{(corner) => <Corner id={corner} />}
 			</For>
 		</div>
 	);
