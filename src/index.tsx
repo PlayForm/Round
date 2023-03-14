@@ -3,16 +3,18 @@ import { appWindow } from "@tauri-apps/api/window";
 import type { Component } from "solid-js";
 import { createSignal, For } from "solid-js";
 import { render } from "solid-js/web";
-import Corner from "./components/corner";
 
 import "./assets/css/window.css";
 
-const [mode, setMode] = createSignal("dark");
+import Corner from "./components/corner.jsx";
+
+// @ts-expect-error
+const [mode, setMode] = createSignal(window.settings.mode);
 
 await appWindow.setIgnoreCursorEvents(true);
 
 await listen(
-	"set-mode",
+	"mode",
 	async (event: { payload: { message: { Mode: string } } }) => {
 		setMode(event.payload.message.Mode);
 	}
@@ -23,7 +25,7 @@ const Window: Component = () => {
 		<div class="Window" data-label={appWindow.label} data-mode={mode()}>
 			<For
 				each={["top_left", "top_right", "bottom_right", "bottom_left"]}>
-				{(corner) => <Corner id={corner} />}
+				{(corner: string) => <Corner id={corner} />}
 			</For>
 		</div>
 	);

@@ -1,14 +1,12 @@
-// @ts-ignore
 import { listen } from "@tauri-apps/api/event";
-// @ts-ignore
 import { createSignal, mergeProps } from "solid-js";
 
 import "../assets/css/corner.css";
 
-const [size, setSize] = createSignal(23);
+const [size, setSize] = createSignal((window as Settings).settings.size);
 
 await listen(
-	"set-size",
+	"size",
 	async (event: { payload: { message: { Size: number } } }) => {
 		setSize(event.payload.message.Size);
 	}
