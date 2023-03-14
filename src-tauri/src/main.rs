@@ -5,7 +5,7 @@ extern crate serde_json;
 extern crate tauri;
 extern crate tauri_plugin_store;
 
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 
 use regex::Regex;
 use serde_json::json;
@@ -26,7 +26,33 @@ struct Payload {
 	message: Message,
 }
 
+#[derive(Debug, PartialEq, Eq, Hash)]
+enum KeySettings<'a> {
+	Name(&'a str),
+}
+
+impl<'a> AsRef<str> for KeySettings<'a> {
+	fn as_ref(&self) -> &str {
+		match self {
+			KeySettings::Name(name) => name,
+		}
+	}
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+enum ValueSettings<'a> {
+	Size(i64),
+	Mode(&'a str),
+	Hidden(bool),
+}
+
 fn main() {
+	let mut defaults: HashMap<KeySettings, ValueSettings> = HashMap::new();
+
+	defaults.insert(KeySettings::Name("size"), ValueSettings::Size(23));
+	defaults.insert(KeySettings::Name("mode"), ValueSettings::Mode("dark"));
+	defaults.insert(KeySettings::Name("hidden"), ValueSettings::Hidden(false));
+
 	tauri::Builder::default()
 		.setup(|app| {
 			let mut store =
@@ -38,22 +64,23 @@ fn main() {
 
 			store.load().unwrap();
 
-			if let None = store.get("size") {
-				store.insert("size".to_string(), json!(23)).unwrap();
-			}
-
-			if let None = store.get("mode") {
-				store.insert("mode".to_string(), json!("dark")).unwrap();
-			}
-
-			if let None = store.get("hidden") {
-				store.insert("hidden".to_string(), json!(false)).unwrap();
+			for (key, value) in defaults {
+				if let None = store.get(key.as_ref()) {
+					store
+						.insert(
+							key.as_ref().to_owned(),
+							json!(json!(value)
+								.as_object()
+								.and_then(|object| object.values().next())),
+						)
+						.unwrap();
+				}
 			}
 
 			store.save().unwrap();
 			store.load().unwrap();
 
-			let mut init_script = r#"window.settings = {};"#.to_string();
+			let mut init_script = String::from(r#"window.settings = {};"#);
 
 			if let Some(size) = store.get("size") {
 				init_script = init_script + &format!(r#"window.settings.size = {};"#, size);
@@ -72,7 +99,8 @@ fn main() {
 					.focused(false)
 					.title("")
 					.position(0.0, 0.0)
-					.build()?;
+					.build()
+					.expect("Error! Failed to create a sample window.");
 
 			for monitor in sample_window.available_monitors().unwrap() {
 				let label =
@@ -95,7 +123,8 @@ fn main() {
 						.inner_size(monitor.size().width.into(), monitor.size().height.into())
 						.position(monitor.position().x.into(), monitor.position().y.into())
 						.initialization_script(&init_script)
-						.build()?;
+						.build()
+						.expect("Error! Failed to create a window.");
 
 				window.set_cursor_grab(false).unwrap();
 
@@ -114,16 +143,16 @@ fn main() {
 		.system_tray(
 			SystemTray::new().with_menu(
 				SystemTrayMenu::new()
-					.add_item(CustomMenuItem::new("increase".to_string(), "➕ Increase Size"))
-					.add_item(CustomMenuItem::new("decrease".to_string(), "➖ Decrease Size"))
-					.add_item(CustomMenuItem::new("reset".to_string(), "↩️ Reset"))
+					.add_item(CustomMenuItem::new("increase", "➕ Increase Size"))
+					.add_item(CustomMenuItem::new("decrease", "➖ Decrease Size"))
+					.add_item(CustomMenuItem::new("reset", "↩️ Reset"))
 					.add_native_item(SystemTrayMenuItem::Separator)
-					.add_item(CustomMenuItem::new("dark".to_string(), "🌑 Dark"))
-					.add_item(CustomMenuItem::new("light".to_string(), "☀️ Light"))
+					.add_item(CustomMenuItem::new("dark", "🌑 Dark"))
+					.add_item(CustomMenuItem::new("light", "☀️ Light"))
 					.add_native_item(SystemTrayMenuItem::Separator)
-					.add_item(CustomMenuItem::new("show".to_string(), "👨🏻 Show"))
-					.add_item(CustomMenuItem::new("hide".to_string(), "🥷🏽 Hide"))
-					.add_item(CustomMenuItem::new("exit".to_string(), "❌ Exit")),
+					.add_item(CustomMenuItem::new("show", "👨🏻 Show"))
+					.add_item(CustomMenuItem::new("hide", "🥷🏽 Hide"))
+					.add_item(CustomMenuItem::new("exit", "❌ Exit")),
 			),
 		)
 		.on_system_tray_event(|app, event| {
@@ -132,53 +161,37 @@ fn main() {
 
 			store.load().unwrap();
 
-			let mut new_size: i64 = match store.get("size") {
+			let mut size = match store.get("size") {
 				Some(size) => size.as_i64().unwrap_or(23),
 				None => 23,
 			};
 
-			let mut new_mode: String = match store.get("mode") {
+			let mut mode = match store.get("mode") {
 				Some(mode) => mode.as_str().unwrap_or("dark").to_string(),
 				None => "dark".to_string(),
 			};
 
-			let mut new_hidden: bool = match store.get("hidden") {
+			let mut hidden = match store.get("hidden") {
 				Some(hidden) => hidden.as_bool().unwrap_or(false),
 				None => false,
 			};
 
 			if let SystemTrayEvent::MenuItemClick { id, .. } = event {
 				match id.as_str() {
-					"increase" => {
-						new_size = new_size + 6;
-					}
-					"decrease" => {
-						new_size = new_size - 6;
-					}
-					"reset" => {
-						new_size = 23;
-					}
-					"light" => {
-						new_mode = "light".to_string();
-					}
-					"dark" => {
-						new_mode = "dark".to_string();
-					}
-					"show" => {
-						new_hidden = false;
-					}
-					"hide" => {
-						new_hidden = true;
-					}
-					"exit" => {
-						std::process::exit(0);
-					}
+					"increase" => size += 6,
+					"decrease" => size -= 6,
+					"reset" => size = 23,
+					"light" => mode = "light".to_string(),
+					"dark" => mode = "dark".to_string(),
+					"show" => hidden = false,
+					"hide" => hidden = true,
+					"exit" => std::process::exit(0),
 					_ => {}
 				}
 
-				store.insert("size".to_string(), json!(new_size)).unwrap();
-				store.insert("mode".to_string(), json!(new_mode)).unwrap();
-				store.insert("hidden".to_string(), json!(new_hidden)).unwrap();
+				store.insert("size".to_string(), json!(size)).unwrap();
+				store.insert("mode".to_string(), json!(mode)).unwrap();
+				store.insert("hidden".to_string(), json!(hidden)).unwrap();
 
 				store.save().unwrap();
 
