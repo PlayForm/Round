@@ -46,8 +46,9 @@ roundness of the windows, respectively.
 
 **Reset** sets the corner radius back to the default value of _23px_.
 
-**Dark** and **Light** switch the app between dark and light mode. **Show** and
-**Hide** show or hide all windows, respectively.
+**Dark** and **Light** switch the app between dark and light mode.
+
+**Show** and **Hide** show or hide all windows, respectively.
 
 **Exit** closes the app.
 
