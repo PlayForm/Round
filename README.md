@@ -21,7 +21,7 @@
 	</picture>
 </a>
 
-https://discord.gg/tnsnMpbK This app rounds the corners of your Windows screen.
+This app rounds the corners of your Windows screen.
 
 ![Rounded Corners](./.github/cover.png)
 
