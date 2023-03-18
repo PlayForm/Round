@@ -1,0 +1,3 @@
+[submodule "src-tauri/plugins-workspace"]
+	path = src-tauri/plugins-workspace
+	url = ssh://git@github.com/roundedcorners/plugins-workspace.git
