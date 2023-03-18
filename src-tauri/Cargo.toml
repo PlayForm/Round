@@ -9,12 +9,7 @@ tauri-build = { version = "1.2.1", features = [] }
 regex = "1.7.1"
 serde = { version = "1.0.157", features = ["derive"] }
 serde_json = "1.0.94"
-tauri = { version = "1.2.4", features = [
-	"system-tray",
-	"window-set-ignore-cursor-events",
-	"window-set-position",
-] }
-tauri-plugin-store = { path = "plugins-workspace/plugins/store", version = "0.1.0" }
+tauri = { version = "1.2.4", features = ["system-tray", "window-set-ignore-cursor-events", "window-set-position"] }
 
 [features]
 custom-protocol = ["tauri/custom-protocol"]
