@@ -10,7 +10,7 @@
 			"vite/client"
 		]
 	},
-	"extends": "./node_modules/@lightrix/config/base/ts",
+	"extends": "@lightrix/config/base/ts",
 	"include": [
 		"src"
 	]
