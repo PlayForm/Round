@@ -20,7 +20,7 @@
 	},
 	"dependencies": {
 		"@tauri-apps/api": "1.2.0",
-		"solid-js": "1.6.16"
+		"solid-js": "1.7.0"
 	},
 	"devDependencies": {
 		"@lightrix/config": "0.0.7",
