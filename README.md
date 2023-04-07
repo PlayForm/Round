@@ -7,18 +7,19 @@
 <a href ="https://discord.gg/7SK688rBE3" target="_blank">
 	<picture>
 		<source
-			media="(prefers-color-scheme: dark)"
-			srcset={`https://img.shields.io/discord/977956954041356329?label=Discord&logo=discord&color=black&logoColor=white&labelColor=black&logoWidth=15`}
-		/>
-		<source
-			media="(prefers-color-scheme: light)"
-			srcset={`https://img.shields.io/discord/977956954041356329?label=Discord&logo=discord&color=white&logoColor=black&labelColor=white&logoWidth=15`}
-		/>
-		<img
-			alt="Discord"
-			src={`https://img.shields.io/discord/977956954041356329?label=Discord&logo=discord&color=black&logoColor=white&labelColor=black&logoWidth=15`}
-		/>
-	</picture>
+    		media="(prefers-color-scheme: dark)"
+    		srcset={`https://img.shields.io/discord/977956954041356329?label=Discord&logo=discord&color=black&logoColor=white&labelColor=black&logoWidth=15`}
+    	/>
+    	<source
+    		media="(prefers-color-scheme: light)"
+    		srcset={`https://img.shields.io/discord/977956954041356329?label=Discord&logo=discord&color=white&logoColor=black&labelColor=white&logoWidth=15`}
+    	/>
+    	<img
+    		alt="Discord"
+    		src={`https://img.shields.io/discord/977956954041356329?label=Discord&logo=discord&color=black&logoColor=white&labelColor=black&logoWidth=15`}
+    	/>
+    </picture>
+
 </a>
 
 This app rounds the corners of your Windows screen.
