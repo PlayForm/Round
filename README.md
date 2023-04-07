@@ -4,7 +4,7 @@
 
 # Rounded Corners
 
-<a href ="https://discord.gg/RzjXMMjY27" target="_blank">
+<a href ="https://discord.gg/7SK688rBE3" target="_blank">
 	<picture>
 		<source
 			media="(prefers-color-scheme: dark)"
