@@ -3,7 +3,7 @@ import { createSignal, mergeProps } from "solid-js";
 
 import "../assets/css/corner.css";
 
-const [size, setSize] = createSignal((window as Settings).settings.size);
+const [size, setSize] = createSignal(window.settings.size);
 
 await listen(
 	"size",
@@ -12,12 +12,10 @@ await listen(
 	}
 );
 
-const Corner = (props: unknown) => (
+export default (props: unknown) => (
 	<div
 		class="Corner"
 		data-id={mergeProps({ id: "default" }, props).id}
 		style={{ "--corner-size": `${size()}px` }}
 	/>
 );
-
-export default Corner;
