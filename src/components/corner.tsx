@@ -12,7 +12,7 @@ await listen(
 	}
 );
 
-export default (props: unknown) => (
+export default (props: any) => (
 	<div
 		class="Corner"
 		data-id={mergeProps({ id: "default" }, props).id}
