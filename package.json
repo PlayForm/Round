@@ -26,11 +26,11 @@
 	"devDependencies": {
 		"@lightrix/config": "0.0.9",
 		"@tauri-apps/cli": "1.2.3",
-		"@types/node": "18.15.11",
+		"@types/node": "18.15.12",
 		"autoprefixer": "10.4.14",
 		"cssnano": "6.0.0",
 		"cssnano-preset-advanced": "6.0.0",
-		"postcss": "8.4.22",
+		"postcss": "8.4.23",
 		"postcss-combine-duplicated-selectors": "10.0.3",
 		"postcss-combine-media-query": "1.0.1",
 		"postcss-import": "15.1.0",
