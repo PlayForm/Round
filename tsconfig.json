@@ -1,17 +1,10 @@
 {
 	"compilerOptions": {
 		"jsxImportSource": "solid-js",
-		"lib": [
-			"DOM",
-			"ESNext"
-		],
+		"lib": ["DOM", "ESNext"],
 		"outDir": "dist",
-		"types": [
-			"vite/client"
-		]
+		"types": ["vite/client"]
 	},
 	"extends": "@lightrix/config/base/ts",
-	"include": [
-		"src"
-	]
+	"include": ["src"]
 }
