@@ -1,3 +1,7 @@
+# 0.0.5
+
+-   Fixes scale when using multiple monitors
+
 # 0.0.4
 
 -   Adds multi-monitor setup

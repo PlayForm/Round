@@ -1,7 +1,6 @@
 {
 	"name": "roundedcorners-app",
-	"version": "0.0.4",
-	"type": "module",
+	"version": "0.0.5",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/roundedcorners/app.git"

@@ -1,6 +1,6 @@
 [package]
 name = "roundedcorners"
-version = "0.0.4"
+version = "0.0.5"
 
 [build-dependencies]
 tauri-build = { version = "1.2.1", features = [] }
@@ -9,11 +9,7 @@ tauri-build = { version = "1.2.1", features = [] }
 regex = "1.8.1"
 serde = { version = "1.0.160", features = ["derive"] }
 serde_json = "1.0.96"
-tauri = { version = "1.2.4", features = [
-	"system-tray",
-	"window-set-ignore-cursor-events",
-	"window-set-position"
-] }
+tauri = { version = "1.2.4", features = ["system-tray", "window-set-ignore-cursor-events", "window-set-position"] }
 tauri-plugin-store = { git = "https://github.com/roundedcorners/plugins-workspace", branch = "dev" }
 
 [features]

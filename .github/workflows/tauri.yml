@@ -31,6 +31,7 @@ jobs:
               with:
                   profile: minimal
                   toolchain: ${{ matrix.toolchain }}
+
             - uses: actions/cache@v3.3.1
               with:
                   path: |
@@ -42,18 +43,35 @@ jobs:
                   key:
                       ${{ runner.os }}-cargo-${{
                       hashFiles('./src-tauri/Cargo.toml') }}
+
             - uses: actions/download-artifact@v3.0.2
               id: download
               with:
                   name: .-node-18-dist
-            - uses: jossef/action-set-json-field@v2
+
+            - uses: jossef/action-set-json-field@v2.1
               with:
                   file: ./src-tauri/tauri.conf.json
                   field: build.distDir
                   value: ${{steps.download.outputs.download-path}}\dist
+
             - uses: actions-rs/cargo@v1.0.3
               with:
                   command: build
                   args:
                       --release --all-features --manifest-path
                       ./src-tauri/Cargo.toml
+
+            - uses: actions/upload-artifact@v3.1.2
+              with:
+                  name:
+                      .-tauri-${{ matrix.toolchain
+                      }}-${{runner.os}}-target-release
+                  path: ./src-tauri/target/release/*.exe
+
+            - uses: actions/upload-artifact@v3.1.2
+              with:
+                  name:
+                      .-tauri-${{ matrix.toolchain
+                      }}-${{runner.os}}-target-release-bundle-msi
+                  path: ./src-tauri/target/release/bundle/msi/*.msi

@@ -59,10 +59,10 @@ fn main() {
 				StoreBuilder::new(app.app_handle(), PathBuf::from("settings.json")).build();
 
 			if let Err(_e) = store.load() {
-				store.save().unwrap();
+				store.save().expect("Error! Could not initialize settings.");
 			};
 
-			store.load().unwrap();
+			store.load().expect("Error! Could not get settings.");
 
 			for (key, value) in defaults {
 				if let None = store.get(key.as_ref()) {
@@ -73,12 +73,12 @@ fn main() {
 								.as_object()
 								.and_then(|object| object.values().next())),
 						)
-						.unwrap();
+						.expect("Error! Could not set defaults.");
 				}
 			}
 
-			store.save().unwrap();
-			store.load().unwrap();
+			store.save().expect("Error! Could not save settings.");
+			store.load().expect("Error! Could not get settings.");
 
 			let mut init_script = String::from(r#"window.settings = {};"#);
 
@@ -102,9 +102,21 @@ fn main() {
 					.build()
 					.expect("Error! Failed to create a sample window.");
 
-			for monitor in sample_window.available_monitors().unwrap() {
-				let label =
-					Regex::new(r"[^a-zA-Z0-9\s]").unwrap().replace_all(monitor.name().unwrap(), "");
+			let scale_factor: f64 = sample_window
+				.primary_monitor()
+				.expect("Error! No monitors found.")
+				.expect("Error! Could not get primary monitor.")
+				.scale_factor();
+
+			for monitor in
+				sample_window.available_monitors().expect("Error! Failed to get monitors.")
+			{
+				let label = Regex::new(r"[^a-zA-Z0-9\s]")
+					.unwrap()
+					.replace_all(monitor.name().expect("Error! Could not get monitor name."), "");
+
+				let monitor_size = monitor.size().to_logical::<i32>(scale_factor);
+				let monitor_position = monitor.position().to_logical::<i32>(scale_factor);
 
 				let window =
 					WindowBuilder::new(app, label, tauri::WindowUrl::App("index.html".into()))
@@ -120,23 +132,23 @@ fn main() {
 						.title("")
 						.transparent(true)
 						.visible(false)
-						.inner_size(monitor.size().width.into(), monitor.size().height.into())
-						.position(monitor.position().x.into(), monitor.position().y.into())
+						.inner_size(monitor_size.width.into(), monitor_size.height.into())
+						.position(monitor_position.x.into(), monitor_position.y.into())
 						.initialization_script(&init_script)
 						.build()
 						.expect("Error! Failed to create a window.");
 
-				window.set_cursor_grab(false).unwrap();
+				window.set_cursor_grab(false).expect("Error! Could not set cursor grab.");
 
 				if let Some(hidden) = store.get("hidden") {
 					if hidden != true {
-						window.show().unwrap();
+						window.show().expect("Error! Could not show window");
 					}
 				}
 			}
 
-			sample_window.hide().unwrap();
-			sample_window.close().unwrap();
+			sample_window.hide().expect("Error! Could not hide sample window");
+			sample_window.close().expect("Error! Could not close sample window");
 
 			Ok(())
 		})
@@ -159,7 +171,7 @@ fn main() {
 			let mut store =
 				StoreBuilder::new(app.app_handle(), PathBuf::from("settings.json")).build();
 
-			store.load().unwrap();
+			store.load().expect("Error! Could not get settings.");
 
 			let mut size = match store.get("size") {
 				Some(size) => size.as_i64().unwrap_or(23),
@@ -189,20 +201,31 @@ fn main() {
 					_ => {}
 				}
 
-				store.insert("size".to_string(), json!(size)).unwrap();
-				store.insert("mode".to_string(), json!(mode)).unwrap();
-				store.insert("hidden".to_string(), json!(hidden)).unwrap();
+				store
+					.insert("size".to_string(), json!(size))
+					.expect("Error! Could not preserve size.");
+				store
+					.insert("mode".to_string(), json!(mode))
+					.expect("Error! Could not preserve mode.");
+				store
+					.insert("hidden".to_string(), json!(hidden))
+					.expect("Error! Could not preserve display.");
 
-				store.save().unwrap();
+				store.save().expect("Error! Could not save settings.");
 
 				app.windows().into_iter().for_each(|(_label, window)| {
 					if let Some(size) = store.get("size") {
 						window
 							.emit(
 								"size",
-								Payload { message: Message::Size(size.as_i64().unwrap()) },
+								Payload {
+									message: Message::Size(
+										size.as_i64()
+											.expect("Error! Could not get size from settings."),
+									),
+								},
 							)
-							.unwrap();
+							.expect("Error! Could not set size to window.");
 					}
 
 					if let Some(mode) = store.get("mode") {
@@ -210,17 +233,21 @@ fn main() {
 							.emit(
 								"mode",
 								Payload {
-									message: Message::Mode(mode.as_str().unwrap().to_owned()),
+									message: Message::Mode(
+										mode.as_str()
+											.expect("Error! Could not get mode from settings.")
+											.to_owned(),
+									),
 								},
 							)
-							.unwrap();
+							.expect("Error! Could not set mode to window.");
 					}
 
 					if let Some(hidden) = store.get("hidden") {
 						if hidden == true {
-							window.hide().unwrap();
+							window.hide().expect("Error! Could not hide windows.");
 						} else {
-							window.show().unwrap();
+							window.show().expect("Error! Could not show windows.");
 						}
 					}
 				});
