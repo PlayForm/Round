@@ -1,5 +1,5 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-
+#[allow(unused_attributes)]
+#[cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
 extern crate regex;
 extern crate serde_json;
 extern crate tauri;
