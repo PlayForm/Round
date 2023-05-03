@@ -3,6 +3,14 @@ import { createSignal, mergeProps } from "solid-js";
 
 import "../assets/css/corner.css";
 
+import type { Settings } from "../options/index";
+
+declare global {
+	interface Window {
+		settings: Settings;
+	}
+}
+
 const [size, setSize] = createSignal(window.settings.size);
 
 await listen(

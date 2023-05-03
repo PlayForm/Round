@@ -1,14 +1,12 @@
 import { listen } from "@tauri-apps/api/event";
 import { appWindow } from "@tauri-apps/api/window";
-import type { Component } from "solid-js";
-import { createSignal, For } from "solid-js";
+import { Component, For, createSignal } from "solid-js";
 import { render } from "solid-js/web";
 
 import "./assets/css/window.css";
 
 import Corner from "./components/corner.jsx";
 
-// @ts-expect-error
 const [mode, setMode] = createSignal(window.settings.mode);
 
 await appWindow.setIgnoreCursorEvents(true);

@@ -1,3 +1,7 @@
+# 0.0.6
+
+-   Cleanup
+
 # 0.0.5
 
 -   Fixes scale when using multiple monitors
