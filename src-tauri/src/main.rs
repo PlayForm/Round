@@ -5,10 +5,9 @@ extern crate serde_json;
 extern crate tauri;
 extern crate tauri_plugin_store;
 
-use std::{collections::HashMap, path::PathBuf};
-
 use regex::Regex;
 use serde_json::json;
+use std::{collections::HashMap, path::PathBuf};
 use tauri::{
 	CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
 	WindowBuilder,
