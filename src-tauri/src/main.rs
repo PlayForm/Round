@@ -7,7 +7,7 @@ extern crate tauri_plugin_store;
 
 use regex::Regex;
 use serde_json::json;
-use std::{collections::HashMap, ops::Sub, path::PathBuf};
+use std::{collections::HashMap, path::PathBuf};
 use tauri::{
 	CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
 	WindowBuilder,
@@ -132,10 +132,7 @@ fn main() {
 						.transparent(true)
 						.visible(false)
 						.center()
-						.inner_size(
-							monitor_size.width.sub(500).into(),
-							monitor_size.height.sub(500).into(),
-						)
+						.inner_size(monitor_size.width.into(), monitor_size.height.into())
 						.position(monitor_position.x.into(), monitor_position.y.into())
 						.initialization_script(&init_script)
 						.build()
