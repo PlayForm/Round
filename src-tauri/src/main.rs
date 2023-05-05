@@ -123,7 +123,7 @@ fn main() {
 						.decorations(false)
 						.disable_file_drop_handler()
 						.accept_first_mouse(false)
-						.focused(true)
+						.focused(false)
 						.fullscreen(false)
 						.maximized(false)
 						.resizable(false)
