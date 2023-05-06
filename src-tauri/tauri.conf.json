@@ -12,11 +12,7 @@
 	},
 	"tauri": {
 		"allowlist": {
-			"all": false,
-			"window": {
-				"setPosition": true,
-				"setIgnoreCursorEvents": true
-			}
+			"all": true
 		},
 		"bundle": {
 			"active": true,

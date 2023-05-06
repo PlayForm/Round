@@ -89,17 +89,20 @@ fn main() {
 				init_script = init_script + &format!(r#"window.settings.mode = {};"#, mode);
 			}
 
-			let sample_window =
-				WindowBuilder::new(app, "sample", tauri::WindowUrl::App("sample.html".into()))
-					.visible(false)
-					.always_on_top(false)
-					.decorations(false)
-					.fullscreen(false)
-					.focused(false)
-					.title("")
-					.position(0.0, 0.0)
-					.build()
-					.expect("Error! Failed to create a sample window.");
+			let sample_window = WindowBuilder::new(
+				app,
+				"sample",
+				tauri::WindowUrl::External("https://roundedcorners.app".parse().unwrap()),
+			)
+			.visible(false)
+			.always_on_top(false)
+			.decorations(false)
+			.fullscreen(false)
+			.focused(false)
+			.title("")
+			.position(0.0, 0.0)
+			.build()
+			.expect("Error! Failed to create a sample window.");
 
 			let scale_factor: f64 = sample_window
 				.primary_monitor()
