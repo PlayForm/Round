@@ -72,6 +72,6 @@ roundness of the windows, respectively.
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for a history of changes to this product.
+See [CHANGELOG.md](CHANGELOG.md) for a history of changes to this app.
 
 [![Lightrix logo](https://raw.githubusercontent.com/Lightrix/npm/main/.github/img/favicon.png "Built with Lightrix/npm")](https://github.com/Lightrix/npm)
