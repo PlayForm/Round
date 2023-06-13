@@ -3,7 +3,7 @@ import { createSignal, mergeProps } from "solid-js";
 
 import "../assets/css/corner.css";
 
-import type { Settings } from "../options/index";
+import type { Settings } from "@options/index.js";
 
 declare global {
 	interface Window {

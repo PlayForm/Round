@@ -1,8 +1,13 @@
 {
 	"compilerOptions": {
+		"jsx": "preserve",
 		"jsxImportSource": "solid-js",
 		"lib": ["DOM", "ESNext"],
-		"outDir": "dist"
+		"outDir": "dist",
+		"baseUrl": ".",
+		"paths": {
+			"@options/*": ["src/options/*"]
+		}
 	},
 	"extends": "@lightrix/config/base/ts",
 	"include": ["src"]
