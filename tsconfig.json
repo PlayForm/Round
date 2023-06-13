@@ -6,7 +6,8 @@
 		"outDir": "dist",
 		"baseUrl": ".",
 		"paths": {
-			"@options/*": ["src/options/*"]
+			"@options/*": ["src/options/*"],
+			"@elements/*": ["src/elements/*"],
 		}
 	},
 	"extends": "@lightrix/config/base/ts",

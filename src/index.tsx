@@ -5,7 +5,7 @@ import { render } from "solid-js/web";
 
 import "./assets/css/window.css";
 
-import Corner from "./components/corner.jsx";
+import Corner from "./elements/Corner.jsx";
 
 const [mode, setMode] = createSignal(window.settings.mode);
 
@@ -21,10 +21,7 @@ await listen(
 const Window: Component = () => {
 	return (
 		<div class="Window" data-label={appWindow.label} data-mode={mode()}>
-			<For
-				each={["top_left", "top_right", "bottom_right", "bottom_left"]}>
-				{(corner: string) => <Corner id={corner} />}
-			</For>
+			<Corner />
 		</div>
 	);
 };
