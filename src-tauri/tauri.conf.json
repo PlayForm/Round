@@ -1,4 +1,5 @@
 {
+	"$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/tooling/cli/schema.json",
 	"build": {
 		"beforeBuildCommand": "npm run build",
 		"beforeDevCommand": "npm run dev",
@@ -12,7 +13,29 @@
 	},
 	"tauri": {
 		"allowlist": {
-			"all": true
+			"all": false,
+			"window": {
+				"center": true,
+				"close": true,
+				"create": true,
+				"hide": true,
+				"maximize": true,
+				"minimize": true,
+				"setAlwaysOnTop": true,
+				"setCursorGrab": true,
+				"setCursorVisible": true,
+				"setDecorations": true,
+				"setFocus": true,
+				"setFullscreen": true,
+				"setIgnoreCursorEvents": true,
+				"setPosition": true,
+				"setResizable": true,
+				"setSize": true,
+				"setSkipTaskbar": true,
+				"setTitle": true,
+				"show": true,
+				"unmaximize": true
+			}
 		},
 		"bundle": {
 			"active": true,

@@ -1,6 +1,6 @@
 # 0.0.6
 
--   Fixes taskbar behaviour
+-   Cleanup
 
 # 0.0.5
 

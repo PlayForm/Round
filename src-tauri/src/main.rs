@@ -7,7 +7,7 @@ extern crate tauri_plugin_store;
 
 use regex::Regex;
 use serde_json::json;
-use std::{collections::HashMap, ops::Sub, path::PathBuf};
+use std::{collections::HashMap, path::PathBuf};
 use tauri::{
 	CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
 	WindowBuilder,
@@ -110,74 +110,45 @@ fn main() {
 				.expect("Error! Could not get primary monitor.")
 				.scale_factor();
 
-			for label in ["BottomLeft", "BottomRight", "TopLeft", "TopRight"] {
-				for monitor in
-					sample_window.available_monitors().expect("Error! Failed to get monitors.")
-				{
-					let label_monitor = Regex::new(r"[^a-zA-Z0-9\s]").unwrap().replace_all(
-						monitor.name().expect("Error! Could not get monitor name."),
-						"",
-					);
+			for monitor in
+				sample_window.available_monitors().expect("Error! Failed to get monitors.")
+			{
+				let label_monitor = Regex::new(r"[^a-zA-Z0-9\s]")
+					.unwrap()
+					.replace_all(monitor.name().expect("Error! Could not get monitor name."), "");
 
-					let monitor_size = monitor.size().to_logical::<i32>(scale_factor);
-					let monitor_position = monitor.position().to_logical::<i32>(scale_factor);
+				let monitor_size = monitor.size().to_logical::<i32>(scale_factor);
+				let monitor_position = monitor.position().to_logical::<i32>(scale_factor);
 
-					let w = 150.0;
-					let h = 150.0;
+				let window = WindowBuilder::new(
+					app,
+					label_monitor,
+					tauri::WindowUrl::App("index.html".into()),
+				)
+				.always_on_top(true)
+				.decorations(false)
+				.disable_file_drop_handler()
+				.accept_first_mouse(false)
+				.focused(false)
+				.fullscreen(false)
+				.maximized(false)
+				.resizable(false)
+				.skip_taskbar(true)
+				.title("")
+				.center()
+				.transparent(true)
+				.visible(false)
+				.inner_size(monitor_size.width.into(), monitor_size.height.into())
+				.position(monitor_position.x.into(), monitor_position.y.into())
+				.initialization_script(&init_script)
+				.build()
+				.expect("Error! Failed to create a window.");
 
-					let x = match label {
-						"BottomLeft" => monitor_position.x.into(), // as-is
-						"BottomRight" => {
-							monitor_position.x as f64 + (monitor_size.width as f64).sub(w)
-						}
-						"TopLeft" => monitor_position.x.into(),
-						"TopRight" => {
-							monitor_position.x as f64 + (monitor_size.width as f64).sub(w)
-						}
-						_ => 0.0,
-					};
+				window.set_cursor_grab(false).expect("Error! Could not set cursor grab.");
 
-					let y = match label {
-						"BottomLeft" => {
-							monitor_position.y as f64 + (monitor_size.height as f64).sub(h)
-						}
-						"BottomRight" => {
-							monitor_position.y as f64 + (monitor_size.height as f64).sub(h)
-						}
-						"TopLeft" => monitor_position.y.into(),
-						"TopRight" => monitor_position.y.into(),
-						_ => 0.0,
-					};
-
-					let file = format!("./src/windows/{}.html", label);
-					let window_label = format!("{}_{}", label_monitor, label);
-
-					let window =
-						WindowBuilder::new(app, window_label, tauri::WindowUrl::App(file.into()))
-							.always_on_top(true)
-							.decorations(false)
-							.disable_file_drop_handler()
-							.accept_first_mouse(false)
-							.focused(false)
-							.fullscreen(false)
-							.maximized(false)
-							.resizable(false)
-							.skip_taskbar(true)
-							.title("")
-							.transparent(true)
-							.visible(false)
-							.inner_size(150.0, 150.0)
-							.position(x.into(), y.into())
-							.initialization_script(&init_script)
-							.build()
-							.expect("Error! Failed to create a window.");
-
-					window.set_cursor_grab(false).expect("Error! Could not set cursor grab.");
-
-					if let Some(hidden) = store.get("hidden") {
-						if hidden != true {
-							window.show().expect("Error! Could not show window");
-						}
+				if let Some(hidden) = store.get("hidden") {
+					if hidden != true {
+						window.show().expect("Error! Could not show window");
 					}
 				}
 			}

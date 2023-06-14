@@ -1,5 +1,5 @@
 import { listen } from "@tauri-apps/api/event";
-import { createSignal } from "solid-js";
+import { createSignal, mergeProps } from "solid-js";
 
 import "../assets/css/corner.css";
 
@@ -20,6 +20,11 @@ await listen(
 	}
 );
 
-export default () => (
-	<div class="Corner" style={{ "--corner-size": `${size()}px` }} />
+// rome-ignore lint/suspicious/noExplicitAny:
+export default (props: any) => (
+	<div
+		class="Corner"
+		data-corner={mergeProps({ id: "Default" }, props).id}
+		style={{ "--corner-size": `${size()}px` }}
+	/>
 );

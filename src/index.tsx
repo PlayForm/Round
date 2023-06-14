@@ -1,6 +1,7 @@
 import { listen } from "@tauri-apps/api/event";
 import { appWindow } from "@tauri-apps/api/window";
-import { Component, createSignal } from "solid-js";
+import type { Component } from "solid-js";
+import { createSignal, For } from "solid-js";
 import { render } from "solid-js/web";
 
 import "./assets/css/window.css";
@@ -21,7 +22,9 @@ await listen(
 const Window: Component = () => {
 	return (
 		<div class="Window" data-label={appWindow.label} data-mode={mode()}>
-			<Corner />
+			<For each={["BottomLeft", "BottomRight", "TopLeft", "TopRight"]}>
+				{(corner: string) => <Corner id={corner} />}
+			</For>
 		</div>
 	);
 };

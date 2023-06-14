@@ -11,23 +11,23 @@
 
 	@apply absolute inset-auto bg-black;
 
-	#window[data-corner="TopLeft"] & {
-		@apply left-0 top-0;
+	&[data-corner="BottomLeft"] {
+		transform: rotate(270deg);
+		@apply bottom-0 left-0;
 	}
 
-	#window[data-corner="TopRight"] & {
-		transform: rotate(90deg);
-		@apply right-0 top-0;
-	}
-
-	#window[data-corner="BottomRight"] & {
+	&[data-corner="BottomRight"] {
 		transform: rotate(180deg);
 		@apply bottom-0 right-0;
 	}
 
-	#window[data-corner="BottomLeft"] & {
-		transform: rotate(270deg);
-		@apply bottom-0 left-0;
+	&[data-corner="TopLeft"] {
+		@apply left-0 top-0;
+	}
+
+	&[data-corner="TopRight"] {
+		transform: rotate(90deg);
+		@apply right-0 top-0;
 	}
 
 	.Window[data-mode="light"] & {
