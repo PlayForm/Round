@@ -1,9 +1,9 @@
 import { listen } from "@tauri-apps/api/event";
-import { createSignal, mergeProps } from "solid-js";
+import { createSignal } from "solid-js";
 
 import "../assets/css/corner.css";
 
-import type { Settings } from "@options/index.js";
+import type { Settings } from "../options/index.js";
 
 declare global {
 	interface Window {
@@ -20,10 +20,6 @@ await listen(
 	}
 );
 
-export default (props: any) => (
-	<div
-		class="Corner"
-		data-id={mergeProps({ id: "default" }, props).id}
-		style={{ "--corner-size": `${size()}px` }}
-	/>
+export default () => (
+	<div class="Corner" style={{ "--corner-size": `${size()}px` }} />
 );
