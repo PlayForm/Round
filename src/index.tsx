@@ -4,7 +4,7 @@ import type { Component } from "solid-js";
 import { createSignal, For } from "solid-js";
 import { render } from "solid-js/web";
 
-import "./assets/css/window.css";
+import "./assets/css/Window.css";
 
 import Corner from "./elements/Corner.jsx";
 
