@@ -4,11 +4,11 @@
 	"type": "module",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/roundedcorners/app.git"
+		"url": "https://github.com/RoundedCorners/app.git"
 	},
-	"homepage": "https://github.com/roundedcorners/app#readme",
+	"homepage": "https://github.com/RoundedCorners/app#readme",
 	"bugs": {
-		"url": "https://github.com/roundedcorners/app/issues"
+		"url": "https://github.com/RoundedCorners/app/issues"
 	},
 	"license": "MIT",
 	"private": false,
