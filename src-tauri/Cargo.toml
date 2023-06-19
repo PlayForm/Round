@@ -9,7 +9,7 @@ tauri-build = { version = "1.4.0", features = [] }
 regex = "1.8.4"
 serde = { version = "1.0.164", features = ["derive"] }
 serde_json = "1.0.97"
-tauri = { version = "1.4.0", features = ["system-tray", "window-center", "window-close", "window-create", "window-hide", "window-maximize", "window-minimize", "window-set-always-on-top", "window-set-cursor-grab", "window-set-cursor-visible", "window-set-decorations", "window-set-focus", "window-set-fullscreen", "window-set-ignore-cursor-events", "window-set-position", "window-set-resizable", "window-set-size", "window-set-skip-taskbar", "window-set-title", "window-show", "window-unmaximize"] }
+tauri = { version = "1.4.1", features = ["system-tray", "window-center", "window-close", "window-create", "window-hide", "window-maximize", "window-minimize", "window-set-always-on-top", "window-set-cursor-grab", "window-set-cursor-visible", "window-set-decorations", "window-set-focus", "window-set-fullscreen", "window-set-ignore-cursor-events", "window-set-position", "window-set-resizable", "window-set-size", "window-set-skip-taskbar", "window-set-title", "window-show", "window-unmaximize"] }
 tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 
 [features]
