@@ -1,23 +1,6 @@
 {
-	"name": "roundedcorners-app",
-	"version": "0.0.6",
-	"type": "module",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/RoundedCorners/app.git"
-	},
-	"homepage": "https://github.com/RoundedCorners/app#readme",
 	"bugs": {
 		"url": "https://github.com/RoundedCorners/app/issues"
-	},
-	"license": "MIT",
-	"private": false,
-	"scripts": {
-		"build": "vite build",
-		"dev": "vite",
-		"serve": "vite preview",
-		"start": "vite",
-		"tauri": "tauri"
 	},
 	"dependencies": {
 		"@tauri-apps/api": "1.4.0",
@@ -41,7 +24,24 @@
 		"vite": "4.4.2",
 		"vite-plugin-solid": "2.7.0"
 	},
+	"homepage": "https://github.com/RoundedCorners/app#readme",
+	"license": "MIT",
+	"name": "roundedcorners-app",
+	"private": false,
 	"publishConfig": {
 		"access": "public"
-	}
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/RoundedCorners/app.git"
+	},
+	"scripts": {
+		"build": "vite build",
+		"dev": "vite",
+		"serve": "vite preview",
+		"start": "vite",
+		"tauri": "tauri"
+	},
+	"type": "module",
+	"version": "0.0.6"
 }
