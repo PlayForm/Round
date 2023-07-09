@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="64" height="64" src="./src-tauri/src/img/icon.ico">
+  <img width="64" height="64" src="./src-tauri/src/img/icon.ico" alt="Rounded Corners Logo" />
 </p>
 
 # Rounded Corners

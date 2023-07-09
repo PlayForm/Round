@@ -12,6 +12,7 @@ use tauri::{
 	CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
 	WindowBuilder,
 };
+
 use tauri_plugin_store::StoreBuilder;
 
 #[derive(Clone, serde::Serialize)]

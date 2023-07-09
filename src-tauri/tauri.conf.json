@@ -42,11 +42,7 @@
 			"category": "DeveloperTool",
 			"copyright": "Copyright (c) 2022-2023 Nikola Hristov. All rights reserved.",
 			"externalBin": [],
-			"icon": [
-				"src/img/16x16.png",
-				"src/img/32x32.png",
-				"src/img/icon.ico"
-			],
+			"icon": ["src/img/16x16.png", "src/img/32x32.png", "src/img/icon.ico"],
 			"identifier": "app.roundedcorners.app",
 			"longDescription": "Rounded Corners app for Windows",
 			"resources": [],
