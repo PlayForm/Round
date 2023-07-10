@@ -16,7 +16,7 @@ await listen(
 	"mode",
 	async (event: { payload: { message: { Mode: string } } }) => {
 		setMode(event.payload.message.Mode);
-	},
+	}
 );
 
 const Window: Component = () => {
