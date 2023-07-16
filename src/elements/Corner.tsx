@@ -17,7 +17,7 @@ await listen(
 	"size",
 	async (event: { payload: { message: { Size: number } } }) => {
 		setSize(event.payload.message.Size);
-	},
+	}
 );
 
 // rome-ignore lint/suspicious/noExplicitAny:
