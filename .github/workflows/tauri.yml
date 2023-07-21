@@ -14,7 +14,7 @@ on:
 
 jobs:
     prepare:
-        uses: roundedcorners/app/.github/workflows/node.yml@main
+        uses: RoundedCorners/app/.github/workflows/node.yml@main
 
     build:
         needs: prepare
