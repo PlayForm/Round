@@ -21,6 +21,7 @@
     </picture>
 </a>
 <br />
+<br />
 
 This app rounds the corners of your Windows screen.
 
