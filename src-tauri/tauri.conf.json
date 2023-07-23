@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/tooling/cli/schema.json",
+	"$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/1.x/tooling/cli/schema.json",
 	"build": {
 		"beforeBuildCommand": "npm run build",
 		"beforeDevCommand": "npm run dev",
@@ -9,7 +9,7 @@
 	},
 	"package": {
 		"productName": "Rounded Corners",
-		"version": "0.0.6"
+		"version": "0.0.7"
 	},
 	"tauri": {
 		"allowlist": {
