@@ -1,8 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
 import { createSignal, mergeProps } from "solid-js";
-
 import "../assets/css/Corner.css";
-
 import type { Settings } from "../options/index.js";
 
 declare global {
