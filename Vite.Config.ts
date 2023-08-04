@@ -3,6 +3,7 @@ import solidPlugin from "vite-plugin-solid";
 
 export default defineConfig({
 	srcDir: "./Source",
+	publicDir: "./Public",
 	plugins: [solidPlugin()],
 	clearScreen: false,
 	server: {
