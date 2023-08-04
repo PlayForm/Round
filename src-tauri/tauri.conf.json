@@ -43,9 +43,9 @@
 			"copyright": "Copyright (c) 2022-2023 Nikola Hristov. All rights reserved.",
 			"externalBin": [],
 			"icon": [
-				"Src/img/16x16.png",
-				"Src/img/32x32.png",
-				"Src/img/icon.ico"
+				"Src/Images/16x16.png",
+				"Src/Images/32x32.png",
+				"Src/Images/icon.ico"
 			],
 			"identifier": "app.roundedcorners.app",
 			"longDescription": "Rounded Corners app for Windows",
@@ -57,8 +57,8 @@
 				"digestAlgorithm": "sha256",
 				"timestampUrl": "",
 				"wix": {
-					"bannerPath": "Src/img/banner.png",
-					"dialogImagePath": "Src/img/dialogImage.png"
+					"bannerPath": "Src/Images/banner.png",
+					"dialogImagePath": "Src/Images/dialogImage.png"
 				}
 			}
 		},
@@ -67,7 +67,7 @@
 		},
 		"systemTray": {
 			"iconAsTemplate": true,
-			"iconPath": "Src/img/icon.ico"
+			"iconPath": "Src/Images/icon.ico"
 		},
 		"updater": {
 			"active": false

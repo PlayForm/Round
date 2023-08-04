@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="64" height="64" src="./src-tauri/src/img/icon.ico" alt="Rounded Corners Logo" />
+  <img width="64" height="64" src="./src-tauri/src/Images/icon.ico" alt="Rounded Corners Logo" />
 </p>
 
 # Rounded Corners
@@ -75,4 +75,4 @@ roundness of the windows, respectively.
 
 See [CHANGELOG.md](CHANGELOG.md) for a history of changes to this app.
 
-[![Lightrix logo](https://raw.githubusercontent.com/Lightrix/npm/main/.github/img/favicon.png "Built with Lightrix/npm")](https://github.com/Lightrix/npm)
+[![Lightrix logo](https://raw.githubusercontent.com/Lightrix/npm/main/.github/Images/favicon.png "Built with Lightrix/npm")](https://github.com/Lightrix/npm)
