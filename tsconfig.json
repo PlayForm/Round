@@ -3,7 +3,7 @@
 		"jsx": "preserve",
 		"jsxImportSource": "solid-js",
 		"lib": ["DOM", "ESNext"],
-		"outDir": "dist"
+		"outDir": "Target"
 	},
 	"extends": "@lightrix/config/base/ts",
 	"include": ["src"]
