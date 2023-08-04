@@ -2,6 +2,9 @@
 name = "roundedcorners"
 version = "0.0.7"
 
+[build]
+target-dir = "Target"
+
 [build-dependencies]
 tauri-build = { version = "1.4.0", features = [] }
 

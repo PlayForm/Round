@@ -14,7 +14,7 @@ export default defineConfig({
 	},
 	envPrefix: ["VITE_", "TAURI_"],
 	build: {
-		outDir: "Build",
+		outDir: "Target",
 		target:
 			process.env["TAURI_PLATFORM"] === "windows"
 				? "chrome105"
