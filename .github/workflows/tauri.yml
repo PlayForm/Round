@@ -67,11 +67,11 @@ jobs:
                   name:
                       .-tauri-${{ matrix.toolchain
                       }}-${{runner.os}}-target-release
-                  path: ./src-tauri/target/release/*.exe
+                  path: ./src-tauri/Target/release/*.exe
 
             - uses: actions/upload-artifact@v3.1.2
               with:
                   name:
                       .-tauri-${{ matrix.toolchain
                       }}-${{runner.os}}-target-release-bundle-msi
-                  path: ./src-tauri/target/release/bundle/msi/*.msi
+                  path: ./src-tauri/Target/release/bundle/msi/*.msi
