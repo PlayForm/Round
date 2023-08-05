@@ -5,6 +5,6 @@
 		"lib": ["DOM", "ESNext"],
 		"outDir": "Target"
 	},
-	"extends": "@lightrix/configuration/base/ts",
+	"extends": "@lightrix/configuration/Base/TypeScript",
 	"include": ["src"]
 }
