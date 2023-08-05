@@ -24,7 +24,7 @@
 		"solid-js": "1.7.9"
 	},
 	"devDependencies": {
-		"@lightrix/config": "0.0.11",
+		"@lightrix/configuration": "0.0.11",
 		"@tauri-apps/cli": "1.4.0",
 		"@types/node": "20.4.7",
 		"autoprefixer": "10.4.14",
