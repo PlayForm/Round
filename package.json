@@ -12,7 +12,7 @@
 	},
 	"type": "module",
 	"scripts": {
-		"build": "vite build",
+		"prepublishOnly": "vite build",
 		"dev": "vite",
 		"serve": "vite preview",
 		"start": "vite",

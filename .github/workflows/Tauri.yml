@@ -1,7 +1,7 @@
 name: Tauri
 
 concurrency:
-    group: tauri-${{ github.workflow }}-${{ github.ref }}
+    group: Tauri-${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 
 on:
@@ -14,7 +14,7 @@ on:
 
 jobs:
     prepare:
-        uses: RoundedCorners/app/.github/workflows/node.yml@main
+        uses: RoundedCorners/app/.github/workflows/Node.yml@main
 
     build:
         needs: prepare
