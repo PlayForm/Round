@@ -39,3 +39,7 @@ tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", 
 
 [features]
 custom-protocol = ["tauri/custom-protocol"]
+
+[lib]
+name = "RoundedCorners"
+path = "Source/main.rs"
