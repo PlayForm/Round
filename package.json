@@ -12,8 +12,8 @@
 	},
 	"type": "module",
 	"scripts": {
-		"prepublishOnly": "vite build",
 		"dev": "vite",
+		"prepublishOnly": "vite build",
 		"serve": "vite preview",
 		"start": "vite",
 		"tauri": "tauri"
