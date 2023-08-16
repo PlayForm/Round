@@ -2,8 +2,8 @@ import { listen } from "@tauri-apps/api/event";
 import { appWindow } from "@tauri-apps/api/window";
 import { For, createSignal } from "solid-js";
 import { render } from "solid-js/web";
-import "./assets/css/Window.css";
-import Corner from "./elements/Corner.jsx";
+import "./Asset/CSS/Window.css";
+import Corner from "./Element/Corner.jsx";
 
 const [mode, setMode] = createSignal(window.settings.mode);
 

@@ -1,6 +1,6 @@
 {
 	"name": "roundedcorners-app",
-	"version": "0.0.7",
+	"version": "0.0.8",
 	"private": false,
 	"homepage": "https://github.com/RoundedCorners/app#readme",
 	"bugs": {
@@ -10,6 +10,7 @@
 		"type": "git",
 		"url": "git+https://github.com/RoundedCorners/app.git"
 	},
+	"license": "MIT",
 	"type": "module",
 	"scripts": {
 		"dev": "vite",

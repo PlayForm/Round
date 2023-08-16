@@ -1,9 +1,6 @@
 [package]
 name = "roundedcorners"
-version = "0.0.7"
-
-[build]
-target-dir = "Target"
+version = "0.0.8"
 
 [build-dependencies]
 tauri-build = { version = "1.4.0", features = [] }
@@ -39,7 +36,3 @@ tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", 
 
 [features]
 custom-protocol = ["tauri/custom-protocol"]
-
-[lib]
-name = "RoundedCorners"
-path = "Source/main.rs"
