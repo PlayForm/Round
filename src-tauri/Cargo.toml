@@ -9,8 +9,8 @@ target-dir = "Target"
 tauri-build = { version = "1.4.0", features = [] }
 
 [dependencies]
-regex = "1.9.1"
-serde = { version = "1.0.181", features = ["derive"] }
+regex = "1.9.3"
+serde = { version = "1.0.183", features = ["derive"] }
 serde_json = "1.0.104"
 tauri = { version = "1.4.1", features = [
 	"system-tray",
