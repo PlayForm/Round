@@ -1,7 +1,7 @@
 {
 	"name": "roundedcorners-app",
 	"version": "0.0.8",
-	"private": false,
+	"private": "false",
 	"homepage": "https://github.com/RoundedCorners/app#readme",
 	"bugs": {
 		"url": "https://github.com/RoundedCorners/app/issues"
@@ -11,6 +11,11 @@
 		"url": "git+https://github.com/RoundedCorners/app.git"
 	},
 	"license": "MIT",
+	"author": {
+		"name": "Nikola Hristov",
+		"email": "nikola@nikolahristov.tech",
+		"url": "https://nikolahristov.tech"
+	},
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
