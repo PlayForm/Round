@@ -1,7 +1,7 @@
 {
 	"name": "roundedcorners-app",
 	"version": "0.0.8",
-	"private": "false",
+	"private": false,
 	"homepage": "https://github.com/RoundedCorners/app#readme",
 	"bugs": {
 		"url": "https://github.com/RoundedCorners/app/issues"
