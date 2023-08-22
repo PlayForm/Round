@@ -1,7 +1,7 @@
 name: Rust
 
 concurrency:
-    group: rust-${{ github.workflow }}-${{ github.ref }}
+    group: Rust-${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 
 permissions:
@@ -16,7 +16,7 @@ on:
     workflow_call:
 
 jobs:
-    rust:
+    Build:
         runs-on: ubuntu-latest
 
         env:
