@@ -9,6 +9,7 @@ const [mode, setMode] = createSignal(window.settings.mode);
 
 await appWindow.setIgnoreCursorEvents(true);
 
+
 await listen(
 	"mode",
 	async (event: { payload: { message: { Mode: string } } }) => {
