@@ -54,7 +54,7 @@ jobs:
                 toolchain: ["stable", "nightly"]
 
         steps:
-            - uses: actions/checkout@v3.6.0
+            - uses: actions/checkout@v4.0.0
             - uses: actions-rs/toolchain@v1.0.7
               with:
                   profile: minimal
