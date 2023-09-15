@@ -2,7 +2,7 @@
 	"compilerOptions": {
 		"jsx": "preserve",
 		"jsxImportSource": "solid-js",
-		"lib": ["DOM", "ESNext"],
+		"lib": ["DOM", "DOM.Iterable", "ESNext"],
 		"outDir": "Target"
 	},
 	"extends": "typescript-esbuild/Target/Configuration/TypeScript",
