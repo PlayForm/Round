@@ -1,14 +1,14 @@
 {
-	"name": "roundedcorners-app",
+	"name": "@roundedcorners/application",
 	"version": "0.0.8",
 	"private": false,
-	"homepage": "https://github.com/RoundedCorners/app#readme",
+	"homepage": "https://github.com/RoundedCorners/Application#readme",
 	"bugs": {
-		"url": "https://github.com/RoundedCorners/app/issues"
+		"url": "https://github.com/RoundedCorners/Application/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/RoundedCorners/app.git"
+		"url": "git+https://github.com/RoundedCorners/Application.git"
 	},
 	"license": "MIT",
 	"author": {
