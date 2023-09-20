@@ -30,7 +30,7 @@
 	},
 	"devDependencies": {
 		"@tauri-apps/cli": "1.4.0",
-		"@types/node": "20.6.2",
+		"@types/node": "20.6.3",
 		"autoprefixer": "10.4.16",
 		"cssnano": "6.0.1",
 		"cssnano-preset-advanced": "6.0.1",
