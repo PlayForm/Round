@@ -1,7 +1,9 @@
+import type { Settings } from "../Option/Index.js";
+
+import "../Asset/CSS/Corner.css";
+
 import { listen } from "@tauri-apps/api/event";
 import { createSignal, mergeProps } from "solid-js";
-import type { Settings } from "../Option/Index.js";
-import "../Asset/CSS/Corner.css";
 
 declare global {
 	interface Window {
