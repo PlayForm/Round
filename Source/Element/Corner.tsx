@@ -20,7 +20,7 @@ await listen(
 	}
 );
 
-// rome-ignore lint/suspicious/noExplicitAny:
+// biome-ignore lint/suspicious/noExplicitAny:
 export default (props: any) => (
 	<div
 		class="Corner"
