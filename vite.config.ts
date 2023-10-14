@@ -1,9 +1,6 @@
-import { defineConfig } from "vite";
-import solidPlugin from "vite-plugin-solid";
-
-export default defineConfig({
+export default (await import("vite")).defineConfig({
 	publicDir: "./Public",
-	plugins: [solidPlugin()],
+	plugins: [(await import("vite-plugin-solid")).default()],
 	clearScreen: false,
 	server: {
 		port: 1420,
