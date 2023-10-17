@@ -43,7 +43,7 @@
 		"tailwindcss": "3.3.3",
 		"typescript-esbuild": "0.2.18",
 		"vite": "4.4.11",
-		"vite-plugin-solid": "2.7.1"
+		"vite-plugin-solid": "2.7.2"
 	},
 	"publishConfig": {
 		"access": "public"
