@@ -20,12 +20,11 @@ await (
 export default async (Property: any) => (
 	<div
 		class="Corner"
-		data-corner={
-			(await import("solid-js")).mergeProps({ id: "Default" }, Property)
-				.id
-		}
+		data-corner={mergeProps({ id: "Default" }, Property).id}
 		style={{ "--corner-size": `${Size[0]()}px` }}
 	/>
 );
 
 import type { Settings } from "../Option/Index.js";
+
+export const { mergeProps } = await import("solid-js");

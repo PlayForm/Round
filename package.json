@@ -1,5 +1,5 @@
 {
-	"name": "@roundedcorners/application",
+	"name": "@application/roundedcorners",
 	"version": "0.0.8",
 	"private": false,
 	"homepage": "https://github.com/RoundedCorners/Application#readme",
@@ -41,7 +41,7 @@
 		"postcss-reporter": "7.0.5",
 		"postcss-url": "10.1.3",
 		"tailwindcss": "3.3.3",
-		"typescript-esbuild": "0.2.21",
+		"typescript-esbuild": "0.2.22",
 		"vite": "4.5.0",
 		"vite-plugin-solid": "2.7.2"
 	},
