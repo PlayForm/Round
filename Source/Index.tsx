@@ -16,8 +16,8 @@ await setIgnoreCursorEvents(true);
 
 await (
 	await import("@tauri-apps/api/event")
-).listen("mode", async (event: { payload: { message: { Mode: string } } }) => {
-	Mode[1](event.payload.message.Mode);
+).listen("mode", async ({ payload }) => {
+	Mode[1](payload.message.Mode);
 });
 
 (await import("solid-js/web")).render(
