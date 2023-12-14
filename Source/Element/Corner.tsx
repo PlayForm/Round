@@ -21,7 +21,7 @@ export default async (Property: any) => (
 	<div
 		class="Corner"
 		data-corner={mergeProps({ id: "Default" }, Property).id}
-		style={{ "--corner-size": `${Size[0]()}px` }}
+		style={{ "--Corner": `${Size[0]()}px` }}
 	/>
 );
 

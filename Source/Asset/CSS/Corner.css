@@ -1,23 +1,25 @@
 .Corner {
-	--corner-size: 23px;
-	width: var(--corner-size);
-	height: var(--corner-size);
+	--Corner: 23px;
+	width: var(--Corner);
+	height: var(--Corner);
 
 	-webkit-mask-image: radial-gradient(
-		circle at var(--corner-size) var(--corner-size),
-		transparent calc(var(--corner-size) + -0.7px),
-		rgba(255, 255, 255, 1) calc(var(--corner-size) + 0.7px)
+		circle at var(--Corner) var(--Corner),
+		transparent calc(var(--Corner) + -0.7px),
+		rgba(255, 255, 255, 1) calc(var(--Corner) + 0.7px)
 	);
 
 	@apply absolute inset-auto bg-black;
 
 	&[data-corner="BottomLeft"] {
 		transform: rotate(270deg);
+
 		@apply bottom-0 left-0;
 	}
 
 	&[data-corner="BottomRight"] {
 		transform: rotate(180deg);
+
 		@apply bottom-0 right-0;
 	}
 
@@ -27,6 +29,7 @@
 
 	&[data-corner="TopRight"] {
 		transform: rotate(90deg);
+
 		@apply right-0 top-0;
 	}
 
