@@ -7,14 +7,15 @@ declare global {
 }
 
 export const Size = (await import("solid-js")).createSignal(
-	window.settings.size
+	window.settings.size,
 );
 
-await (
-	await import("@tauri-apps/api/event")
-).listen("size", async (event: { payload: { message: { Size: number } } }) => {
-	Size[1](event.payload.message.Size);
-});
+await (await import("@tauri-apps/api/event")).listen(
+	"size",
+	async (event: { payload: { message: { Size: number } } }) => {
+		Size[1](event.payload.message.Size);
+	},
+);
 
 // biome-ignore lint/suspicious/noExplicitAny:
 export default async (Property: any) => (
