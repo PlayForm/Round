@@ -32,7 +32,7 @@
 		"@tauri-apps/cli": "2.0.0-alpha.20",
 		"@types/node": "20.10.6",
 		"autoprefixer": "10.4.16",
-		"cssnano": "6.0.2",
+		"cssnano": "6.0.3",
 		"cssnano-preset-advanced": "6.0.2",
 		"postcss": "8.4.32",
 		"postcss-combine-duplicated-selectors": "10.0.3",
