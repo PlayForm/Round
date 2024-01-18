@@ -55,6 +55,7 @@ jobs:
 
         steps:
             - uses: actions/checkout@v4.1.1
+
             - uses: actions-rs/toolchain@v1.0.7
               with:
                   profile: minimal
