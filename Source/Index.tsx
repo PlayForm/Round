@@ -5,7 +5,9 @@ export const Mode = (await import("solid-js")).createSignal(
 );
 
 export const {
-	default: { appWindow: { setIgnoreCursorEvents, label } },
+	default: {
+		appWindow: { setIgnoreCursorEvents, label },
+	},
 }: {
 	default: { appWindow: WebviewWindow };
 } = await import("@tauri-apps/api/window");
