@@ -16,19 +16,16 @@ Rounded Corners sets up a system tray application using the Tauri framework. It
 creates a window for each monitor available on the system, sets up a menu for
 the system tray, and handles events from the menu.
 
-## Code
+## Dependencies
 
 The code imports several crates:
 
--   `regex`
--   `serde_json`
--   `tauri`
--   `tauri_plugin_store`
-
-`regex` provides support for regular expressions, `serde_json` is a JSON
-serialization/deserialization library, `tauri` is the main framework for
-building cross-platform desktop apps in Rust, and `tauri_plugin_store` provides
-a key-value store for persisting application data.
+-   `regex` - provides support for regular expressions
+-   `serde_json`- is a JSON serialization/deserialization library
+-   `tauri` - is the main framework for building cross-platform desktop apps in
+    Rust
+-   `tauri_plugin_store` - provides a key-value store for persisting application
+    data
 
 ## Options
 
