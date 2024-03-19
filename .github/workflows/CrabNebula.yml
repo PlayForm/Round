@@ -1,24 +1,23 @@
-name: Test Action
-
-on:
-    push:
-        branches:
-            - release
+name: CrabNebula
 
 concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
+    group: CrabNebula-${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 
+on:
+    workflow_dispatch:
+    release:
+        types: [created]
+    workflow_call:
+
 jobs:
-    draft:
+    Release:
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v4.1.2
 
-            - name: create draft release
-              uses: crabnebula-dev/cloud-release
-              id: draft
+            - uses: crabnebula-dev/cloud-release
               with:
                   command: release draft ${{ secrets.CN_APP_ID }} 0.1.0
                   api-key: ${{ secrets.CN_API_KEY }}
