@@ -261,5 +261,5 @@ fn main() {
 			}
 		})
 		.run(tauri::generate_context!())
-		.expect("Error! Failed to run Rounded Corners.");
+		.expect("Cannot Round Windows.");
 }

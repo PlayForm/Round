@@ -8,8 +8,8 @@
 		"withGlobalTauri": false
 	},
 	"package": {
-		"productName": "Rounded Corners",
-		"version": "0.0.8"
+		"productName": "Round Windows",
+		"version": "0.0.9"
 	},
 	"tauri": {
 		"allowlist": {
@@ -48,9 +48,9 @@
 				"src/Image/icon.ico"
 			],
 			"identifier": "app.roundedcorners.app",
-			"longDescription": "Rounded Corners app for Windows",
+			"longDescription": "Round Windows.",
 			"resources": [],
-			"shortDescription": "Rounded Corners",
+			"shortDescription": "Round Windows.",
 			"targets": "all",
 			"windows": {
 				"certificateThumbprint": null,
