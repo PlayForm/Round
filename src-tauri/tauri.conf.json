@@ -1,76 +1,102 @@
 {
-	"$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/1.x/tooling/cli/schema.json",
+	"$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/tooling/cli/schema.json",
 	"build": {
 		"beforeBuildCommand": "npm run prepublishOnly",
 		"beforeDevCommand": "npm run dev",
-		"devPath": "http://localhost:1420",
-		"distDir": "../Target",
-		"withGlobalTauri": false
+		"devUrl": "http://localhost:1420",
+		"frontendDist": "../Target"
 	},
-	"package": {
-		"productName": "Round Windows",
-		"version": "0.0.9"
-	},
-	"tauri": {
-		"allowlist": {
-			"all": false,
-			"window": {
-				"center": true,
-				"close": true,
-				"create": true,
-				"hide": true,
-				"maximize": true,
-				"minimize": true,
-				"setAlwaysOnTop": true,
-				"setCursorGrab": true,
-				"setCursorVisible": true,
-				"setDecorations": true,
-				"setFocus": true,
-				"setFullscreen": true,
-				"setIgnoreCursorEvents": true,
-				"setPosition": true,
-				"setResizable": true,
-				"setSize": true,
-				"setSkipTaskbar": true,
-				"setTitle": true,
-				"show": true,
-				"unmaximize": true
-			}
-		},
-		"bundle": {
-			"active": true,
-			"category": "DeveloperTool",
-			"copyright": "Copyright (c) 2022-2023 Nikola R. Hristov. All rights reserved.",
-			"externalBin": [],
-			"icon": [
-				"src/Image/16x16.png",
-				"src/Image/32x32.png",
-				"src/Image/icon.ico"
-			],
-			"identifier": "app.roundedcorners.app",
-			"longDescription": "Round Windows.",
-			"resources": [],
-			"shortDescription": "Round Windows.",
-			"targets": "all",
-			"windows": {
-				"certificateThumbprint": null,
-				"digestAlgorithm": "sha256",
-				"timestampUrl": "",
-				"wix": {
-					"bannerPath": "src/Image/banner.png",
-					"dialogImagePath": "src/Image/dialogImage.png"
-				}
-			}
-		},
+	"identifier": "app.roundedcorners.app",
+	"productName": "Round Windows",
+	"version": "0.0.9",
+	"app": {
+		"macOSPrivateApi": false,
 		"security": {
+			"assetProtocol": {
+				"enable": false,
+				"scope": []
+			},
+			"capabilities": [],
+			"dangerousDisableAssetCspModification": false,
+			"freezePrototype": false,
+			"pattern": {
+				"use": "brownfield"
+			},
 			"csp": null
 		},
-		"systemTray": {
+		"windows": [],
+		"withGlobalTauri": false,
+		"trayIcon": {
 			"iconAsTemplate": true,
 			"iconPath": "src/Image/icon.ico"
+		}
+	},
+	"bundle": {
+		"active": true,
+		"category": "DeveloperTool",
+		"copyright": "Copyright (c) 2022-2023 Nikola R. Hristov. All rights reserved.",
+		"externalBin": [],
+		"icon": [
+			"src/Image/16x16.png",
+			"src/Image/32x32.png",
+			"src/Image/icon.ico"
+		],
+		"longDescription": "Round Windows.",
+		"resources": [],
+		"shortDescription": "Round Windows.",
+		"targets": "all",
+		"windows": {
+			"certificateThumbprint": null,
+			"digestAlgorithm": "sha256",
+			"timestampUrl": null,
+			"wix": {
+				"bannerPath": "src/Image/banner.png",
+				"dialogImagePath": "src/Image/dialogImage.png"
+			},
+			"allowDowngrades": false,
+			"nsis": null,
+			"tsp": true,
+			"webviewFixedRuntimePath": null,
+			"webviewInstallMode": {
+				"silent": true,
+				"type": "downloadBootstrapper"
+			}
 		},
-		"updater": {
-			"active": false
+		"android": {
+			"minSdkVersion": 24
+		},
+		"iOS": {},
+		"linux": {
+			"appimage": {
+				"bundleMediaFramework": false,
+				"files": {}
+			},
+			"deb": {
+				"files": {}
+			},
+			"rpm": {
+				"epoch": 0,
+				"files": {},
+				"release": "1"
+			}
+		},
+		"macOS": {
+			"dmg": {
+				"appPosition": {
+					"x": 0,
+					"y": 0
+				},
+				"applicationFolderPosition": {
+					"x": 0,
+					"y": 0
+				},
+				"windowSize": {
+					"height": 400,
+					"width": 660
+				}
+			},
+			"files": {},
+			"minimumSystemVersion": "10.13"
 		}
 	}
 }
