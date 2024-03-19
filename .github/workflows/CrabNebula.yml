@@ -19,5 +19,5 @@ jobs:
 
             - uses: crabnebula-dev/cloud-release@dev
               with:
-                  command: release draft ${{ secrets.CN_APP_ID }} 0.1.0
+                  command: release draft ${{ secrets.CN_APP_ID }} 0.0.9
                   api-key: ${{ secrets.CN_API_KEY }}
