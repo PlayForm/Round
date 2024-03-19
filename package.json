@@ -2,13 +2,13 @@
 	"name": "@application/roundedcorners",
 	"version": "0.0.8",
 	"private": false,
-	"homepage": "https://github.com/RoundedCorners/Application#readme",
+	"homepage": "https://github.com/RoundWindows/Application#readme",
 	"bugs": {
-		"url": "https://github.com/RoundedCorners/Application/issues"
+		"url": "https://github.com/RoundWindows/Application/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/RoundedCorners/Application.git"
+		"url": "git+https://github.com/RoundWindows/Application.git"
 	},
 	"license": "SEE LICENSE IN LICENSE",
 	"author": {
