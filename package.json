@@ -29,7 +29,7 @@
 		"solid-js": "1.8.16"
 	},
 	"devDependencies": {
-		"@tauri-apps/cli": "2.0.0-beta.10",
+		"@tauri-apps/cli": "2.0.0-beta.11",
 		"@types/node": "20.11.30",
 		"autoprefixer": "10.4.18",
 		"cssnano": "6.1.1",
