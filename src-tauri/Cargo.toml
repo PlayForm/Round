@@ -33,7 +33,7 @@ tauri = { version = "1.6.1", features = [
 	"window-show",
 	"window-unmaximize",
 ] }
-tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
+tauri-plugin-store = { git = "HTTPS://GitHub.Com/tauri-apps/plugins-workspace", branch = "v1" }
 
 [features]
 custom-protocol = ["tauri/custom-protocol"]

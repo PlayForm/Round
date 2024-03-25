@@ -2,19 +2,19 @@
 	"name": "@application/roundwindows",
 	"version": "0.0.9",
 	"private": false,
-	"homepage": "https://github.com/RoundWindows/Application#readme",
+	"homepage": "HTTPS://GitHub.Com/RoundWindows/Application#readme",
 	"bugs": {
-		"url": "https://github.com/RoundWindows/Application/issues"
+		"url": "HTTPS://GitHub.Com/RoundWindows/Application/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/RoundWindows/Application.git"
+		"url": "git+HTTPS://GitHub.Com/RoundWindows/Application.git"
 	},
 	"license": "SEE LICENSE IN LICENSE",
 	"author": {
 		"name": "Nikola R. Hristov",
 		"email": "Nikola@Playform.Cloud",
-		"url": "https://nikolahristov.tech"
+		"url": "HTTPS://NikolaHristov.Tech"
 	},
 	"type": "module",
 	"scripts": {
