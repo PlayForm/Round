@@ -1,5 +1,5 @@
 {
-	"$schema": "HTTPS://Raw.GitHubUserContent.Com/tauri-apps/tauri/dev/tooling/cli/schema.json",
+	"$schema": "https://Raw.GitHubUserContent.Com/tauri-apps/tauri/dev/tooling/cli/schema.json",
 	"app": {
 		"macOSPrivateApi": false,
 		"security": {
