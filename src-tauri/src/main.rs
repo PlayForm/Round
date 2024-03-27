@@ -162,16 +162,16 @@ fn main() {
 		.system_tray(
 			SystemTray::new().with_menu(
 				SystemTrayMenu::new()
-					.add_item(CustomMenuItem::new("increase", "➕ Increase Size"))
-					.add_item(CustomMenuItem::new("decrease", "➖ Decrease Size"))
+					.add_item(CustomMenuItem::new("increase", "➕ Increase Size"))
+					.add_item(CustomMenuItem::new("decrease", "➖ Decrease Size"))
 					.add_item(CustomMenuItem::new("reset", "↩️ Reset"))
 					.add_native_item(SystemTrayMenuItem::Separator)
-					.add_item(CustomMenuItem::new("dark", "🌑 Dark"))
+					.add_item(CustomMenuItem::new("dark", "🌑 Dark"))
 					.add_item(CustomMenuItem::new("light", "☀️ Light"))
 					.add_native_item(SystemTrayMenuItem::Separator)
-					.add_item(CustomMenuItem::new("show", "👨🏻 Show"))
-					.add_item(CustomMenuItem::new("hide", "🥷🏽 Hide"))
-					.add_item(CustomMenuItem::new("exit", "❌ Exit")),
+					.add_item(CustomMenuItem::new("show", "👨🏻 Show"))
+					.add_item(CustomMenuItem::new("hide", "🥷🏽 Hide"))
+					.add_item(CustomMenuItem::new("exit", "❌ Exit")),
 			),
 		)
 		.on_system_tray_event(|app, event| {
