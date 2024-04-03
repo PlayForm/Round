@@ -19,7 +19,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
-		"prepublishOnly": "vite build",
+		"Build": "vite build",
 		"serve": "vite preview",
 		"start": "vite",
 		"tauri": "tauri"
