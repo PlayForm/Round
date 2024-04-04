@@ -18,8 +18,8 @@
 	},
 	"type": "module",
 	"scripts": {
-		"dev": "vite",
 		"Build": "vite build",
+		"dev": "vite",
 		"serve": "vite preview",
 		"start": "vite",
 		"tauri": "tauri"
