@@ -261,5 +261,5 @@ fn main() {
 			}
 		})
 		.run(tauri::generate_context!())
-		.expect("Cannot Round Windows.");
+		.expect("Cannot Round.");
 }

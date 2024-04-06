@@ -56,7 +56,7 @@
 				"release": "1"
 			}
 		},
-		"longDescription": "Round Windows.",
+		"longDescription": "Round.",
 		"macOS": {
 			"dmg": {
 				"appPosition": {
@@ -76,7 +76,7 @@
 			"minimumSystemVersion": "10.13"
 		},
 		"resources": [],
-		"shortDescription": "Round Windows.",
+		"shortDescription": "Round.",
 		"targets": "all",
 		"windows": {
 			"allowDowngrades": false,
