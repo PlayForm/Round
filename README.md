@@ -33,9 +33,9 @@ The app has several menu items:
 
 -   ➕ **Increase Size**
 -   ➖ **Decrease Size**
--   ↩️ **Reset**
+-   ↩️ **Reset**
 -   🌑 **Dark**
--   ☀️ **Light**
+-   ☀️ **Light**
 -   👨🏻 **Show**
 -   🥷🏽 **Hide**
 -   ❌ **Exit**
