@@ -4,7 +4,7 @@
   <img width="64" height="64" src="./src-tauri/src/Image/icon.ico" alt="Round Windows" />
 </p>
 
-# Round Windows
+# Round
 
 Rounds the corners of your Windows screen.
 
@@ -12,7 +12,7 @@ Rounds the corners of your Windows screen.
 
 ## Getting started
 
-Round Windows sets up a system tray application using the Tauri framework. It
+Round sets up a system tray application using the Tauri framework. It
 creates a window for each monitor available on the system, sets up a menu for
 the system tray, and handles events from the menu.
 
