@@ -12,7 +12,7 @@ Rounds the corners of your Windows screen.
 
 ## Getting started
 
-Round sets up a system tray application using the Tauri framework. It
+`Round` sets up a system tray application using the Tauri framework. It
 creates a window for each monitor available on the system, sets up a menu for
 the system tray, and handles events from the menu.
 
