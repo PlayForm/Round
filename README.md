@@ -31,14 +31,14 @@ The code imports several crates:
 
 The app has several menu items:
 
--   ➕ **Increase Size**
--   ➖ **Decrease Size**
--   ↩️ **Reset**
--   🌑 **Dark**
--   ☀️ **Light**
--   👨🏻 **Show**
--   🥷🏽 **Hide**
--   ❌ **Exit**
+-   ➕ **Increase Size**
+-   ➖ **Decrease Size**
+-   ↩️ **Reset**
+-   🌑 **Dark**
+-   ☀️ **Light**
+-   👨🏻 **Show**
+-   🥷🏽 **Hide**
+-   ❌ **Exit**
 
 Clicking on **Increase Size** or **Decrease Size** increases or decreases the
 roundness of the windows, respectively.
