@@ -2,13 +2,13 @@
 	"name": "@application/roundwindows",
 	"version": "0.0.9",
 	"private": false,
-	"homepage": "https://github.com/RoundWindows/Application#readme",
+	"homepage": "https://github.com/PlayForm/Round#readme",
 	"bugs": {
-		"url": "https://github.com/RoundWindows/Application/issues"
+		"url": "https://github.com/PlayForm/Round/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/RoundWindows/Application.git"
+		"url": "git+https://github.com/PlayForm/Round.git"
 	},
 	"license": "SEE LICENSE IN LICENSE",
 	"author": {
