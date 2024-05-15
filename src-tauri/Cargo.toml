@@ -9,7 +9,11 @@ tauri-build = { version = "1.5.2", features = [] }
 regex = "1.10.4"
 serde = { version = "1.0.201", features = ["derive"] }
 serde_json = "1.0.117"
+<<<<<<< HEAD
 tauri = { version = "1.6.5", features = [
+=======
+tauri = { version = "1.6.3", features = [
+>>>>>>> 7581ab03acbcc74a4d559b6530abb4778a250d0a
 	"tray-icon",
 	"system-tray",
 	"window-center",
