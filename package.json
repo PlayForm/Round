@@ -25,11 +25,7 @@
 		"tauri": "tauri"
 	},
 	"dependencies": {
-<<<<<<< HEAD
-		"@tauri-apps/api": "1.5.5",
-=======
 		"@tauri-apps/api": "1.5.6",
->>>>>>> d2436dd363c0b5494a4138a7346a27db3a409151
 		"solid-js": "1.8.17"
 	},
 	"devDependencies": {
