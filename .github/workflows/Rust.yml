@@ -71,12 +71,8 @@ jobs:
                       ~/.cargo/git/db/
                       target/
                       Target/
-                  key:
-                      ${{ runner.os }}-cargo-${{
-                      hashFiles('./src-tauri/Cargo.toml') }}
+                  key: ${{ runner.os }}-cargo-${{ hashFiles('./src-tauri/Cargo.toml') }}
             - uses: actions-rs/cargo@v1.0.3
               with:
-                  command: build
-                  args:
-                      --release --all-features --manifest-path
-                      ./src-tauri/Cargo.toml
+                command: build
+                args: --release --all-features --manifest-path ./src-tauri/Cargo.toml
