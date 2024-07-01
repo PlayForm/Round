@@ -8,7 +8,7 @@ tauri-build = { version = "1.5.2", features = [] }
 [dependencies]
 regex = "1.10.5"
 serde = { version = "1.0.203", features = ["derive"] }
-serde_json = "1.0.118"
+serde_json = "1.0.119"
 tauri = { version = "1.6.8", features = [
 	"tray-icon",
 	"system-tray",
