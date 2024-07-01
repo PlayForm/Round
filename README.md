@@ -6,7 +6,7 @@
 
 Rounds the corners of your Windows screen.
 
-![Round](https://nikolahristov.tech/Image/GitHub/Round/Cover.png?v=b4c49)
+![Round](https://nikolahristov.tech/Image/GitHub/Round/Cover.png?v=05aa2)
 
 ## Getting started
 
