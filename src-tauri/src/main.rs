@@ -5,16 +5,6 @@ extern crate serde_json;
 extern crate tauri;
 extern crate tauri_plugin_store;
 
-use regex::Regex;
-use serde_json::json;
-use std::{collections::HashMap, path::PathBuf};
-use tauri::{
-	CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
-	WindowBuilder,
-};
-
-use tauri_plugin_store::StoreBuilder;
-
 #[derive(Clone, serde::Serialize)]
 enum Message {
 	Mode(String),
@@ -263,3 +253,13 @@ fn main() {
 		.run(tauri::generate_context!())
 		.expect("Cannot Round.");
 }
+
+use regex::Regex;
+use serde_json::json;
+use std::{collections::HashMap, path::PathBuf};
+use tauri::{
+	CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
+	WindowBuilder,
+};
+
+use tauri_plugin_store::StoreBuilder;
