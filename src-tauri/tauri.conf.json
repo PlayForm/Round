@@ -1,5 +1,5 @@
 {
-	"$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/tooling/cli/schema.json",
+	"$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/crates/tauri-cli/schema.json",
 	"app": {
 		"macOSPrivateApi": false,
 		"security": {
@@ -85,7 +85,6 @@
 			"nsis": null,
 			"timestampUrl": null,
 			"tsp": true,
-			"webviewFixedRuntimePath": null,
 			"webviewInstallMode": {
 				"silent": true,
 				"type": "downloadBootstrapper"
