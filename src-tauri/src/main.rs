@@ -116,22 +116,23 @@ fn main() {
 					label_monitor,
 					tauri::WindowUrl::App("index.html".into()),
 				)
+				.accept_first_mouse(false)
 				.always_on_top(true)
+				.center()
 				.decorations(false)
 				.disable_file_drop_handler()
-				.accept_first_mouse(false)
 				.focused(false)
 				.fullscreen(false)
+				.initialization_script(&init_script)
+				.inner_size(monitor_size.width.into(), monitor_size.height.into())
 				.maximized(false)
+				.position(monitor_position.x.into(), monitor_position.y.into())
 				.resizable(false)
 				.skip_taskbar(true)
 				.title("")
-				.center()
 				.transparent(true)
 				.visible(false)
-				.inner_size(monitor_size.width.into(), monitor_size.height.into())
-				.position(monitor_position.x.into(), monitor_position.y.into())
-				.initialization_script(&init_script)
+				
 				.build()
 				.expect("Error! Failed to create a window.");
 
