@@ -132,7 +132,6 @@ fn main() {
 				.title("")
 				.transparent(true)
 				.visible(false)
-				
 				.build()
 				.expect("Error! Failed to create a window.");
 
