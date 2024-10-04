@@ -1,5 +1,7 @@
 import "./Asset/CSS/Window.css";
 
+import type { WebviewWindow } from "@tauri-apps/api/window";
+
 export const Mode = (await import("solid-js")).createSignal(
 	window.settings.mode,
 );
@@ -14,12 +16,11 @@ export const {
 
 await setIgnoreCursorEvents(true);
 
-await (await import("@tauri-apps/api/event")).listen(
-	"mode",
-	async ({ payload }) => {
-		Mode[1](payload.message.Mode);
-	},
-);
+await (
+	await import("@tauri-apps/api/event")
+).listen("mode", async ({ payload }) => {
+	Mode[1](payload.message.Mode);
+});
 
 (await import("solid-js/web")).render(
 	() => (
@@ -35,5 +36,3 @@ await (await import("@tauri-apps/api/event")).listen(
 export const { default: Corner } = await import("./Element/Corner.jsx");
 
 export const { For } = await import("solid-js");
-
-import type { WebviewWindow } from "@tauri-apps/api/window";
