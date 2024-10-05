@@ -3,13 +3,13 @@ name = "roundwindows"
 version = "0.0.9"
 
 [build-dependencies]
-tauri-build = { version = "2.0.0", features = [] }
+tauri-build = { version = "2.0.1", features = [] }
 
 [dependencies]
 regex = "1.11.0"
 serde = { version = "1.0.210", features = ["derive"] }
 serde_json = "1.0.128"
-tauri = { version = "2.0.0", features = [
+tauri = { version = "2.0.1", features = [
 	"tray-icon",
 	"system-tray",
 	"window-center",
