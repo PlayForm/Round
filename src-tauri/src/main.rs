@@ -45,11 +45,8 @@ fn main() {
 
 	tauri::Builder::default()
 		.setup(|app| {
-			let mut store = StoreBuilder::new(
-				app.app_handle(),
-				PathBuf::from("settings.json"),
-			)
-			.build();
+			let mut store =
+				StoreBuilder::new(app.app_handle(), PathBuf::from("settings.json")).build();
 
 			if let Err(_e) = store.load() {
 				store.save().expect("Error! Could not initialize settings.");
@@ -63,9 +60,7 @@ fn main() {
 						.insert(
 							key.as_ref().to_owned(),
 							json!(
-								json!(value)
-									.as_object()
-									.and_then(|object| object.values().next())
+								json!(value).as_object().and_then(|object| object.values().next())
 							),
 						)
 						.expect("Error! Could not set defaults.");
@@ -78,21 +73,17 @@ fn main() {
 			let mut init_script = String::from(r#"window.settings = {};"#);
 
 			if let Some(size) = store.get("size") {
-				init_script = init_script
-					+ &format!(r#"window.settings.size = {};"#, size);
+				init_script = init_script + &format!(r#"window.settings.size = {};"#, size);
 			}
 
 			if let Some(mode) = store.get("mode") {
-				init_script = init_script
-					+ &format!(r#"window.settings.mode = {};"#, mode);
+				init_script = init_script + &format!(r#"window.settings.mode = {};"#, mode);
 			}
 
 			let sample_window = WindowBuilder::new(
 				app,
 				"sample",
-				tauri::WindowUrl::External(
-					"https://roundedcorners.app".parse().unwrap(),
-				),
+				tauri::WindowUrl::External("https://roundedcorners.app".parse().unwrap()),
 			)
 			.visible(false)
 			.always_on_top(false)
@@ -110,22 +101,15 @@ fn main() {
 				.expect("Error! Could not get primary monitor.")
 				.scale_factor();
 
-			for monitor in sample_window
-				.available_monitors()
-				.expect("Error! Failed to get monitors.")
+			for monitor in
+				sample_window.available_monitors().expect("Error! Failed to get monitors.")
 			{
-				let label_monitor =
-					Regex::new(r"[^a-zA-Z0-9\s]").unwrap().replace_all(
-						monitor
-							.name()
-							.expect("Error! Could not get monitor name."),
-						"",
-					);
+				let label_monitor = Regex::new(r"[^a-zA-Z0-9\s]")
+					.unwrap()
+					.replace_all(monitor.name().expect("Error! Could not get monitor name."), "");
 
-				let monitor_size =
-					monitor.size().to_logical::<i32>(scale_factor);
-				let monitor_position =
-					monitor.position().to_logical::<i32>(scale_factor);
+				let monitor_size = monitor.size().to_logical::<i32>(scale_factor);
+				let monitor_position = monitor.position().to_logical::<i32>(scale_factor);
 
 				let window = WindowBuilder::new(
 					app,
@@ -140,10 +124,7 @@ fn main() {
 				.focused(false)
 				.fullscreen(false)
 				.initialization_script(&init_script)
-				.inner_size(
-					monitor_size.width.into(),
-					monitor_size.height.into(),
-				)
+				.inner_size(monitor_size.width.into(), monitor_size.height.into())
 				.maximized(false)
 				.position(monitor_position.x.into(), monitor_position.y.into())
 				.resizable(false)
@@ -154,9 +135,7 @@ fn main() {
 				.build()
 				.expect("Error! Failed to create a window.");
 
-				window
-					.set_cursor_grab(false)
-					.expect("Error! Could not set cursor grab.");
+				window.set_cursor_grab(false).expect("Error! Could not set cursor grab.");
 
 				if let Some(hidden) = store.get("hidden") {
 					if hidden != true {
@@ -166,23 +145,15 @@ fn main() {
 			}
 
 			sample_window.hide().expect("Error! Could not hide sample window");
-			sample_window
-				.close()
-				.expect("Error! Could not close sample window");
+			sample_window.close().expect("Error! Could not close sample window");
 
 			Ok(())
 		})
 		.system_tray(
 			SystemTray::new().with_menu(
 				SystemTrayMenu::new()
-					.add_item(CustomMenuItem::new(
-						"increase",
-						"➕ Increase Size",
-					))
-					.add_item(CustomMenuItem::new(
-						"decrease",
-						"➖ Decrease Size",
-					))
+					.add_item(CustomMenuItem::new("increase", "➕ Increase Size"))
+					.add_item(CustomMenuItem::new("decrease", "➖ Decrease Size"))
 					.add_item(CustomMenuItem::new("reset", "↩️ Reset"))
 					.add_native_item(SystemTrayMenuItem::Separator)
 					.add_item(CustomMenuItem::new("dark", "🌑 Dark"))
@@ -194,11 +165,8 @@ fn main() {
 			),
 		)
 		.on_system_tray_event(|app, event| {
-			let mut store = StoreBuilder::new(
-				app.app_handle(),
-				PathBuf::from("settings.json"),
-			)
-			.build();
+			let mut store =
+				StoreBuilder::new(app.app_handle(), PathBuf::from("settings.json")).build();
 
 			store.load().expect("Error! Could not get settings.");
 
@@ -249,10 +217,8 @@ fn main() {
 								"size",
 								Payload {
 									message:Message::Size(
-										size.as_i64().expect(
-											"Error! Could not get size from \
-											 settings.",
-										),
+										size.as_i64()
+											.expect("Error! Could not get size from settings."),
 									),
 								},
 							)
@@ -266,10 +232,7 @@ fn main() {
 								Payload {
 									message:Message::Mode(
 										mode.as_str()
-											.expect(
-												"Error! Could not get mode \
-												 from settings.",
-											)
+											.expect("Error! Could not get mode from settings.")
 											.to_owned(),
 									),
 								},
@@ -279,13 +242,9 @@ fn main() {
 
 					if let Some(hidden) = store.get("hidden") {
 						if hidden == true {
-							window
-								.hide()
-								.expect("Error! Could not hide windows.");
+							window.hide().expect("Error! Could not hide windows.");
 						} else {
-							window
-								.show()
-								.expect("Error! Could not show windows.");
+							window.show().expect("Error! Could not show windows.");
 						}
 					}
 				});
