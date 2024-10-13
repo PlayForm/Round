@@ -6,7 +6,7 @@
 
 Rounds the corners of your Windows screen.
 
-![Round](https://playform.cloud/Image/GitHub/Round/Cover.png?v=2)
+![`Round`](https://playform.cloud/Image/GitHub/Round/Cover.png?v=2)
 
 ## Getting started
 
@@ -51,4 +51,4 @@ roundness of the windows, respectively.
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for a history of changes to this app.
+See [`CHANGELOG.md`](CHANGELOG.md) for a history of changes to this app.
