@@ -12,6 +12,10 @@ updates:
       schedule:
           interval: "daily"
       versioning-strategy: increase
+      ignore:
+          - dependency-name: "tailwindcss"
+            versions:
+                - "^4.0.0"
 
     - package-ecosystem: "cargo"
       directory: "/src-tauri"
