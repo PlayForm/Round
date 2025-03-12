@@ -1,0 +1,31 @@
+digraph G {
+  newrank=true;
+  rankdir=LR;
+  splines=ortho;
+  overlap=false;
+  nodesep=0.5;
+  ranksep=0.5;
+  concentrate=true;
+  graph [bgcolor="#f9f9f9", color="#888888", penwidth=2, fontname="Arial"];
+  node [fontname="Arial", fontsize=14, style=filled, margin="0.3,0.2"];
+  edge [fontname="Arial", fontsize=10, color="#555555", fontcolor="gray"];
+  subgraph cluster_1 {
+    label="root";
+    style=filled; color="#5DADE2"; fillcolor="#5DADE220";
+    "n0" [label="root", shape=folder, fillcolor="#5DADE2", penwidth=1.5];
+    "n2" [label="cargo (.): roundwindows v0.0.9", shape=ellipse, fillcolor="#EB984E", penwidth=1.5];
+    "n1" [label="Cargo.toml", shape=note, fillcolor="#FADBD8", penwidth=1];
+  }
+
+  "n0" -> "n1" [label="Contain", style=solid, color="blue", weight=2, arrowsize=0.8];
+  "n0" -> "n2" [label="Contain", style=solid, color="blue", weight=2, arrowsize=0.8];
+  subgraph cluster_legend {
+    label="Legend"; fontsize=14; style=dashed; color=gray;
+    "dir" [label="Directory", shape=folder, fillcolor="#5DADE2"];
+    "file" [label="File", shape=note, fillcolor="#FADBD8"];
+    "pkg" [label="Package", shape=ellipse, fillcolor="#EB984E"];
+    "ext" [label="External", shape=trapezium, fillcolor="#EC7063"];
+    "dir" -> "file" [label="Contain", style=solid, color=blue];
+    "pkg" -> "ext" [label="Dependency", style=dashed, color=red];
+  }
+}
