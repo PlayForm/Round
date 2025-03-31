@@ -13,7 +13,7 @@ enum Message {
 
 #[derive(Clone, serde::Serialize)]
 struct Payload {
-	message:Message,
+	message: Message,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -37,7 +37,7 @@ enum ValueSettings<'a> {
 }
 
 fn main() {
-	let mut defaults:HashMap<KeySettings, ValueSettings> = HashMap::new();
+	let mut defaults: HashMap<KeySettings, ValueSettings> = HashMap::new();
 
 	defaults.insert(KeySettings::Name("size"), ValueSettings::Size(23));
 
@@ -95,7 +95,7 @@ fn main() {
 			.build()
 			.expect("Error! Failed to create a sample window.");
 
-			let scale_factor:f64 = sample_window
+			let scale_factor: f64 = sample_window
 				.primary_monitor()
 				.expect("Error! No monitors found.")
 				.expect("Error! Could not get primary monitor.")
@@ -213,7 +213,7 @@ fn main() {
 							.emit(
 								"size",
 								Payload {
-									message:Message::Size(
+									message: Message::Size(
 										size.as_i64().expect("Error! Could not get size from settings."),
 									),
 								},
@@ -226,7 +226,7 @@ fn main() {
 							.emit(
 								"mode",
 								Payload {
-									message:Message::Mode(
+									message: Message::Mode(
 										mode.as_str().expect("Error! Could not get mode from settings.").to_owned(),
 									),
 								},
