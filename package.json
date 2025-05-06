@@ -34,7 +34,7 @@
 		"@types/node": "22.15.14",
 		"autoprefixer": "10.4.21",
 		"cssnano": "7.0.6",
-		"cssnano-preset-advanced": "7.0.6",
+		"cssnano-preset-advanced": "7.0.7",
 		"postcss": "8.5.3",
 		"postcss-combine-duplicated-selectors": "10.0.3",
 		"postcss-combine-media-query": "2.0.0",
