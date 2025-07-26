@@ -25,13 +25,13 @@
 		"tauri": "tauri"
 	},
 	"dependencies": {
-		"@tauri-apps/api": "2.6.0",
+		"@tauri-apps/api": "2.7.0",
 		"solid-js": "1.9.7"
 	},
 	"devDependencies": {
 		"@playform/build": "0.2.5",
-		"@tauri-apps/cli": "2.6.2",
-		"@types/node": "24.0.14",
+		"@tauri-apps/cli": "2.7.1",
+		"@types/node": "24.1.0",
 		"autoprefixer": "10.4.21",
 		"cssnano": "7.1.0",
 		"cssnano-preset-advanced": "7.0.8",
