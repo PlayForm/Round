@@ -30,7 +30,7 @@
 	},
 	"devDependencies": {
 		"@playform/build": "0.2.5",
-		"@tauri-apps/cli": "2.8.1",
+		"@tauri-apps/cli": "2.8.3",
 		"@types/node": "24.3.0",
 		"autoprefixer": "10.4.21",
 		"cssnano": "7.1.1",
