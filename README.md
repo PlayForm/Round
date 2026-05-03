@@ -6,26 +6,44 @@
 
 # Round
 
-Rounds the corners of your Windows screen.
+Rounds the corners of every monitor - natively on **macOS** and **Windows**.
 
 ![`Round`](https://PlayForm.Cloud/Image/GitHub/Round/Cover.png?v=2)
 
 ## Getting started
 
-`Round` sets up a system tray application using the Tauri framework. It creates
-a window for each monitor available on the system, sets up a menu for the system
-tray, and handles events from the menu.
+`Round` is a tray application built on Tauri 2. It creates a transparent,
+click-through overlay window on every connected monitor, draws four rounded
+corners on each, and is controlled from the system tray (menu bar on macOS,
+notification area on Windows).
+
+The overlay is lifted above OS chrome so the corners cover the screen edges
+completely:
+
+- **macOS** - the windows sit at `NSStatusWindowLevel`, ride along across all
+  Spaces, and survive other apps entering fullscreen, so the corners overlay the
+  menu bar at the top of every display. Transparency uses `macOSPrivateApi`.
+- **Windows** - the windows are pushed to `HWND_TOPMOST` after creation and
+  flagged `WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT`, so the
+  corners overlay the taskbar without stealing focus or showing in Alt-Tab.
+
+Clicks always pass through, the overlays never take focus, and settings persist
+across launches.
 
 ## Dependencies
 
-The code imports several crates:
+The Rust side uses:
 
-- `regex` - provides support for regular expressions
-- `serde_json`- is a JSON serialization/deserialization library
-- `tauri` - is the main framework for building cross-platform desktop apps in
-  Rust
-- `tauri_plugin_store` - provides a key-value store for persisting application
-  data
+- `tauri` 2 with the `tray-icon` and `macos-private-api` features
+- `tauri-plugin-store` - persistent key-value store for the size, mode, and
+  visibility settings
+- `regex` - sanitizes monitor names into valid window labels
+- `serde` / `serde_json` - payload (de)serialization
+- `objc2` (macOS only) - raises each window above the menu bar
+- `windows-sys` (Windows only) - raises each window above the taskbar
+
+The frontend is Solid 1.9 + Vite 8 with `@tauri-apps/api` 2, bundled by
+`@playform/build`.
 
 ## Options
 
