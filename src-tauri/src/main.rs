@@ -9,6 +9,86 @@ use tauri::{
 };
 use tauri_plugin_store::StoreExt;
 
+#[cfg(target_os = "macos")]
+fn raise_window<R: tauri::Runtime>(window: &tauri::WebviewWindow<R>) {
+	use objc2::{msg_send, runtime::AnyObject};
+
+	let Ok(ns_window) = window.ns_window() else {
+		return;
+	};
+
+	let ns_window = ns_window as *mut AnyObject;
+
+	if ns_window.is_null() {
+		return;
+	}
+
+	const NS_STATUS_WINDOW_LEVEL: isize = 25;
+
+	const NS_WINDOW_COLLECTION_BEHAVIOR_CAN_JOIN_ALL_SPACES: u64 = 1 << 0;
+
+	const NS_WINDOW_COLLECTION_BEHAVIOR_STATIONARY: u64 = 1 << 4;
+
+	const NS_WINDOW_COLLECTION_BEHAVIOR_IGNORES_CYCLE: u64 = 1 << 6;
+
+	const NS_WINDOW_COLLECTION_BEHAVIOR_FULL_SCREEN_AUXILIARY: u64 = 1 << 8;
+
+	let behavior = NS_WINDOW_COLLECTION_BEHAVIOR_CAN_JOIN_ALL_SPACES
+		| NS_WINDOW_COLLECTION_BEHAVIOR_STATIONARY
+		| NS_WINDOW_COLLECTION_BEHAVIOR_IGNORES_CYCLE
+		| NS_WINDOW_COLLECTION_BEHAVIOR_FULL_SCREEN_AUXILIARY;
+
+	unsafe {
+		let _: () = msg_send![ns_window, setLevel: NS_STATUS_WINDOW_LEVEL];
+
+		let _: () = msg_send![ns_window, setCollectionBehavior: behavior];
+
+		let _: () = msg_send![ns_window, setIgnoresMouseEvents: true];
+	}
+}
+
+#[cfg(target_os = "windows")]
+fn raise_window<R: tauri::Runtime>(window: &tauri::WebviewWindow<R>) {
+	use windows_sys::Win32::{
+		Foundation::HWND,
+		UI::WindowsAndMessaging::{
+			GWL_EXSTYLE, GetWindowLongPtrW, HWND_TOPMOST, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE,
+			SetWindowLongPtrW, SetWindowPos, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_EX_TRANSPARENT,
+		},
+	};
+
+	let Ok(hwnd) = window.hwnd() else {
+		return;
+	};
+
+	let hwnd = hwnd.0 as HWND;
+
+	if hwnd.is_null() {
+		return;
+	}
+
+	unsafe {
+		let style = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
+
+		let extra = (WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT) as isize;
+
+		SetWindowLongPtrW(hwnd, GWL_EXSTYLE, style | extra);
+
+		SetWindowPos(
+			hwnd,
+			HWND_TOPMOST,
+			0,
+			0,
+			0,
+			0,
+			SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
+		);
+	}
+}
+
+#[cfg(not(any(target_os = "macos", target_os = "windows")))]
+fn raise_window<R: tauri::Runtime>(_window: &tauri::WebviewWindow<R>) {}
+
 #[derive(Clone, serde::Serialize)]
 enum Message {
 	Mode(String),
@@ -92,6 +172,8 @@ fn main() {
 						.transparent(true)
 						.visible(false)
 						.build()?;
+
+				raise_window(&window);
 
 				if !hidden {
 					window.show()?;
