@@ -1,6 +1,9 @@
+import { listen } from "@tauri-apps/api/event";
+import { createSignal, mergeProps } from "solid-js";
+
 import "../Asset/CSS/Corner.css";
 
-import type { Settings } from "../Option/Index.js";
+import type { Settings } from "../Type/Settings.js";
 
 declare global {
 	interface Window {
@@ -8,23 +11,24 @@ declare global {
 	}
 }
 
-export const Size = (await import("solid-js")).createSignal(
-	window.settings.size,
-);
+type SizePayload = {
+	message: { Size: number };
+};
 
-await (
-	await import("@tauri-apps/api/event")
-).listen("size", async (event: { payload: { message: { Size: number } } }) => {
-	Size[1](event.payload.message.Size);
+export const Size = createSignal(window.settings.size);
+
+await listen<SizePayload>("size", ({ payload }) => {
+	Size[1](payload.message.Size);
 });
 
-// biome-ignore lint/suspicious/noExplicitAny:
-export default async (Property: any) => (
+type CornerProperty = {
+	id?: string;
+};
+
+export default (Property: CornerProperty) => (
 	<div
 		class="Corner"
 		data-corner={mergeProps({ id: "Default" }, Property).id}
 		style={{ "--Corner": `${Size[0]()}px` }}
 	/>
 );
-
-export const { mergeProps } = await import("solid-js");

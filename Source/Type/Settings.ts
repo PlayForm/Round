@@ -1,9 +1,8 @@
 /**
  * @module Settings
- *
  */
-export type Type = {
-	Size: number;
+export type Settings = {
+	size: number;
 
-	Mode: string;
+	mode: "dark" | "light";
 };
