@@ -1,38 +1,40 @@
+import { listen } from "@tauri-apps/api/event";
+import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { createSignal, For } from "solid-js";
+import { render } from "solid-js/web";
+
 import "./Asset/CSS/Window.css";
 
-import type { WebviewWindow } from "@tauri-apps/api/window";
+import Corner from "./Element/Corner.jsx";
+import type { Settings } from "./Type/Settings.js";
 
-export const Mode = (await import("solid-js")).createSignal(
-	window.settings.mode,
-);
+declare global {
+	interface Window {
+		settings: Settings;
+	}
+}
 
-export const {
-	default: {
-		appWindow: { setIgnoreCursorEvents, label },
-	},
-}: {
-	default: { appWindow: WebviewWindow };
-} = await import("@tauri-apps/api/window");
+type ModePayload = {
+	message: { Mode: Settings["mode"] };
+};
 
-await setIgnoreCursorEvents(true);
+export const Mode = createSignal<Settings["mode"]>(window.settings.mode);
 
-await (
-	await import("@tauri-apps/api/event")
-).listen("mode", async ({ payload }) => {
+const appWindow = getCurrentWebviewWindow();
+
+await appWindow.setIgnoreCursorEvents(true);
+
+await listen<ModePayload>("mode", ({ payload }) => {
 	Mode[1](payload.message.Mode);
 });
 
-(await import("solid-js/web")).render(
+render(
 	() => (
-		<div class="Window" data-label={label} data-mode={Mode[0]()}>
+		<div class="Window" data-label={appWindow.label} data-mode={Mode[0]()}>
 			<For each={["BottomLeft", "BottomRight", "TopLeft", "TopRight"]}>
-				{(corner: string) => <Corner id={corner} />}
+				{(corner) => <Corner id={corner} />}
 			</For>
 		</div>
 	),
 	document.getElementById("window") as HTMLElement,
 );
-
-export const { default: Corner } = await import("./Element/Corner.jsx");
-
-export const { For } = await import("solid-js");

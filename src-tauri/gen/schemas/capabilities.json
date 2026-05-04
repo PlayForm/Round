@@ -1,1 +1,1 @@
-{}
+{"default":{"identifier":"default","description":"Default permissions for Round windows.","local":true,"windows":["*"],"permissions":["core:default","core:window:allow-set-ignore-cursor-events","core:event:allow-listen"]}}

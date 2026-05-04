@@ -4,7 +4,8 @@
 		"jsx": "preserve",
 		"jsxImportSource": "solid-js",
 		"lib": ["DOM", "DOM.Iterable", "ESNext"],
-		"outDir": "Target"
+		"outDir": "Target",
+		"rootDir": "./Source"
 	},
 	"extends": "@playform/build/tsconfig",
 	"include": ["Source"]

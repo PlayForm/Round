@@ -1,0 +1,36 @@
+[build]
+target-dir = "Target"
+rustdocflags = ["-Zunstable-options", "--enable-index-page"]
+
+[net]
+git-fetch-with-cli = true
+
+[cargo-new]
+vcs = "git"
+
+[unstable]
+rustdoc-scrape-examples = true
+
+[profile.dev]
+incremental = true
+split-debuginfo = "unpacked"
+debug = 0
+strip = "debuginfo"
+panic = "abort"
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+opt-level = 2     # Use level 2 to avoid optimizer bugs with OXC
+codegen-units = 1
+debug = false     # Can disable debug symbols for final release
+lto = false       # Disable LTO to avoid linking issues
+panic = "abort"
+strip = false
+
+[target.aarch64-apple-darwin]
+# rustflags removed: -Zshare-generics=y is nightly-only and not compatible with stable Rust
+
+[target.x86_64-apple-darwin]
+# rustflags removed: -Zshare-generics=y is nightly-only and not compatible with stable Rust
