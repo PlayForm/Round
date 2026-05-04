@@ -209,11 +209,10 @@ fn main() {
 				],
 			)?;
 
-			let mut tray = TrayIconBuilder::new().menu(&menu).icon_as_template(true);
+			let tray_icon = tauri::include_image!("icons/tray.png");
 
-			if let Some(icon) = app.default_window_icon() {
-				tray = tray.icon(icon.clone());
-			}
+			let tray =
+				TrayIconBuilder::new().menu(&menu).icon_as_template(true).icon(tray_icon);
 
 			tray.on_menu_event(move |app, event| {
 				let store = match app.store(STORE_PATH) {

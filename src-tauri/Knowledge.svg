@@ -32,7 +32,7 @@
 			<title>n2</title>
 			<ellipse fill="#eb984e" stroke="black" stroke-width="1.5" cx="403.1" cy="-48" rx="161.01" ry="31.5" />
 			<text text-anchor="middle" x="403.1" y="-42.58" font-family="Arial" font-size="14.00">cargo (.):
-				roundwindows v0.0.9</text>
+				round v0.0.9</text>
 		</g>
 		<!-- n0&#45;&gt;n2 -->
 		<g id="edge2" class="edge">
