@@ -4,10 +4,40 @@ use regex::Regex;
 use serde_json::json;
 use tauri::{
 	Emitter, Manager, WebviewUrl, WebviewWindowBuilder,
-	menu::{Menu, MenuItem, PredefinedMenuItem},
+	menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem},
 	tray::TrayIconBuilder,
 };
 use tauri_plugin_store::StoreExt;
+
+#[cfg(target_os = "macos")]
+fn set_dock_visible(visible: bool) {
+	use objc2::{class, msg_send, runtime::AnyObject};
+
+	const NS_APPLICATION_ACTIVATION_POLICY_REGULAR: isize = 0;
+
+	const NS_APPLICATION_ACTIVATION_POLICY_ACCESSORY: isize = 1;
+
+	let policy = if visible {
+		NS_APPLICATION_ACTIVATION_POLICY_REGULAR
+	} else {
+		NS_APPLICATION_ACTIVATION_POLICY_ACCESSORY
+	};
+
+	unsafe {
+		let cls = class!(NSApplication);
+
+		let ns_app: *mut AnyObject = msg_send![cls, sharedApplication];
+
+		if ns_app.is_null() {
+			return;
+		}
+
+		let _: bool = msg_send![ns_app, setActivationPolicy: policy];
+	}
+}
+
+#[cfg(not(target_os = "macos"))]
+fn set_dock_visible(_visible: bool) {}
 
 #[cfg(target_os = "macos")]
 fn raise_window<R: tauri::Runtime>(window: &tauri::WebviewWindow<R>) {
@@ -120,6 +150,9 @@ fn main() {
 			if store.get("hidden").is_none() {
 				store.set("hidden", json!(false));
 			}
+			if store.get("dock_hidden").is_none() {
+				store.set("dock_hidden", json!(false));
+			}
 			store.save()?;
 
 			let size = store.get("size").and_then(|value| value.as_i64()).unwrap_or(DEFAULT_SIZE);
@@ -128,6 +161,11 @@ fn main() {
 				.and_then(|value| value.as_str().map(str::to_owned))
 				.unwrap_or_else(|| DEFAULT_MODE.to_owned());
 			let hidden = store.get("hidden").and_then(|value| value.as_bool()).unwrap_or(false);
+
+			let dock_hidden =
+				store.get("dock_hidden").and_then(|value| value.as_bool()).unwrap_or(false);
+
+			set_dock_visible(!dock_hidden);
 
 			let init_script = format!(
 				"window.settings = {{ size: {size}, mode: {mode} }};",
@@ -181,17 +219,26 @@ fn main() {
 			}
 
 			let increase =
-				MenuItem::with_id(app, "increase", "Increase Size ➕", true, None::<&str>)?;
+				MenuItem::with_id(app, "increase", "Increase Size\u{2001}➕", true, None::<&str>)?;
 			let decrease =
-				MenuItem::with_id(app, "decrease", "Decrease Size ➖", true, None::<&str>)?;
-			let reset = MenuItem::with_id(app, "reset", "Reset ↩️", true, None::<&str>)?;
-			let dark = MenuItem::with_id(app, "dark", "Dark 🌑", true, None::<&str>)?;
-			let light = MenuItem::with_id(app, "light", "Light ☀️", true, None::<&str>)?;
-			let show = MenuItem::with_id(app, "show", "Show 👨🏻", true, None::<&str>)?;
-			let hide = MenuItem::with_id(app, "hide", "Hide 🥷🏽", true, None::<&str>)?;
-			let exit = MenuItem::with_id(app, "exit", "Exit ❌", true, None::<&str>)?;
+				MenuItem::with_id(app, "decrease", "Decrease Size\u{2001}➖", true, None::<&str>)?;
+			let reset = MenuItem::with_id(app, "reset", "Reset\u{2001}↩️", true, None::<&str>)?;
+			let dark = MenuItem::with_id(app, "dark", "Dark\u{2001}🌑", true, None::<&str>)?;
+			let light = MenuItem::with_id(app, "light", "Light\u{2001}☀️", true, None::<&str>)?;
+			let show = MenuItem::with_id(app, "show", "Show\u{2001}👨🏻", true, None::<&str>)?;
+			let hide = MenuItem::with_id(app, "hide", "Hide\u{2001}🥷🏽", true, None::<&str>)?;
+			let dock = CheckMenuItem::with_id(
+				app,
+				"dock",
+				"No Dock\u{2001}⚓",
+				true,
+				dock_hidden,
+				None::<&str>,
+			)?;
+			let exit = MenuItem::with_id(app, "exit", "Exit\u{2001}❌", true, None::<&str>)?;
 			let separator_one = PredefinedMenuItem::separator(app)?;
 			let separator_two = PredefinedMenuItem::separator(app)?;
+			let separator_three = PredefinedMenuItem::separator(app)?;
 
 			let menu = Menu::with_items(
 				app,
@@ -205,9 +252,13 @@ fn main() {
 					&separator_two,
 					&show,
 					&hide,
+					&separator_three,
+					&dock,
 					&exit,
 				],
 			)?;
+
+			let dock_for_menu = dock.clone();
 
 			let tray_icon = tauri::include_image!("icons/tray.png");
 
@@ -219,6 +270,22 @@ fn main() {
 					Ok(store) => store,
 					Err(_) => return,
 				};
+
+				if event.id.as_ref() == "dock" {
+					let now_hidden = !store
+						.get("dock_hidden")
+						.and_then(|value| value.as_bool())
+						.unwrap_or(false);
+
+					store.set("dock_hidden", json!(now_hidden));
+					let _ = store.save();
+
+					set_dock_visible(!now_hidden);
+
+					let _ = dock_for_menu.set_checked(now_hidden);
+
+					return;
+				}
 
 				let mut size =
 					store.get("size").and_then(|value| value.as_i64()).unwrap_or(DEFAULT_SIZE);

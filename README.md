@@ -7,6 +7,8 @@
 # Round
 
 Rounds the corners of every monitor - natively on **macOS** and **Windows**.
+Should also build and run on **Linux** (X11 / Wayland), but that path is
+currently untested - bug reports and patches are welcome.
 
 ![`Round`](https://PlayForm.Cloud/Image/GitHub/Round/Cover.png?v=2)
 
@@ -26,6 +28,10 @@ completely:
 - **Windows** - the windows are pushed to `HWND_TOPMOST` after creation and
   flagged `WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT`, so the
   corners overlay the taskbar without stealing focus or showing in Alt-Tab.
+- **Linux** - falls back to Tauri's default `always_on_top` + `skip_taskbar`,
+  no platform-specific lifting. Untested in practice; on most compositors the
+  overlay will sit above normal windows but may render under panels/docks
+  configured as struts. PRs welcome.
 
 Clicks always pass through, the overlays never take focus, and settings persist
 across launches.
