@@ -1,1 +1,6 @@
 Target
+
+# Tauri update signer keys (private key MUST NOT be committed; the public key
+# is safe to share but kept here so the pair stays together).
+Round.key
+Round.pub
