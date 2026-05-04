@@ -17,7 +17,7 @@ tauri-plugin-store = "2.4.3"
 objc2 = "0.6.4"
 
 [target.'cfg(target_os = "windows")'.dependencies]
-windows-sys = { version = "0.59", features = [
+windows-sys = { version = "0.61.2", features = [
 	"Win32_Foundation",
 	"Win32_UI_WindowsAndMessaging",
 ] }
