@@ -1,0 +1,22 @@
+{
+    "explorer.excludeGitIgnore": false,
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/.trunk/*actions/": true,
+        "**/.trunk/*logs/": true,
+        "**/.trunk/*notifications/": true,
+        "**/.trunk/*out/": true,
+        "**/.trunk/*plugins/": true,
+        "**/CVS": true,
+        "**/cache": true,
+        "**/target": true,
+        "**/temp": true,
+        "**/tmp": true,
+        "**/vendor": true,
+        "**/node_modules": true
+    }
+}

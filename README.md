@@ -6,49 +6,40 @@
 
 # Round
 
-Rounds the corners of every monitor - natively on **macOS** and **Windows**.
-Should also build and run on **Linux** (X11 / Wayland), but that path is
-currently untested - bug reports and patches are welcome.
+A transparent, click-through overlay that draws rounded corners on every
+connected monitor. Native on **macOS** and **Windows**; **Linux** should build
+but is untested.
 
 ![`Round`](https://PlayForm.Cloud/Image/GitHub/Round/Cover.png?v=2)
 
 ## Getting started
 
-`Round` is a tray application built on Tauri 2. It creates a transparent,
-click-through overlay window on every connected monitor, draws four rounded
-corners on each, and is controlled from the system tray (menu bar on macOS,
-notification area on Windows).
+`Round` is a Tauri 2 tray app. It spawns one borderless, transparent webview per
+monitor sized to the monitor's bounds, draws four rounded corners with Solid,
+and is controlled from the system tray. State (size, theme, hidden, no-dock) is
+persisted via `tauri-plugin-store`.
 
-The overlay is lifted above OS chrome so the corners cover the screen edges
-completely:
+Each window is lifted above OS chrome so the corners cover the full screen:
 
-- **macOS** - the windows sit at `NSStatusWindowLevel`, ride along across all
-  Spaces, and survive other apps entering fullscreen, so the corners overlay the
-  menu bar at the top of every display. Transparency uses `macOSPrivateApi`.
-- **Windows** - the windows are pushed to `HWND_TOPMOST` after creation and
-  flagged `WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT`, so the
-  corners overlay the taskbar without stealing focus or showing in Alt-Tab.
-- **Linux** - falls back to Tauri's default `always_on_top` + `skip_taskbar`,
-  no platform-specific lifting. Untested in practice; on most compositors the
-  overlay will sit above normal windows but may render under panels/docks
-  configured as struts. PRs welcome.
-
-Clicks always pass through, the overlays never take focus, and settings persist
-across launches.
+- **macOS** sets `NSStatusWindowLevel`, the collection behaviour
+  `canJoinAllSpaces | stationary | ignoresCycle | fullScreenAuxiliary`, and
+  `setIgnoresMouseEvents:YES`. Transparency requires `macOSPrivateApi`.
+- **Windows** calls `SetWindowPos(HWND_TOPMOST, ..., SWP_NOACTIVATE)` and adds
+  `WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT` on top of Tauri's
+  `WS_EX_LAYERED`.
+- **Linux** falls back to `always_on_top` + `skip_taskbar`; struts/panels may
+  still draw over the corners.
 
 ## Dependencies
 
-The Rust side uses:
-
 - `tauri` 2 with the `tray-icon` and `macos-private-api` features
-- `tauri-plugin-store` - persistent key-value store for the size, mode, and
-  visibility settings
-- `regex` - sanitizes monitor names into valid window labels
-- `serde` / `serde_json` - payload (de)serialization
-- `objc2` (macOS only) - raises each window above the menu bar
-- `windows-sys` (Windows only) - raises each window above the taskbar
+- `tauri-plugin-store` for persisting size, theme, and visibility
+- `regex`, `serde`, `serde_json`
+- `objc2` (macOS only) - lifts windows above the menu bar and toggles the dock
+  activation policy
+- `windows-sys` (Windows only) - lifts windows above the taskbar
 
-The frontend is Solid 1.9 + Vite 8 with `@tauri-apps/api` 2, bundled by
+Frontend: Solid 1.9 + Vite 8 + `@tauri-apps/api` 2, bundled by
 `@playform/build`.
 
 ## Options
@@ -62,6 +53,7 @@ The app has several menu items:
 - **Light** ☀️
 - **Show** 👨🏻
 - **Hide** 🥷🏽
+- **No Dock** ⚓
 - **Exit** ❌
 
 Clicking on **Increase Size** or **Decrease Size** increases or decreases the
@@ -72,6 +64,10 @@ roundness of the windows, respectively.
 **Dark** and **Light** switch the app between dark and light mode.
 
 **Show** and **Hide** show or hide all windows, respectively.
+
+**No Dock** (macOS only) toggles the dock icon via
+`NSApplicationActivationPolicy.Accessory`; the menu item is checked when the
+dock icon is hidden.
 
 **Exit** closes the app.
 

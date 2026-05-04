@@ -22,7 +22,7 @@ panic = "abort"
 opt-level = 3
 
 [profile.release]
-opt-level = 2     # Use level 2 to avoid optimizer bugs with OXC
+opt-level = 3
 codegen-units = 1
 debug = false     # Can disable debug symbols for final release
 lto = false       # Disable LTO to avoid linking issues
