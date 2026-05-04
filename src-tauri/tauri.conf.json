@@ -93,7 +93,7 @@
 			}
 		}
 	},
-	"identifier": "app.roundedcorners.app",
+	"identifier": "app.roundedcorners.binary",
 	"productName": "Round",
 	"version": "0.0.9"
 }
