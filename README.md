@@ -73,4 +73,4 @@ dock icon is hidden.
 
 ## Changelog
 
-See [`CHANGELOG.md`](CHANGELOG.md) for a history of changes to this app.
+See [`CHANGELOG.md`](https://github.com/PlayForm/Round/blob/Current/CHANGELOG.md) for a history of changes to this app.
