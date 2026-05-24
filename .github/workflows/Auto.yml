@@ -62,7 +62,7 @@ jobs:
                   git add .
                   git commit -a --allow-empty-message -m ""
 
-            - uses: ad-m/github-push-action@v1.1.0
+            - uses: ad-m/github-push-action@v1.3.0
               with:
                   github_token: ${{ secrets.GITHUB_TOKEN }}
                   branch: Current
