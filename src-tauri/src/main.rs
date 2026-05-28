@@ -82,6 +82,11 @@ fn raise_window<R:tauri::Runtime>(window:&tauri::WebviewWindow<R>) {
 fn raise_window<R:tauri::Runtime>(window:&tauri::WebviewWindow<R>) {
 	use windows_sys::Win32::{
 		Foundation::HWND,
+		Graphics::Dwm::{
+			DwmSetWindowAttribute,
+			DWMWA_WINDOW_CORNER_PREFERENCE,
+			DWMWCP_DONOTROUND,
+		},
 		UI::WindowsAndMessaging::{
 			GWL_EXSTYLE,
 			GetWindowLongPtrW,
@@ -115,6 +120,15 @@ fn raise_window<R:tauri::Runtime>(window:&tauri::WebviewWindow<R>) {
 		SetWindowLongPtrW(hwnd, GWL_EXSTYLE, style | extra);
 
 		SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+
+		let corner_pref: i32 = DWMWCP_DONOTROUND;
+
+		DwmSetWindowAttribute(
+			hwnd,
+			DWMWA_WINDOW_CORNER_PREFERENCE as u32,
+			&corner_pref as *const i32 as *const core::ffi::c_void,
+			std::mem::size_of::<i32>() as u32,
+		);
 	}
 }
 
@@ -187,10 +201,6 @@ fn main() {
 				mode = serde_json::to_string(&mode).unwrap_or_else(|_| "\"dark\"".into()),
 			);
 
-			let primary = app.primary_monitor()?.ok_or("Error! No primary monitor.")?;
-
-			let scale_factor = primary.scale_factor();
-
 			let label_re = Regex::new(r"[^a-zA-Z0-9]").unwrap();
 
 			for (index, monitor) in app.available_monitors()?.into_iter().enumerate() {
@@ -201,6 +211,8 @@ fn main() {
 				if label.is_empty() {
 					label = format!("monitor{index}");
 				}
+
+				let scale_factor = monitor.scale_factor();
 
 				let size_logical = monitor.size().to_logical::<i32>(scale_factor);
 
@@ -225,7 +237,7 @@ fn main() {
 
 				#[cfg(target_os = "windows")]
 				{
-					builder = builder.skip_taskbar(true);
+					builder = builder.skip_taskbar(true).shadow(false);
 				}
 
 				let window = builder.build()?;

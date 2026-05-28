@@ -1,4 +1,7 @@
+import { fileURLToPath } from "node:url";
+
 export default (await import("vite")).defineConfig({
+	root: fileURLToPath(new URL(".", import.meta.url)),
 	publicDir: "./Public",
 	plugins: [(await import("vite-plugin-solid")).default()],
 	clearScreen: false,

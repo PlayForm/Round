@@ -13,7 +13,6 @@ rustdoc-scrape-examples = true
 
 [profile.dev]
 incremental = true
-split-debuginfo = "unpacked"
 debug = 0
 strip = "debuginfo"
 panic = "abort"
