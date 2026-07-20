@@ -43,7 +43,7 @@
 		"postcss-url": "10.1.4",
 		"tailwindcss": "3.4.19",
 		"vite": "8.1.5",
-		"vite-plugin-solid": "2.11.12"
+		"vite-plugin-solid": "2.11.13"
 	},
 	"publishConfig": {
 		"access": "public",
