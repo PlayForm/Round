@@ -36,7 +36,7 @@
 		"cssnano": "9.2.2",
 		"cssnano-preset-advanced": "9.1.4",
 		"postcss": "8.5.28",
-		"postcss-combine-duplicated-selectors": "10.0.3",
+		"postcss-combine-duplicated-selectors": "11.0.0",
 		"postcss-combine-media-query": "2.1.0",
 		"postcss-import": "17.0.0",
 		"postcss-reporter": "7.1.0",
