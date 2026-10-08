@@ -35,7 +35,7 @@
 		"autoprefixer": "10.6.1",
 		"cssnano": "9.2.2",
 		"cssnano-preset-advanced": "9.1.4",
-		"postcss": "8.5.28",
+		"postcss": "8.5.29",
 		"postcss-combine-duplicated-selectors": "11.0.0",
 		"postcss-combine-media-query": "2.1.0",
 		"postcss-import": "17.0.0",
