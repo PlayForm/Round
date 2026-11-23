@@ -22,26 +22,53 @@ the npm packages and `pround`.
   all open it when it is closed and close it when it is open. A right click used
   to reach the native menu; with no menu left there is nothing for it to show,
   so it is the same switch as every other button.
-- The panel stays open while it is being used. Every command ends in a broadcast
-  over the overlay windows, and that broadcast used to re-show windows that were
-  already showing - which on macOS keys the overlay, blurs the panel, and read as
-  a dismissal, so moving a slider or clicking Dark/Light closed the panel under
-  the control. `Settings::visible` now compares against `is_visible()` and does
-  nothing when the window is already in the wanted state, and the overlay show
-  path orders windows front without taking the keyboard (`orderFrontRegardless`
-  on macOS; Windows already had `WS_EX_NOACTIVATE`). A blur that only moves focus
-  to another window of Round is no longer a dismissal either, so only a click
-  outside the app or the tray icon closes the panel.
-- A click inside the panel no longer closes it. The blur guard asked whether
-  another window of the app held the keyboard, which a click on the panel does
-  not change, so the panel read its own click as a dismissal. It now asks where
-  the pointer is: a blur with the pointer inside a window of the app a click can
-  reach is the user working the panel, and only a pointer outside all of them is
-  a dismissal. The click-through overlays are left out of that test - they cover
-  a whole monitor each and never receive a click, so counting them would read a
-  click on the desktop as a click on Round - and the comparison is made in AppKit
-  points on macOS, where the pointer and a window's frame are reported through
-  different backing scales on a desk that mixes a Retina display with a 1x one.
+- The panel is dismissed by a click on a backdrop of Round's own, not by an
+  inference about focus. A popover has to know when the user left, and the OS
+  never says: `WindowEvent::Focused(false)` states that the keyboard moved and a
+  pointer position states where the mouse was, neither states what the user did.
+  Every guard built on those - a settle window after `show`, an
+  `NSApplication.isActive` probe, a scan for another focused window of the app,
+  and a pointer-containment test - produced a wrong answer at least once: the
+  panel closed under the control being used, then on a click inside the app. All
+  four are gone. While the panel is open a transparent, non-focusable backdrop
+  window covers each monitor's work area, one level above the corner art and one
+  below the panel, and its document invokes a new `dismiss` command on the first
+  `pointerdown` of any button. A dismissal is now a click delivered to a window
+  of Round's own.
+- `Menu` no longer reacts to `WindowEvent::Focused(false)` at all: the settle
+  window, the `Blurred`/`Shown` timestamps, `locate`/`Pointer`, `elsewhere`, the
+  `NSApplication.isActive` probe and `Overlay::clickable` are deleted.
+  `Menu::toggle` keeps its meaning - open if hidden, hide if visible - without
+  the guard, and `Menu::hide` closes the panel and the backdrop together, so a
+  tray click still toggles the panel shut and `dismiss` is idempotent.
+- The backdrop stops at each monitor's work area rather than covering the whole
+  screen: the menu bar (the Dock strip on macOS, the taskbar on Windows) stays
+  outside it, so a click on the tray icon reaches the icon instead of being
+  swallowed by an invisible window. A click in that strip activates whatever it
+  landed on and leaves the panel open - the one click the backdrop cannot see,
+  and the price of never swallowing the tray. Each backdrop carries its own
+  monitor's work area in physical pixels, so a desk that mixes a Retina display
+  with a 1x one, or puts a display at a negative origin, needs no arithmetic.
+- `Settings::broadcast` skips the backdrop windows. They are hidden and shown by
+  the panel, so a broadcast that restored them would put a click-eating window
+  over the desktop with the panel closed, once per slider step.
+- `Overlay` is now the window ladder rather than a set of one-off lifts:
+  `art` / `scrim` / `panel` / `front` / `dock`, with the order spelled out once
+  per platform - AppKit levels 25 / 26 / 27 on macOS, a re-insert at the top of
+  the topmost band on Windows, the raise order on X11. `raise` and `present` are
+  renamed `art` and `front`, and `clickable` is gone with the guard that asked
+  it. The panel now sits above the corner art as well as above the backdrop, so
+  the corners no longer draw over it.
+
+### Webview (`@application/round-web`)
+
+- `backdrop.html` and `Source/Backdrop.ts`: the backdrop's document. It paints
+  nothing, has no input and no state, and does one thing - a `pointerdown`
+  listener in the capture phase that invokes `dismiss`, for any button. Its
+  window is created with `focusable(false)` and `accept_first_mouse(true)`, so
+  the click cannot take the keyboard and still counts when Round is inactive.
+- `vite.config.ts` builds it as a third entry beside `index.html` and
+  `menu.html`.
 
 ### Dependencies
 

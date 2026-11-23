@@ -35,6 +35,7 @@ digraph Round {
         "Screen" [label = "Screen";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
         "Tray" [label = "Tray";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
         "Overlay" [label = "Overlay";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
+        "Backdrop" [label = "Backdrop";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
     }
     
     subgraph cluster_web {
@@ -45,6 +46,7 @@ digraph Round {
         "Index" [label = "Index.tsx";shape = note;fillcolor = "#FADBD8";penwidth = 1;];
         "Panel" [label = "Menu.tsx";shape = note;fillcolor = "#FADBD8";penwidth = 1;];
         "Corner" [label = "Corner.tsx";shape = note;fillcolor = "#FADBD8";penwidth = 1;];
+        "Scrim" [label = "Backdrop.ts";shape = note;fillcolor = "#FADBD8";penwidth = 1;];
         "Style" [label = "Asset/CSS";shape = note;fillcolor = "#FADBD8";penwidth = 1;];
     }
     
@@ -67,6 +69,7 @@ digraph Round {
     
     "Main" -> "Library" [label = "uses"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Library" -> "Menu" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
+    "Library" -> "Backdrop" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
     "Library" -> "Message" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
     "Library" -> "Mode" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
     "Library" -> "Overlay" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
@@ -75,11 +78,14 @@ digraph Round {
     "Library" -> "Tray" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
     
     "Main" -> "Screen" [label = "one window per monitor"; style = solid; color = "blue"; arrowsize = 0.8;];
-    "Main" -> "Overlay" [label = "raise"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Main" -> "Overlay" [label = "art"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Main" -> "Tray" [label = "install"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Main" -> "Menu" [label = "commands"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Tray" -> "Menu" [label = "toggle"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Menu" -> "Settings" [label = "mutate"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Menu" -> "Backdrop" [label = "open / close"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Menu" -> "Overlay" [label = "panel"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Backdrop" -> "Overlay" [label = "scrim"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Settings" -> "Mode" [label = "typed field"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Settings" -> "Message" [label = "broadcast"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Settings" -> "store" [label = "persist"; style = dashed; color = "red"; arrowsize = 0.8;];
@@ -92,10 +98,13 @@ digraph Round {
     
     "web" -> "Index" [label = "entry"; style = solid; color = "blue"; arrowsize = 0.8;];
     "web" -> "Panel" [label = "entry"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "web" -> "Scrim" [label = "entry"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Index" -> "Corner" [label = "four corners"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Index" -> "Style" [label = "Window.css"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Panel" -> "Style" [label = "Menu.css"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Corner" -> "Style" [label = "Corner.css"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Scrim" -> "Style" [label = "Backdrop.css"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Scrim" -> "Menu" [label = "dismiss"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Index" -> "api" [label = "listen"; style = dashed; color = "red"; arrowsize = 0.8;];
     "Index" -> "solid" [label = "signals"; style = dashed; color = "red"; arrowsize = 0.8;];
     "Panel" -> "api" [label = "invoke"; style = dashed; color = "red"; arrowsize = 0.8;];

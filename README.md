@@ -107,7 +107,7 @@ let window = tauri::WebviewWindowBuilder::new(app, &screen.label, tauri::Webview
 	.transparent(true)
 	.build()?;
 
-Overlay::raise(&window); // platform-correct lift, no cfg at the call site
+Overlay::art(&window); // platform-correct lift, no cfg at the call site
 ```
 
 The crate ships the library target and the `round` binary. The binary embeds the
@@ -127,8 +127,14 @@ directory has no corners to draw and the build says so.
 
 The tray icon carries no native menu. Clicking it opens a panel under the icon -
 a real window, drawn by the same webview stack as the overlays and used as a
-menu: it hugs its content, closes when it loses focus, and never appears in the
-taskbar or the dock.
+menu: it hugs its content and never appears in the taskbar or the dock.
+
+While the panel is open, a transparent **backdrop** window covers every
+monitor's work area, one level under the panel. Clicking it is what closes the
+panel: the click is delivered to a window of Round's own, so dismissal is a fact
+rather than a guess about why the keyboard moved. The backdrop stops at the work
+area, so the tray icon stays clickable and a click on it still toggles the panel
+closed.
 
 - **All monitors** - one slider for the default corner radius (_23px_ on a fresh
   install). Moving it drops the per-monitor overrides, because "all monitors" is
@@ -144,7 +150,9 @@ taskbar or the dock.
 Each control is one Tauri command on `pround::Menu` - `state`, `set_size`,
 `set_mode`, `set_hidden`, `set_dock`, `reset`, `quit` - and each returns the
 state the panel should now render, so the panel never keeps a second copy of the
-truth. `Settings` remains the only place the values live.
+truth. `Settings` remains the only place the values live. The one command that
+is not a control is `dismiss`, which the backdrop's own document invokes on a
+pointer-down: it hides the panel and the backdrop together, and is idempotent.
 
 ---
 
@@ -152,9 +160,9 @@ truth. `Settings` remains the only place the values live.
 
 - **`Crate/Round`** - the Rust crate, published to crates.io as **`pround`**.
   `Source/Library.rs` is the crate root (the overlay engine), `Source/Main.rs`
-  is the `round` binary, and each domain (`Menu`, `Message`, `Mode`, `Overlay`,
-  `Screen`, `Settings`, `Tray`) is its own PascalCase directory with a `mod.rs`
-  facade.
+  is the `round` binary, and each domain (`Backdrop`, `Menu`, `Message`, `Mode`,
+  `Overlay`, `Screen`, `Settings`, `Tray`) is its own PascalCase directory with
+  a `mod.rs` facade.
 - **`Package/Web`** - the webview package: Solid 1.9 + Vite 8 + Tailwind 3,
   built by `@playform/build`'s tsconfig base into `Package/Web/Target`. The
   crate embeds that directory at compile time; it is never copied into the

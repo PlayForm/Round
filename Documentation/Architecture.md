@@ -36,22 +36,40 @@ declares them and holds nothing else.
 
 - **`Menu`** - the menu window, and the app's whole control surface. It builds a
   borderless, transparent, always-on-top webview (`menu.html`) under the tray
-  icon, toggles it on a click, dismisses it when it really loses focus, and
-  exposes the panel's commands - `state`, `set_size`, `set_mode`, `set_hidden`,
-  `set_dock`, `reset`, `quit` - each of which returns the state to render.
-  "Really" is four guards on the blur: a window that is already hidden, a blur
-  inside the settle window after `show`, a blur whose pointer is still inside a
-  window of Round, and a blur that only moved the keyboard to another window of
-  Round are all ignored; a dismissal is a blur with the pointer outside every
-  window a click can reach, while the app itself is still active
-  (`NSApplication.isActive`). The pointer guard is the one that carries clicks:
-  the overlays never take the keyboard, so clicking the panel does not move focus
-  and focus alone cannot tell a click on the app from a click that left it. A
-  window that ignores the mouse is not counted at all - the overlays are
-  click-through and cover a whole monitor each, so counting them would read a
-  click on the desktop as a click on Round. Without the keyboard guard every
-  command would close the panel it was clicked in, because a command ends in a
-  broadcast over the overlay windows and showing a window can key it.
+  icon, opens the `Backdrop` scrims under it, toggles it on a click, and exposes
+  the panel's commands - `state`, `set_size`, `set_mode`, `set_hidden`,
+  `set_dock`, `reset`, `dismiss`, `quit` - each of which returns the state to
+  render.
+  It does not decide its own dismissal. A popover has to know when the user
+  left, and the OS never says: a blur states that the keyboard moved, a pointer
+  position states where the mouse was, and neither states what the user did. The
+  panel used to read `WindowEvent::Focused(false)` behind four guards - a settle
+  window after `show`, an `NSApplication.isActive` probe, a scan for another
+  focused window of the app, and a pointer-containment test - and every one of
+  them produced a wrong answer at least once: the panel closed under the control
+  being used, then on a click inside the app. All four are gone. What is left is
+  `dismiss`, invoked by the scrim's own document when a pointer goes down on it,
+  and `toggle` from the tray icon. Nothing in this module reads focus,
+  activation, a timer or geometry.
+- **`Backdrop`** - the scrim. One borderless, transparent, non-focusable webview
+  per monitor (`backdrop.html`), covering that monitor's work area one level
+  above the art and below the panel. It exists only while the panel is open:
+  `Menu::open` builds and shows it, `Menu::hide` closes it, and `dismiss` hides
+  both together. Its document is empty except for one `pointerdown` listener
+  that invokes `dismiss` - any button, capture phase - so the dismissal is a
+  click delivered to a window of Round's own rather than an inference about one.
+  The work area, not the whole rect, is what keeps the tray usable: the menu bar
+  (and, on macOS, the Dock strip; on Windows, the taskbar) is outside the scrim,
+  so a click there reaches the OS chrome and the tray icon still toggles the
+  panel closed. A click in that strip therefore does not dismiss the panel - it
+  activates whatever it landed on - which is the one shape of click the scrim
+  cannot see, and the price of never swallowing the tray.
+  Each scrim carries its own monitor's work area in physical pixels, so a desk
+  that mixes a Retina display with a 1x one, or puts a display at a negative
+  origin, needs no arithmetic. `Backdrop::owns` is what the broadcast asks
+  before treating a window as art: the scrims are hidden and shown by the panel
+  and never restored by a broadcast, or a slider step would put a click-eating
+  window back on the desktop with the panel closed.
 - **`Mode`** - the two inks a corner can be drawn in. Serialises to the
   lowercase word the webview reads (`dark`, `light`); unknown store values fall
   back to the default.
@@ -64,32 +82,42 @@ declares them and holds nothing else.
 - **`Screen`** - one monitor resolved to the window label and the logical bounds
   a webview window takes. Labels keep ASCII alphanumerics only (Tauri rejects
   the rest); an unnamed monitor becomes `monitor<index>`.
-- **`Overlay`** - lifting a transparent webview above the OS chrome. Exactly one
-  `clickable`/`raise`/`present`/`dock` set is re-exported per platform, so call
-  sites are identical everywhere and there is no runtime branch to get wrong:
-    - `MacOS.rs` - `NSStatusWindowLevel` (25), collection behaviour
-      `canJoinAllSpaces | stationary | ignoresCycle | fullScreenAuxiliary`,
-      `setIgnoresMouseEvents:YES`, `orderFrontRegardless` for `present`, and
-      `setActivationPolicy` for the dock toggle.
-    - `Windows.rs` - `SetWindowPos(HWND_TOPMOST, ..., SWP_NOACTIVATE)` plus
-      `WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT` on top of
-      Tauri's `WS_EX_LAYERED`, and `DWMWCP_DONOTROUND` so Windows 11 does not
-      draw a second set of corners.
-    - `Linux.rs` - nothing beyond the builder's `always_on_top` +
-      `skip_taskbar`; a compositor may still draw panels over the corners.
-  `clickable` reads back the click-through state each `raise` asked for
-  (`ignoresMouseEvents` on macOS, `WS_EX_TRANSPARENT` on Windows; Linux has no
-  way to ask for it, so there the window does receive clicks). The Menu panel
-  asks it before counting a window as part of the app, and a window whose state
-  cannot be read answers "clickable", so a missing answer keeps the panel open
-  rather than dismissing it.
-  `present` is the one place a window is put on screen, and it is deliberately
-  not `WebviewWindow::show`: that forwards to tao's `set_visible(true)`, which
-  calls `makeKeyAndOrderFront:` and makes the overlay the key window. An overlay
-  never receives a click, so taking the keyboard from the Menu panel buys
-  nothing and costs the panel its open state; `orderFrontRegardless` orders the
-  window front without the key change (and still works while the app is
-  inactive, where `makeKeyAndOrderFront:` does nothing).
+- **`Overlay`** - the window ladder, and the one place it is spelled out.
+  Exactly one `art`/`scrim`/`panel`/`front`/`dock` set is re-exported per
+  platform, so call sites are identical everywhere and there is no runtime
+  branch to get wrong. Three layers, bottom to top:
+    - **art** - the corner overlay, one window per monitor. Click-through, so a
+      click on it is a click on whatever is under it.
+    - **scrim** - the backdrop. It takes the mouse, which is the whole point of
+      it.
+    - **panel** - the Menu window, above the scrim, owning its own clicks.
+  On macOS the order is a level: `NSStatusWindowLevel` (25) for the art, 26 for
+  the scrim, 27 for the panel. A level is a fact about the window rather than a
+  fact about the last call, so re-showing a scrim can never lift it over the
+  panel. The art also takes the all-spaces collection behaviour
+  (`canJoinAllSpaces | stationary | ignoresCycle | fullScreenAuxiliary`) and
+  `setIgnoresMouseEvents:YES`; the scrim adds `stationary | ignoresCycle` to
+  whatever it already carries - keeping a full-screen invisible window out of
+  Mission Control and out of ⌘` - and deliberately **not** `canJoinAllSpaces`,
+  because the panel does not join every Space either: a scrim that did would
+  outlive the panel the moment the user switched Space.
+  On Windows the order is the topmost band: the art adds
+  `WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT` and
+  `DWMWCP_DONOTROUND`, the scrim adds `WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE` and
+  never the transparent one, and the panel is re-inserted with
+  `SetWindowPos(HWND_TOPMOST, ..., SWP_NOACTIVATE)` after the scrims are up -
+  which is what puts it on top however many times it has been opened.
+  On Linux nothing lifts a window above the compositor's own panels; the scrim
+  and then the panel are raised with `set_always_on_top(true)`, and a compositor
+  that refuses to stack one client over another leaves the scrim under the
+  panel, where a click on the panel is still the panel's.
+  `front` is the one place a window is put on screen, and it is deliberately not
+  `WebviewWindow::show`: that forwards to tao's `set_visible(true)`, which calls
+  `makeKeyAndOrderFront:` and makes the window key. Neither the art nor the
+  scrim has any use for the keyboard, and taking it would pull focus out of
+  whatever the user was using; `orderFrontRegardless` orders the window front
+  without the key change (and still works while the app is inactive, where
+  `makeKeyAndOrderFront:` does nothing).
 - **`Tray`** - the tray icon and its click, nothing else. No native menu is
   attached: a click calls `Menu::toggle`, so the tray owns no command, no label
   and no state.
@@ -110,11 +138,11 @@ the same map with the edges drawn.
 4. For every monitor: build a borderless, transparent, non-focusable,
    non-resizable, always-on-top webview at the monitor's logical bounds, run the
    init script (`window.settings = {"size":23,"mode":"dark"};`), build it
-   hidden, `Overlay::raise` it, then `Settings::visible` it - which `present`s it
+   hidden, `Overlay::art` it, then `Settings::visible` it - which `front`s it
    unless the saved state is hidden.
 5. `Tray::install` builds the icon and wires its click to `Menu::toggle`. The
-   menu window itself is built on the first click, not at startup, so a launch
-   that never opens the panel never pays for it.
+   panel and the scrims are built on the first click, not at startup, so a
+   launch that never opens the panel never pays for them.
 
 ---
 
@@ -123,16 +151,28 @@ the same map with the edges drawn.
 ```
 tray click
   -> Menu::toggle(app, rect)
-       hidden -> place under the icon, show, focus
-       visible -> hide
+       hidden -> place under the icon, open the scrims, show, raise the panel
+                 above them, focus
+       visible -> hide the panel and the scrims
   -> the panel invokes a command: state / set_size / set_mode /
      set_hidden / set_dock / reset / quit
   -> Settings::load(&store) -> mutate -> Settings::save(&store)
-  -> broadcast: for every overlay window emit "size", emit "mode", and apply
+  -> broadcast: for every ART window emit "size", emit "mode", and apply
      visibility only where it differs from `is_visible()` - a window already in
-     the wanted state is left alone, because showing it is not a no-op
+     the wanted state is left alone, because showing it is not a no-op. The
+     panel and the scrims are skipped: the panel renders the state the command
+     returns, and the scrim has no state at all
   -> the command returns the new State, which the panel renders
+
+pointerdown on a scrim
+  -> invoke("dismiss")
+  -> Menu::dismiss: hide the panel and every scrim
 ```
+
+There is no other way into a dismissal. No focus event, activation probe, timer
+or geometry test decides one, so none of them can get it wrong: the panel closes
+when a click lands on Round's own scrim, when the tray icon is clicked, or when
+the app quits.
 
 The webview is deliberately dumb: it holds no state of its own beyond two
 signals initialised from `window.settings` and updated by those events. All
@@ -159,6 +199,10 @@ decisions - including the reset value and the clamp - live in Rust.
 Both `data-mode` and `--Corner` are emitted inside Solid render effects that
 read the signal accessors, so the panel's changes repaint live.
 
+The backdrop's document has no contract of its own beyond one inbound event: a
+`pointerdown` on it invokes `dismiss`. It reads no state, renders nothing and
+holds no signals, which is what lets its window stay invisible.
+
 ---
 
 ## Where to change what
@@ -173,5 +217,9 @@ read the signal accessors, so the panel's changes repaint live.
   TypeScript type in `Package/Web/Source/Type/Settings.ts`.
 - **A platform behaviour** - only the matching file under `Source/Overlay/`; the
   re-export in `Overlay/mod.rs` means no call site changes.
+- **The order the three layers sit in** - the const block at the top of each
+  file under `Source/Overlay/`: the AppKit levels on macOS, the topmost insert
+  on Windows, the raise order on X11. `art`, `scrim` and `panel` are the only
+  places a level is chosen.
 - **A corner's look** - `Package/Web/Source/Asset/CSS/Corner.css` and the
   `.Window` markup in `Source/Index.tsx`; the Rust side only carries numbers.

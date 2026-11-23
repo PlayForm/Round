@@ -67,9 +67,10 @@ pub fn art<R:Runtime>(window:&WebviewWindow<R>) {
 /// The scrim deliberately does **not** join every Space the way the art does.
 /// The panel does not join them either, so a scrim on all Spaces would outlive
 /// the panel the moment the user switched Space: an invisible window eating
-/// every click with nothing over it. `IgnoresCycle` is added to whatever
-/// behaviour the window already carries, so ⌘` cannot land on a scrim and the
-/// fullscreen flags the builder set are left alone.
+/// every click with nothing over it. `IgnoresCycle` and `Stationary` are added
+/// to whatever behaviour the window already carries, so ⌘` cannot land on a
+/// scrim, Mission Control does not list one, and the fullscreen flags the
+/// builder set are left alone.
 pub fn scrim<R:Runtime>(window:&WebviewWindow<R>) {
 	let Some(ns_window) = handle(window) else {
 		return;
@@ -84,7 +85,10 @@ pub fn scrim<R:Runtime>(window:&WebviewWindow<R>) {
 
 		let behavior:u64 = msg_send![ns_window, collectionBehavior];
 
-		let _:() = msg_send![ns_window, setCollectionBehavior: behavior | IgnoresCycle];
+		// `Stationary` keeps the scrim out of Mission Control and `IgnoresCycle`
+		// out of ⌘`, so the one window of Round that covers a whole screen
+		// never appears in a list the user can pick from.
+		let _:() = msg_send![ns_window, setCollectionBehavior: behavior | Stationary | IgnoresCycle];
 	}
 }
 

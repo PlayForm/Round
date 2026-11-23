@@ -18,7 +18,10 @@
 //! panel is closed. Each carries its own monitor's work area in physical pixels,
 //! so a desk that mixes a Retina display with a 1x one, or puts a display left
 //! of the main one at a negative origin, needs no arithmetic: every window is
-//! told exactly where its own screen's work area is.
+//! told exactly where its own screen's work area is. The set is reconciled on
+//! every open rather than watched, so a display connected while the panel is
+//! open is covered from the next open - and a display that was unplugged never
+//! leaves a scrim behind on the screen it used to be.
 
 use tauri::{
 	AppHandle,
@@ -49,8 +52,14 @@ fn label(index:usize) -> String { format!("{Prefix}{index}") }
 ///
 /// The overlay broadcast asks this before treating a window as art: the scrim
 /// is hidden and shown by the panel, and a broadcast that "restored" it would
-/// leave a click-eating window over the desktop with no panel on it.
-pub fn owns(label:&str) -> bool { label.starts_with(Prefix) }
+/// leave a click-eating window over the desktop with no panel on it. The test
+/// is `backdrop` followed by digits only, so it cannot claim an art window
+/// whose label merely starts with the same letters.
+pub fn owns(label:&str) -> bool {
+	label
+		.strip_prefix(Prefix)
+		.is_some_and(|index| !index.is_empty() && index.bytes().all(|byte| byte.is_ascii_digit()))
+}
 
 /// Show one scrim over every monitor's work area, building the ones that do not
 /// exist yet.

@@ -45,7 +45,7 @@ use tauri_plugin_store::StoreExt;
 
 use crate::{Backdrop, Mode::Mode, Overlay, Screen::Screen, Settings::Settings};
 
-/// The window label, and the one label the overlay broadcast skips.
+/// The window label. The overlay broadcast skips this window and every scrim.
 pub const Label:&str = "menu";
 
 /// The panel's size in logical pixels, before the webview measures its content.
@@ -118,7 +118,10 @@ fn open<R:Runtime>(app:&AppHandle<R>, window:&WebviewWindow<R>, anchor:Rect) -> 
 		eprintln!("round: the backdrop could not be opened: {error}");
 	}
 
-	window.show()?;
+	// A panel that failed to appear must not leave a scrim behind: a scrim is a
+	// window eating clicks with nothing over it, which is the one state worse
+	// than a panel that will not close.
+	window.show().inspect_err(|_| Backdrop::close(app))?;
 
 	// The panel is above the scrim by construction, not by having been shown
 	// later: a level on macOS, a re-insert at the top of the topmost band on
@@ -160,22 +163,24 @@ fn place<R:Runtime>(app:&AppHandle<R>, window:&WebviewWindow<R>, anchor:Rect) {
 	});
 
 	// The screen the icon lives on, not the primary one: an icon on a second
-	// display must not drag the panel back to the first.
+	// display must not drag the panel back to the first. The edges are the
+	// screen's work area rather than its whole rect, because the panel is one
+	// level above the menu bar: clamped to the full rect, a panel with no room
+	// under the icon would be placed over the menu bar and hide the tray icon
+	// it was opened from, which is the one control that has to stay reachable
+	// while the panel is open.
 	let (left_edge, top_edge, right_edge, bottom_edge) =
 		app.monitor_from_point(x, y)
 			.ok()
 			.flatten()
 			.map_or((0.0, 0.0, f64::MAX, f64::MAX), |monitor| {
-				let position = monitor.position();
+				let area = monitor.work_area();
 
-				let size = monitor.size();
+				let left = f64::from(area.position.x);
 
-				(
-					f64::from(position.x),
-					f64::from(position.y),
-					f64::from(position.x) + f64::from(size.width),
-					f64::from(position.y) + f64::from(size.height),
-				)
+				let top = f64::from(area.position.y);
+
+				(left, top, left + f64::from(area.size.width), top + f64::from(area.size.height))
 			});
 
 	let left = (x + width / 2.0 - panel_width / 2.0).clamp(left_edge, (right_edge - panel_width).max(left_edge));
