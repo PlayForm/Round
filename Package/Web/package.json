@@ -1,7 +1,8 @@
 {
-	"name": "@application/round",
+	"name": "@application/round-web",
 	"version": "0.0.9",
-	"private": false,
+	"private": true,
+	"description": "The transparent corner overlay webview that Round renders on every monitor.",
 	"homepage": "https://github.com/PlayForm/Round#readme",
 	"bugs": {
 		"url": "https://github.com/PlayForm/Round/issues"
@@ -10,15 +11,15 @@
 		"type": "git",
 		"url": "git+https://github.com/PlayForm/Round.git"
 	},
-	"license": "SEE LICENSE IN LICENSE",
+	"license": "CC0-1.0",
 	"author": {
-		"name": "Source ✍🏻 Open 👐🏻",
+		"name": "Source ✍🏻 Open 👐🏻",
 		"email": "Source/Open@PlayForm.Cloud",
 		"url": "https://PlayForm.Cloud"
 	},
 	"type": "module",
 	"scripts": {
-		"Build": "vite build",
+		"Build": "vite build && node Script/Embed.mjs",
 		"dev": "vite",
 		"serve": "vite preview",
 		"start": "vite",
@@ -34,7 +35,6 @@
 		"@types/node": "26.6.6",
 		"autoprefixer": "10.7.0",
 		"cssnano": "9.9.0",
-		"cssnano-preset-advanced": "10.0.0",
 		"postcss": "8.5.33",
 		"postcss-combine-duplicated-selectors": "11.0.0",
 		"postcss-combine-media-query": "2.1.0",
@@ -44,9 +44,5 @@
 		"tailwindcss": "3.4.19",
 		"vite": "8.3.8",
 		"vite-plugin-solid": "2.11.17"
-	},
-	"publishConfig": {
-		"access": "public",
-		"provenance": true
 	}
 }

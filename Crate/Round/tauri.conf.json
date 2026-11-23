@@ -1,5 +1,14 @@
 {
-	"$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/crates/tauri-cli/schema.json",
+	"$schema": "https://schema.tauri.app/config/2",
+	"productName": "Round",
+	"version": "0.0.9",
+	"identifier": "app.roundedcorners.binary",
+	"build": {
+		"beforeBuildCommand": "pnpm run Build",
+		"beforeDevCommand": "pnpm run dev",
+		"devUrl": "http://localhost:1420",
+		"frontendDist": "Web"
+	},
 	"app": {
 		"macOSPrivateApi": true,
 		"security": {
@@ -18,19 +27,13 @@
 		"windows": [],
 		"withGlobalTauri": false
 	},
-	"build": {
-		"beforeBuildCommand": "npm run Build",
-		"beforeDevCommand": "npm run dev",
-		"devUrl": "http://localhost:1420",
-		"frontendDist": "../Target"
-	},
 	"bundle": {
 		"active": true,
 		"android": {
 			"minSdkVersion": 24
 		},
-		"category": "DeveloperTool",
-		"copyright": "Copyright (c) 2022-2023 Nikola Hristov. All rights reserved.",
+		"category": "Utility",
+		"copyright": "Copyright (c) 2022-2026 Nikola Hristov. All rights reserved.",
 		"externalBin": [],
 		"iOS": {},
 		"icon": [
@@ -54,7 +57,7 @@
 				"release": "1"
 			}
 		},
-		"longDescription": "Round.",
+		"longDescription": "Round draws rounded corners over every connected monitor: one transparent, click-through overlay per screen, controlled from the system tray.",
 		"macOS": {
 			"dmg": {
 				"appPosition": {
@@ -76,7 +79,7 @@
 			"signingIdentity": "-"
 		},
 		"resources": [],
-		"shortDescription": "Round.",
+		"shortDescription": "Rounded corners on every monitor.",
 		"targets": "all",
 		"windows": {
 			"allowDowngrades": false,
@@ -90,12 +93,9 @@
 				"type": "downloadBootstrapper"
 			},
 			"wix": {
-				"bannerPath": "src/Image/banner.png",
-				"dialogImagePath": "src/Image/dialogImage.png"
+				"bannerPath": "Source/Image/banner.png",
+				"dialogImagePath": "Source/Image/dialogImage.png"
 			}
 		}
-	},
-	"identifier": "app.roundedcorners.binary",
-	"productName": "Round",
-	"version": "0.0.9"
+	}
 }

@@ -1,0 +1,32 @@
+{
+	"name": "@application/round",
+	"version": "0.0.9",
+	"private": true,
+	"description": "Repository root: the Rust crate lives in Crate/Round, the webview frontend in Package/Web.",
+	"homepage": "https://github.com/PlayForm/Round#readme",
+	"bugs": {
+		"url": "https://github.com/PlayForm/Round/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/PlayForm/Round.git"
+	},
+	"license": "CC0-1.0",
+	"author": {
+		"name": "Source ✍🏻 Open 👐🏻",
+		"email": "Source/Open@PlayForm.Cloud",
+		"url": "https://PlayForm.Cloud"
+	},
+	"type": "module",
+	"packageManager": "pnpm@12.16.1",
+	"engines": {
+		"node": "^22.22.3 || ^24.15.0 || >=26.0.0"
+	},
+	"scripts": {
+		"Build": "pnpm --filter @application/round-web run Build",
+		"dev": "pnpm --filter @application/round-web run dev",
+		"serve": "pnpm --filter @application/round-web run serve",
+		"start": "pnpm --filter @application/round-web run dev",
+		"tauri": "pnpm --filter @application/round-web run tauri"
+	}
+}

@@ -1,0 +1,10 @@
+[toolchain]
+# Floating `nightly` - deliberately the newest nightly, never a dated pin.
+# Declaring the channel makes every invocation in this directory agree on it,
+# and the components list keeps `cargo fmt` / `cargo clippy` present instead of
+# failing with "no such command". Freshness is enforced at verification time
+# (`rustup toolchain install nightly --profile minimal --force`), never by
+# freezing the compiler here.
+channel = "nightly"
+components = ["rustfmt", "clippy"]
+profile = "minimal"

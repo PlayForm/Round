@@ -15,6 +15,7 @@ export default (await import("vite")).defineConfig({
 	envPrefix: ["VITE_", "TAURI_"],
 	build: {
 		outDir: "Target",
+		emptyOutDir: true,
 		target: "chrome105",
 		minify: process.env["TAURI_DEBUG"] ? false : "esbuild",
 		sourcemap: !!process.env["TAURI_DEBUG"],

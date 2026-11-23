@@ -1,0 +1,12 @@
+# Round is a two-package repository: the Rust crate (Crate/Round, published to
+# crates.io as `pround`) and the webview frontend (Package/Web). The workspace
+# file exists so `pnpm install` here resolves against this directory instead of
+# walking up into a parent workspace on the developer's machine - CI and a local
+# checkout must install the same graph.
+packages:
+    - "Package/Web"
+
+# esbuild ships a platform binary through a postinstall script; pnpm refuses to
+# run it unless it is allowed here, and an ignored build fails `pnpm install`.
+allowBuilds:
+    esbuild: true

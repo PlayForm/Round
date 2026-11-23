@@ -1,23 +1,53 @@
 [package]
-name = "Round"
-version = "0.0.9"
-edition = "2021"
+name = "pround"
+description = "A transparent, click-through overlay that draws rounded corners on every connected monitor."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "../../README.md"
+keywords = ["tauri", "rounded", "overlay", "monitor", "tray"]
+categories = ["gui"]
+
+# `Web/` is vite's output, mirrored here by `Package/Web/Script/Embed.mjs` and
+# gitignored. It MUST ship: `tauri::generate_context!` embeds the frontend into
+# the binary at compile time, so `cargo install pround` has to work on a machine
+# with no Node toolchain. An `include` list overrides .gitignore, which is the
+# only reason those files reach crates.io at all.
+include = [
+	"/Source/**",
+	"/Web/**",
+	"/icons/**",
+	"/capabilities/**",
+	"/gen/**",
+	"/tauri.conf.json",
+	"/build.rs",
+]
+
+[lib]
+name = "pround"
+path = "Source/Library.rs"
+
+[[bin]]
+name = "round"
+path = "Source/Main.rs"
 
 [build-dependencies]
-tauri-build = { version = "2.6.2", features = [] }
+tauri-build = { version = "2.7", features = [] }
 
 [dependencies]
-regex = "1.12.3"
-serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.150"
-tauri = { version = "2.11.2", features = ["tray-icon", "macos-private-api"] }
-tauri-plugin-store = "2.4.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tauri = { version = "2.12", features = ["tray-icon", "macos-private-api"] }
+tauri-plugin-store = "2.5"
 
 [target.'cfg(target_os = "macos")'.dependencies]
-objc2 = "0.6.4"
+objc2 = "0.6"
 
 [target.'cfg(target_os = "windows")'.dependencies]
-windows-sys = { version = "0.61.2", features = [
+windows-sys = { version = "0.61", features = [
 	"Win32_Foundation",
 	"Win32_Graphics_Dwm",
 	"Win32_UI_WindowsAndMessaging",
