@@ -5,13 +5,28 @@
 //! no native menu behind it. Everything the app can be told to do lives here,
 //! including what a list of menu items could never express: a radius per
 //! monitor, a value you can read while dragging it. It is a window, but it is
-//! used as a menu: it opens on click, closes when it loses focus, hugs its
-//! content, never appears in the taskbar and never sits in the dock.
-
-use std::{
-	sync::Mutex,
-	time::{Duration, Instant},
-};
+//! used as a menu: it opens on click, hugs its content, never appears in the
+//! taskbar and never sits in the dock.
+//!
+//! ## How it closes
+//!
+//! Three layers decide it, and only one of them can dismiss the panel:
+//!
+//! - the corner **art** is click-through, so a click on it is a click on the
+//!   desktop;
+//! - the **scrim** ([`Backdrop`](crate::Backdrop)) exists only while the panel
+//!   is open and takes the mouse - a `pointerdown` on it is the dismissal;
+//! - the **panel** is a window one level above the scrim, so a click on the
+//!   panel is delivered to the panel and never reaches the scrim underneath.
+//!
+//! Nothing here reads focus, activation, a timer or the pointer's position. The
+//! panel used to dismiss itself on `WindowEvent::Focused(false)` behind four
+//! guards - a settle window after `show`, an `NSApplication.isActive` probe, a
+//! scan for another focused window of the app, and a pointer-containment test -
+//! and every one of them was an inference about an event that never states its
+//! cause. Each produced a wrong answer: the panel closed under a control being
+//! used, then closed on a click inside the app. The scrim replaces all four
+//! with an event that says what happened.
 
 use serde::Serialize;
 use tauri::{
@@ -25,34 +40,13 @@ use tauri::{
 	WebviewUrl,
 	WebviewWindow,
 	WebviewWindowBuilder,
-	WindowEvent,
 };
 use tauri_plugin_store::StoreExt;
 
-use crate::{Mode::Mode, Overlay, Screen::Screen, Settings::Settings};
+use crate::{Backdrop, Mode::Mode, Overlay, Screen::Screen, Settings::Settings};
 
 /// The window label, and the one label the overlay broadcast skips.
 pub const Label:&str = "menu";
-
-/// When the panel last hid because it lost focus.
-///
-/// Clicking the tray icon while the panel is open blurs it first, so a naive
-/// toggle would hide it and immediately show it again. A click that arrives
-/// inside this window after a blur is the dismissal, not a new opening.
-static Blurred:Mutex<Option<Instant>> = Mutex::new(None);
-
-/// When the panel was last shown.
-///
-/// Ordering a window front keys it and then drops it again in the same tick:
-/// macOS activates the app only after the window is already key, and refuses
-/// that activation when the show did not come from a user gesture. A blur that
-/// arrives this soon after `show` is the show settling, not a dismissal.
-static Shown:Mutex<Option<Instant>> = Mutex::new(None);
-
-const Blur:Duration = Duration::from_millis(250);
-
-/// How long after `show` a focus loss still counts as the show settling.
-const Settle:Duration = Duration::from_millis(500);
 
 /// The panel's size in logical pixels, before the webview measures its content.
 const Width:f64 = 320.0;
@@ -84,185 +78,59 @@ pub struct Monitor {
 /// Show the panel under `anchor`, or hide it when it is already open.
 ///
 /// `anchor` is the tray icon's rect: the panel opens under the icon, on
-/// whichever screen that icon lives on.
+/// whichever screen that icon lives on. The icon is outside the scrim - the
+/// scrims stop at each monitor's work area - so this click is delivered to the
+/// menu bar rather than swallowed, which is what keeps the tray usable while
+/// the panel is open.
 pub fn toggle<R:Runtime>(app:&AppHandle<R>, anchor:Rect) -> tauri::Result<()> {
 	let window = match app.get_webview_window(Label) {
 		Some(window) => window,
 		None => build(app)?,
 	};
 
-	if window.is_visible().unwrap_or(false) {
-		return window.hide();
+	match window.is_visible().unwrap_or(false) {
+		true => hide(app, &window),
+		false => open(app, &window, anchor),
 	}
+}
 
-	// The click that dismissed it also blurred it; treat that as "closed".
-	if blurred_now() {
-		return Ok(());
-	}
+/// Close the panel and the scrims together.
+///
+/// Idempotent: hiding a window that is already hidden is a no-op, so a second
+/// `dismiss`, or one that arrives after the tray already closed the panel, is
+/// harmless. The scrims are closed first: a scrim without a panel over it is a
+/// window that eats clicks for no reason, so it must never be the one left
+/// behind.
+fn hide<R:Runtime>(app:&AppHandle<R>, window:&WebviewWindow<R>) -> tauri::Result<()> {
+	Backdrop::close(app);
 
-	place(app, &window, anchor);
+	window.hide()
+}
 
-	// Recorded before `show`, because the focus change can arrive inside it.
-	if let Ok(mut at) = Shown.lock() {
-		*at = Some(Instant::now());
+/// Open the scrims, then the panel above them.
+fn open<R:Runtime>(app:&AppHandle<R>, window:&WebviewWindow<R>, anchor:Rect) -> tauri::Result<()> {
+	place(app, window, anchor);
+
+	// The scrims go up first, so the panel is the window ordered on top of
+	// them. A scrim that cannot be built is not a reason to refuse the panel -
+	// the tray still closes it - so the failure is logged and the panel shows.
+	if let Err(error) = Backdrop::open(app) {
+		eprintln!("round: the backdrop could not be opened: {error}");
 	}
 
 	window.show()?;
 
+	// The panel is above the scrim by construction, not by having been shown
+	// later: a level on macOS, a re-insert at the top of the topmost band on
+	// Windows, a raise on X11. See [`Overlay`](crate::Overlay).
+	Overlay::panel(window);
+
 	// `show` already orders the window front and makes it key; this is what
-	// asks the app to activate. If macOS refuses, the panel is still visible
-	// and the settle window below keeps the refusal from hiding it.
+	// asks the app to activate. If macOS refuses - it refuses an activation
+	// that did not come from a user gesture - the panel is still visible and
+	// nothing dismisses it for that.
 	window.set_focus()
 }
-
-fn blurred_now() -> bool { Blurred.lock().ok().and_then(|at| *at).is_some_and(|at| at.elapsed() < Blur) }
-
-fn settling() -> bool { Shown.lock().ok().and_then(|at| *at).is_some_and(|at| at.elapsed() < Settle) }
-
-/// Where the pointer sat when the panel resigned the keyboard.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-enum Pointer {
-	/// Within a window of this app that a click can reach - the click never
-	/// left Round.
-	Inside,
-	/// Outside every window a click can reach.
-	Outside,
-	/// A window's geometry could not be read, so the pointer cannot be placed.
-	Unknown,
-}
-
-impl Pointer {
-	/// Whether the pointer is known to be outside every window of the app.
-	///
-	/// Only that is the user leaving. A pointer inside the app is the user
-	/// working it - the overlays never take the keyboard, so focus alone cannot
-	/// tell the two apart - and a pointer that cannot be placed leaves the
-	/// answer to the guards that follow, rather than dismissing on missing
-	/// data.
-	fn leaving(self) -> bool { matches!(self, Self::Outside) }
-}
-
-/// Where the pointer is relative to the windows of this app.
-///
-/// A popover dismisses on the click that leaves it, and the only click that has
-/// not left is one landing inside the app itself. Focus cannot answer that: the
-/// overlays are non-activating, so a click on one never makes it key and the
-/// app stays active. The pointer can, and it does so without a timing guess.
-fn locate<R:Runtime>(app:&AppHandle<R>) -> Pointer {
-	let Some(pointer) = cursor(app) else {
-		return Pointer::Unknown;
-	};
-
-	let (inside, unreadable) = app
-		.webview_windows()
-		.into_values()
-		// A click-through window cannot receive a click: its rect covers a whole
-		// monitor, so counting it would read every click on the desktop as a
-		// click on Round.
-		.filter(Overlay::clickable)
-		.fold((false, false), |(inside, unreadable), window| match outer(&window) {
-			Some(rect) => (inside || within(rect, pointer), unreadable),
-			None => (inside, true),
-		});
-
-	match (inside, unreadable) {
-		(true, _) => Pointer::Inside,
-		(false, true) => Pointer::Unknown,
-		(false, false) => Pointer::Outside,
-	}
-}
-
-/// The pointer, in the pixel space a window reports its own frame in.
-///
-/// macOS reports the pointer through the *primary* display's backing scale but
-/// a window reports its frame through *its own* screen's, so on a desk that
-/// mixes a Retina display with a 1x one the two spaces differ by a factor of
-/// two. Both are brought back to AppKit points - the pointer here, the frame in
-/// [`outer`] - which is the one space every display shares. Windows and X11
-/// report raw physical pixels on both sides, where the same division would
-/// invent a difference that is not there.
-#[cfg(target_os = "macos")]
-fn cursor<R:Runtime>(app:&AppHandle<R>) -> Option<PhysicalPosition<f64>> {
-	let scale = app.primary_monitor().ok().flatten()?.scale_factor();
-
-	app.cursor_position()
-		.ok()
-		.map(|pointer| PhysicalPosition::new(pointer.x / scale, pointer.y / scale))
-}
-
-#[cfg(not(target_os = "macos"))]
-fn cursor<R:Runtime>(app:&AppHandle<R>) -> Option<PhysicalPosition<f64>> { app.cursor_position().ok() }
-
-/// The window's outer rect, in the space [`cursor`] reports.
-#[cfg(target_os = "macos")]
-fn outer<R:Runtime>(window:&WebviewWindow<R>) -> Option<(f64, f64, f64, f64)> {
-	let scale = window.scale_factor().ok()?;
-
-	let (left, top, right, bottom) = rect(window)?;
-
-	Some((left / scale, top / scale, right / scale, bottom / scale))
-}
-
-#[cfg(not(target_os = "macos"))]
-fn outer<R:Runtime>(window:&WebviewWindow<R>) -> Option<(f64, f64, f64, f64)> { rect(window) }
-
-/// The window's outer rect as `(left, top, right, bottom)`, in the pixels the
-/// platform reports for that window.
-fn rect<R:Runtime>(window:&WebviewWindow<R>) -> Option<(f64, f64, f64, f64)> {
-	let position = window.outer_position().ok()?;
-
-	let size = window.outer_size().ok()?;
-
-	let left = f64::from(position.x);
-
-	let top = f64::from(position.y);
-
-	Some((left, top, left + f64::from(size.width), top + f64::from(size.height)))
-}
-
-/// Whether the pointer lies within `(left, top, right, bottom)`.
-///
-/// A window on a display left of or above the main one has a negative origin,
-/// so this is a plain range check on both axes and never assumes zero. The far
-/// edges are exclusive, as a half-open rect is.
-fn within((left, top, right, bottom):(f64, f64, f64, f64), pointer:PhysicalPosition<f64>) -> bool {
-	pointer.x >= left && pointer.x < right && pointer.y >= top && pointer.y < bottom
-}
-
-/// Whether another window of this app holds the keyboard.
-///
-/// Focus that moved between our own windows is not the user leaving: the
-/// overlay windows are ours, and a command that brings one of them forward must
-/// not read as a dismissal of the panel the command came from. A blur that only
-/// moved the keyboard between our windows is therefore not a dismissal, whatever
-/// [`locate`] makes of the pointer.
-fn elsewhere<R:Runtime>(app:&AppHandle<R>) -> bool {
-	app.webview_windows()
-		.into_values()
-		.any(|window| window.label() != Label && window.is_focused().unwrap_or(false))
-}
-
-/// Whether the app still holds focus when the window resigns the keyboard.
-///
-/// On macOS, ordering a window front keys it before the app is active, and the
-/// system can deactivate that activation attempt a moment later - the window
-/// then resigns the keyboard with the app already inactive. A real click on
-/// another app does the opposite: the window resigns the keyboard while this
-/// app is still active, and the app deactivates after. So only the latter is a
-/// dismissal.
-#[cfg(target_os = "macos")]
-fn dismissed() -> bool {
-	use objc2::{class, msg_send, runtime::AnyObject};
-
-	unsafe {
-		let app:*mut AnyObject = msg_send![class!(NSApplication), sharedApplication];
-
-		msg_send![app, isActive]
-	}
-}
-
-#[cfg(not(target_os = "macos"))]
-fn dismissed() -> bool { true }
 
 fn build<R:Runtime>(app:&AppHandle<R>) -> tauri::Result<WebviewWindow<R>> {
 	let window = WebviewWindowBuilder::new(app, Label, WebviewUrl::App("menu.html".into()))
@@ -277,36 +145,7 @@ fn build<R:Runtime>(app:&AppHandle<R>) -> tauri::Result<WebviewWindow<R>> {
 		.visible(false)
 		.build()?;
 
-	// A popover dismisses when it loses focus, exactly like the menu it replaces.
-	let handle = window.clone();
-
-	let owner = app.clone();
-
-	window.on_window_event(move |event| {
-		if let WindowEvent::Focused(false) = event {
-			// Hiding a window that is already hidden emits another blur, a
-			// window that was just ordered front is still settling, a click
-			// that landed inside a window of this app is the user working it
-			// rather than leaving it, focus that only moved to another window
-			// of this app is not the user leaving either, and an activation the
-			// system took back is not the user leaving either. None of those is
-			// a dismissal, and recording one would swallow the next tray click.
-			if !handle.is_visible().unwrap_or(false)
-				|| settling()
-				|| !locate(&owner).leaving()
-				|| elsewhere(&owner)
-				|| !dismissed()
-			{
-				return;
-			}
-
-			if let Ok(mut at) = Blurred.lock() {
-				*at = Some(Instant::now());
-			}
-
-			let _ = handle.hide();
-		}
-	});
+	Overlay::panel(&window);
 
 	Ok(window)
 }
@@ -368,6 +207,26 @@ fn physical(anchor:&Rect, scale:f64) -> (f64, f64, f64, f64) {
 }
 
 // --- Commands ----------------------------------------------------------------
+
+/// Close the panel and the scrims.
+///
+/// This is the scrim's only command, and the only path that dismisses the panel
+/// on its own: a pointer-down delivered to a window of this app that is not the
+/// panel. Nothing about it reads focus, activation, timing or geometry.
+#[tauri::command]
+pub fn dismiss(app:AppHandle) {
+	match app.get_webview_window(Label) {
+		Some(window) => {
+			if let Err(error) = hide(&app, &window) {
+				eprintln!("round: the panel could not be closed: {error}");
+			}
+		}
+		// A scrim outliving its panel is the one state worse than an open
+		// panel, so a dismissal still closes the scrims when there is no panel
+		// window left to hide.
+		None => Backdrop::close(&app),
+	}
+}
 
 #[tauri::command]
 pub fn state(app:AppHandle) -> Result<State, String> { read(&app) }

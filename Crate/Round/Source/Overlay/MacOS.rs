@@ -1,10 +1,23 @@
-//! macOS: a status-level, click-through, all-spaces window.
+//! macOS: an explicit AppKit level per layer.
+//!
+//! Ordering by "who was shown last" is a fact about a moment; a level is a fact
+//! about the window. Re-showing the scrim - which happens on every open - can
+//! never lift it over the panel, and nothing about the ladder depends on the
+//! order three calls happen to run in.
 
 use objc2::{class, msg_send, runtime::AnyObject};
 use tauri::{Runtime, WebviewWindow};
 
 /// `NSStatusWindowLevel` - above the menu bar and every normal window.
-const Level:isize = 25;
+const Status:isize = 25;
+
+/// The scrim: one level above the art, so it is the topmost window of Round a
+/// click can reach.
+const Scrim:isize = Status + 1;
+
+/// The panel: one level above the scrim, so a click on it never reaches the
+/// scrim underneath.
+const Panel:isize = Scrim + 1;
 
 /// `NSWindowCollectionBehaviorCanJoinAllSpaces`.
 const CanJoinAllSpaces:u64 = 1 << 0;
@@ -24,83 +37,95 @@ const Regular:isize = 0;
 /// `NSApplicationActivationPolicyAccessory` - no dock icon, no menu bar.
 const Accessory:isize = 1;
 
-/// Whether a click can reach the window.
-///
-/// [`raise`] makes the overlay click-through, so a click that lands on its rect
-/// is delivered to whatever is under it - the desktop, another application -
-/// and is not a click on Round. A window whose AppKit handle cannot be read is
-/// reported as clickable, so a caller asking whether the user left keeps the
-/// panel open rather than dismissing on missing data.
-pub fn clickable<R:Runtime>(window:&WebviewWindow<R>) -> bool {
-	let Ok(pointer) = window.ns_window() else {
-		return true;
-	};
+/// The window's AppKit handle, or `None` when the window does not exist yet.
+fn handle<R:Runtime>(window:&WebviewWindow<R>) -> Option<*mut AnyObject> {
+	let pointer = window.ns_window().ok()? as *mut AnyObject;
 
-	let ns_window = pointer as *mut AnyObject;
-
-	match ns_window.is_null() {
-		true => true,
-		false => {
-			let ignores:bool = unsafe { msg_send![ns_window, ignoresMouseEvents] };
-
-			!ignores
-		}
-	}
+	(!pointer.is_null()).then_some(pointer)
 }
 
-/// Lift one overlay window above the menu bar, on every Space, in fullscreen
-/// apps too, and make it ignore the mouse entirely.
-pub fn raise<R:Runtime>(window:&WebviewWindow<R>) {
-	let Ok(pointer) = window.ns_window() else {
+/// Lift one art window above the menu bar, on every Space, in fullscreen apps
+/// too, and make it ignore the mouse entirely.
+pub fn art<R:Runtime>(window:&WebviewWindow<R>) {
+	let Some(ns_window) = handle(window) else {
 		return;
 	};
 
-	let ns_window = pointer as *mut AnyObject;
-
 	let behavior = CanJoinAllSpaces | Stationary | IgnoresCycle | FullScreenAuxiliary;
 
-	let _ = (!ns_window.is_null()).then(|| unsafe {
-		let _:() = msg_send![ns_window, setLevel: Level];
+	unsafe {
+		let _:() = msg_send![ns_window, setLevel: Status];
 
 		let _:() = msg_send![ns_window, setCollectionBehavior: behavior];
 
 		let _:() = msg_send![ns_window, setIgnoresMouseEvents: true];
-	});
+	}
 }
 
-/// Put one overlay window on screen without giving it the keyboard.
+/// Put one scrim above the art, below the panel, and in the mouse's way.
+///
+/// The scrim deliberately does **not** join every Space the way the art does.
+/// The panel does not join them either, so a scrim on all Spaces would outlive
+/// the panel the moment the user switched Space: an invisible window eating
+/// every click with nothing over it. `IgnoresCycle` is added to whatever
+/// behaviour the window already carries, so ⌘` cannot land on a scrim and the
+/// fullscreen flags the builder set are left alone.
+pub fn scrim<R:Runtime>(window:&WebviewWindow<R>) {
+	let Some(ns_window) = handle(window) else {
+		return;
+	};
+
+	unsafe {
+		let _:() = msg_send![ns_window, setLevel: Scrim];
+
+		// The one thing that makes a scrim a scrim: the click is delivered
+		// here instead of falling through to the desktop.
+		let _:() = msg_send![ns_window, setIgnoresMouseEvents: false];
+
+		let behavior:u64 = msg_send![ns_window, collectionBehavior];
+
+		let _:() = msg_send![ns_window, setCollectionBehavior: behavior | IgnoresCycle];
+	}
+}
+
+/// Put the panel above the scrim.
+pub fn panel<R:Runtime>(window:&WebviewWindow<R>) {
+	let Some(ns_window) = handle(window) else {
+		return;
+	};
+
+	unsafe {
+		let _:() = msg_send![ns_window, setLevel: Panel];
+	}
+}
+
+/// Put a window on screen without giving it the keyboard.
 ///
 /// `window.show()` is not just an order-front: Tauri forwards it to tao's
 /// `set_visible(true)`, which calls `makeKeyAndOrderFront:` unconditionally.
-/// That makes the overlay the key window, so the Menu panel resigns key, macOS
-/// delivers `Focused(false)` to it, and the panel - whose app is still
-/// frontmost, so the blur looks exactly like a dismissal - closes itself. An
-/// overlay never receives a click, so it has no use for the keyboard:
-/// `orderFrontRegardless` is the same ordering without the key change, which is
-/// also why it still works while the app is inactive, where
-/// `makeKeyAndOrderFront:` does nothing at all.
-pub fn present<R:Runtime>(window:&WebviewWindow<R>) -> tauri::Result<()> {
-	let pointer = window.ns_window()?;
-
-	let ns_window = pointer as *mut AnyObject;
-
-	match ns_window.is_null() {
+/// That makes the window key, so whatever held the keyboard resigns it, and
+/// macOS delivers `Focused(false)` to it. Neither the art nor the scrim ever
+/// wants the keyboard: `orderFrontRegardless` is the same ordering without the
+/// key change, which is also why it still works while the app is inactive,
+/// where `makeKeyAndOrderFront:` does nothing at all.
+pub fn front<R:Runtime>(window:&WebviewWindow<R>) -> tauri::Result<()> {
+	let Some(ns_window) = handle(window) else {
 		// No AppKit window to order: fall back to the portable call, which is
 		// only reached on a window that does not exist yet.
-		true => window.show(),
-		false => unsafe {
-			let _:() = msg_send![ns_window, orderFrontRegardless];
+		return window.show();
+	};
 
-			// A window that did not come up is an overlay with no corners at
-			// all, which is worse than a key change: verify the ordering took
-			// and fall back to the portable call when it did not. A failed
-			// query is assumed to have worked, so the fallback never re-shows a
-			// window that is already up.
-			match window.is_visible().unwrap_or(true) {
-				true => Ok(()),
-				false => window.show(),
-			}
-		},
+	unsafe {
+		let _:() = msg_send![ns_window, orderFrontRegardless];
+	}
+
+	// A window that did not come up is a layer with no surface at all, which is
+	// worse than a key change: verify the ordering took and fall back to the
+	// portable call when it did not. A failed query is assumed to have worked,
+	// so the fallback never re-shows a window that is already up.
+	match window.is_visible().unwrap_or(true) {
+		true => Ok(()),
+		false => window.show(),
 	}
 }
 

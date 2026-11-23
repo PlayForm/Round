@@ -24,11 +24,13 @@ export default (await import("vite")).defineConfig({
 		minify: process.env["TAURI_DEBUG"] ? false : "esbuild",
 		sourcemap: !!process.env["TAURI_DEBUG"],
 		rollupOptions: {
-			// Two documents: `index.html` is the overlay every monitor renders,
-			// `menu.html` is the Menu window the tray icon opens.
+			// Three documents: `index.html` is the overlay every monitor
+			// renders, `menu.html` is the Menu window the tray icon opens, and
+			// `backdrop.html` is the scrim that window is dismissed by.
 			input: {
 				index: fileURLToPath(new URL("index.html", import.meta.url)),
 				menu: fileURLToPath(new URL("menu.html", import.meta.url)),
+				backdrop: fileURLToPath(new URL("backdrop.html", import.meta.url)),
 			},
 		},
 	},

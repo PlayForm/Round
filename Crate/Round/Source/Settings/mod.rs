@@ -144,29 +144,30 @@ impl Settings {
 	/// Show or hide one overlay window to match the persisted visibility.
 	///
 	/// A window already in the wanted state is left untouched - not as an
-	/// optimisation, but because showing one is not a no-op. On macOS
-	/// `show()` orders the window front by making it key, so the Menu panel
-	/// resigns key, the blur arrives with the app still frontmost, and the
-	/// panel reads it as a dismissal and closes under the control that was
-	/// just used. Every command ends in a broadcast, so re-showing an overlay
-	/// that is already up would close the panel on every slider step.
+	/// optimisation, but because showing one is not a no-op: it re-orders the
+	/// window, and on macOS `show()` would make it key and take the keyboard
+	/// from the panel. Every command ends in a broadcast, so re-showing an
+	/// overlay that is already up would re-order the desktop on every slider
+	/// step.
 	pub fn visible<R:Runtime>(&self, window:&WebviewWindow<R>) -> tauri::Result<()> {
 		match (!self.hidden, window.is_visible().unwrap_or(false)) {
 			// Wanted up and up, wanted down and down: nothing to do.
 			(true, true) | (false, false) => Ok(()),
-			(true, false) => crate::Overlay::present(window),
+			(true, false) => crate::Overlay::front(window),
 			(false, true) => window.hide(),
 		}
 	}
 
 	/// Push the current state to every overlay window.
 	///
-	/// The menu window is skipped: it is an ordinary window, and hiding or
-	/// resizing it with the overlays would take away the panel the user is using.
+	/// Only the art is an overlay. The Menu panel renders the state the command
+	/// returns and needs no event, and the scrim has no state at all: applying
+	/// this visibility to it would put a click-eating window over the desktop
+	/// with the panel closed, once per slider step.
 	pub fn broadcast<R:Runtime>(&self, app:&AppHandle<R>) {
 		app.webview_windows()
 			.into_values()
-			.filter(|window| window.label() != crate::Menu::Label)
+			.filter(|window| window.label() != crate::Menu::Label && !crate::Backdrop::owns(window.label()))
 			.for_each(|window| {
 				let label = window.label().to_owned();
 

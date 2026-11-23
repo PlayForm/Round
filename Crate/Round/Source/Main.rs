@@ -16,6 +16,7 @@ fn main() {
 			Menu::set_hidden,
 			Menu::set_dock,
 			Menu::reset,
+			Menu::dismiss,
 			Menu::quit,
 		])
 		.setup(|app| {
@@ -58,7 +59,7 @@ fn main() {
 
 				let window = builder.build()?;
 
-				Overlay::raise(&window);
+				Overlay::art(&window);
 
 				settings.visible(&window)
 			})?;
