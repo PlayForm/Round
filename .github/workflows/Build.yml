@@ -69,7 +69,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: pnpm/action-setup@9bbca1e9dc2902adb87e8780fe5c98796985a62d # v6.1.1
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
 
       # No lockfile is tracked in this repository - lockfiles are local-only by
       # policy, the same rule as Cargo.lock. Two consequences: setup-node's pnpm
@@ -143,7 +143,7 @@ jobs:
           key: cargo-build-${{ runner.os }}-${{ matrix.target }}-${{ hashFiles('Cargo.toml', 'Crate/**/Cargo.toml', 'rust-toolchain.toml') }}
           restore-keys: cargo-build-${{ runner.os }}-${{ matrix.target }}-
 
-      - uses: pnpm/action-setup@9bbca1e9dc2902adb87e8780fe5c98796985a62d # v6.1.1
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
 
       # No lockfile is tracked in this repository - lockfiles are local-only by
       # policy, the same rule as Cargo.lock. Two consequences: setup-node's pnpm
