@@ -9,6 +9,12 @@ the npm packages and `pround`.
 
 ## Unreleased
 
+_(nothing yet)_
+
+---
+
+## 0.0.11
+
 ### Repository
 
 - One source of truth for the version: `Cargo.toml` →
