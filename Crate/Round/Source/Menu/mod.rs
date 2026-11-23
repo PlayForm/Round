@@ -106,11 +106,7 @@ pub fn toggle<R:Runtime>(app:&AppHandle<R>, anchor:Option<Rect>) -> tauri::Resul
 		*at = Some(Instant::now());
 	}
 
-	eprintln!("[menu] show");
-
 	window.show()?;
-
-	eprintln!("[menu] shown {:?}", window.is_visible());
 
 	// `show` already orders the window front and makes it key; this is what
 	// asks the app to activate. If macOS refuses, the panel is still visible
@@ -121,6 +117,28 @@ pub fn toggle<R:Runtime>(app:&AppHandle<R>, anchor:Option<Rect>) -> tauri::Resul
 fn blurred_now() -> bool { Blurred.lock().ok().and_then(|at| *at).is_some_and(|at| at.elapsed() < Blur) }
 
 fn settling() -> bool { Shown.lock().ok().and_then(|at| *at).is_some_and(|at| at.elapsed() < Settle) }
+
+/// Whether the app still holds focus when the window resigns the keyboard.
+///
+/// On macOS, ordering a window front keys it before the app is active, and the
+/// system can deactivate that activation attempt a moment later - the window
+/// then resigns the keyboard with the app already inactive. A real click on
+/// another app does the opposite: the window resigns the keyboard while this
+/// app is still active, and the app deactivates after. So only the latter is a
+/// dismissal.
+#[cfg(target_os = "macos")]
+fn dismissed() -> bool {
+	use objc2::{class, msg_send, runtime::AnyObject};
+
+	unsafe {
+		let app:*mut AnyObject = msg_send![class!(NSApplication), sharedApplication];
+
+		msg_send![app, isActive]
+	}
+}
+
+#[cfg(not(target_os = "macos"))]
+fn dismissed() -> bool { true }
 
 fn build<R:Runtime>(app:&AppHandle<R>) -> tauri::Result<WebviewWindow<R>> {
 	let window = WebviewWindowBuilder::new(app, Label, WebviewUrl::App("menu.html".into()))
@@ -135,24 +153,23 @@ fn build<R:Runtime>(app:&AppHandle<R>) -> tauri::Result<WebviewWindow<R>> {
 		.visible(false)
 		.build()?;
 
-	eprintln!("[menu] created visible={:?} position={:?}", window.is_visible(), window.outer_position());
+	eprintln!(
+		"[menu] created visible={:?} position={:?}",
+		window.is_visible(),
+		window.outer_position()
+	);
 
 	// A popover dismisses when it loses focus, exactly like the menu it replaces.
 	let handle = window.clone();
 
 	window.on_window_event(move |event| {
 		if let WindowEvent::Focused(false) = event {
-			eprintln!(
-				"[menu] blur visible={:?} since_show={:?}",
-				handle.is_visible(),
-				Shown.lock().ok().and_then(|at| *at).map(|at| at.elapsed())
-			);
-
-			// Hiding a window that is already hidden emits another blur, and a
-			// window that was just ordered front is still settling. Neither is
-			// the user dismissing the panel, and recording one would swallow
-			// the next tray click.
-			if !handle.is_visible().unwrap_or(false) || settling() {
+			// Hiding a window that is already hidden emits another blur, a
+			// window that was just ordered front is still settling, and an
+			// activation the system took back is not the user leaving. None of
+			// those is a dismissal, and recording one would swallow the next
+			// tray click.
+			if !handle.is_visible().unwrap_or(false) || settling() || !dismissed() {
 				return;
 			}
 
@@ -178,18 +195,17 @@ fn place<R:Runtime>(app:&AppHandle<R>, window:&WebviewWindow<R>, anchor:Option<R
 
 	let (x, y, width, height) = physical(&anchor, scale);
 
-	let (panel_width, panel_height) = window
-		.outer_size()
-		.map_or((Width * scale, Height * scale), |size| {
-			(f64::from(size.width), f64::from(size.height))
-		});
+	let (panel_width, panel_height) = window.outer_size().map_or((Width * scale, Height * scale), |size| {
+		(f64::from(size.width), f64::from(size.height))
+	});
 
 	// The screen the icon lives on, not the primary one: an icon on a second
 	// display must not drag the panel back to the first.
 	let (left_edge, top_edge, right_edge, bottom_edge) =
-		app.monitor_from_point(x, y).ok().flatten().map_or(
-			(0.0, 0.0, f64::MAX, f64::MAX),
-			|monitor| {
+		app.monitor_from_point(x, y)
+			.ok()
+			.flatten()
+			.map_or((0.0, 0.0, f64::MAX, f64::MAX), |monitor| {
 				let position = monitor.position();
 
 				let size = monitor.size();
@@ -200,21 +216,15 @@ fn place<R:Runtime>(app:&AppHandle<R>, window:&WebviewWindow<R>, anchor:Option<R
 					f64::from(position.x) + f64::from(size.width),
 					f64::from(position.y) + f64::from(size.height),
 				)
-			},
-		);
+			});
 
-	let left = (x + width / 2.0 - panel_width / 2.0)
-		.clamp(left_edge, (right_edge - panel_width).max(left_edge));
+	let left = (x + width / 2.0 - panel_width / 2.0).clamp(left_edge, (right_edge - panel_width).max(left_edge));
 
 	// Under the icon when there is room, above it otherwise - a tray at the
 	// bottom of the screen (Windows) would push the panel off it.
 	let below = y + height + Gap;
 
-	let top = if below + panel_height <= bottom_edge {
-		below
-	} else {
-		(y - panel_height - Gap).max(top_edge)
-	};
+	let top = if below + panel_height <= bottom_edge { below } else { (y - panel_height - Gap).max(top_edge) };
 
 	// Placement is a nicety: a panel in the wrong place is still a panel, so a
 	// failure here must never abort the show.
@@ -239,13 +249,7 @@ fn physical(anchor:&Rect, scale:f64) -> (f64, f64, f64, f64) {
 // --- Commands ----------------------------------------------------------------
 
 #[tauri::command]
-pub fn state(app:AppHandle) -> Result<State, String> {
-	if std::env::var("ROUND_DIAG").is_ok() {
-		eprintln!("[diag] menu page called state");
-	}
-
-	read(&app)
-}
+pub fn state(app:AppHandle) -> Result<State, String> { read(&app) }
 
 #[tauri::command]
 pub fn set_size(app:AppHandle, label:Option<String>, value:i64) -> Result<State, String> {
