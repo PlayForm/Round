@@ -3,9 +3,14 @@
 use tauri::{
 	AppHandle,
 	Runtime,
-	menu::{CheckMenuItem, IsMenuItem, Menu, MenuItem, PredefinedMenuItem},
+	menu::{IsMenuItem, Menu, MenuItem, PredefinedMenuItem},
 	tray::TrayIconBuilder,
 };
+// macOS-only: the dock entry is the only `CheckMenuItem` in the menu. Importing
+// it unconditionally is dead code on Linux and Windows, and `-D warnings` in CI
+// turns that into a hard failure macOS can never reproduce.
+#[cfg(target_os = "macos")]
+use tauri::menu::CheckMenuItem;
 use tauri_plugin_store::StoreExt;
 
 use crate::{Action::Action, Effect::Effect, Overlay, Settings::Settings};
@@ -15,6 +20,10 @@ use crate::{Action::Action, Effect::Effect, Overlay, Settings::Settings};
 /// The menu is built from [`Action`]'s own identifiers and labels, and the
 /// handler is one match over [`Effect`] - so a new command is a new enum
 /// variant, never a new string in three places.
+///
+/// `settings` is read only by the macOS dock entry; the parameter exists on
+/// every platform so the call site stays identical.
+#[cfg_attr(not(target_os = "macos"), allow(unused_variables))]
 pub fn install<R:Runtime>(app:&AppHandle<R>, settings:&Settings) -> tauri::Result<()> {
 	let item = |action:Action| MenuItem::with_id(app, action.id(), action.label(), true, None::<&str>);
 
