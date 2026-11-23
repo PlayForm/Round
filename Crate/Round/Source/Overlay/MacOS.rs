@@ -44,6 +44,42 @@ pub fn raise<R:Runtime>(window:&WebviewWindow<R>) {
 	});
 }
 
+/// Put one overlay window on screen without giving it the keyboard.
+///
+/// `window.show()` is not just an order-front: Tauri forwards it to tao's
+/// `set_visible(true)`, which calls `makeKeyAndOrderFront:` unconditionally.
+/// That makes the overlay the key window, so the Menu panel resigns key, macOS
+/// delivers `Focused(false)` to it, and the panel - whose app is still
+/// frontmost, so the blur looks exactly like a dismissal - closes itself. An
+/// overlay never receives a click, so it has no use for the keyboard:
+/// `orderFrontRegardless` is the same ordering without the key change, which is
+/// also why it still works while the app is inactive, where
+/// `makeKeyAndOrderFront:` does nothing at all.
+pub fn present<R:Runtime>(window:&WebviewWindow<R>) -> tauri::Result<()> {
+	let pointer = window.ns_window()?;
+
+	let ns_window = pointer as *mut AnyObject;
+
+	match ns_window.is_null() {
+		// No AppKit window to order: fall back to the portable call, which is
+		// only reached on a window that does not exist yet.
+		true => window.show(),
+		false => unsafe {
+			let _:() = msg_send![ns_window, orderFrontRegardless];
+
+			// A window that did not come up is an overlay with no corners at
+			// all, which is worse than a key change: verify the ordering took
+			// and fall back to the portable call when it did not. A failed
+			// query is assumed to have worked, so the fallback never re-shows a
+			// window that is already up.
+			match window.is_visible().unwrap_or(true) {
+				true => Ok(()),
+				false => window.show(),
+			}
+		},
+	}
+}
+
 /// Show or hide the dock icon for the whole process.
 pub fn dock(visible:bool) {
 	let policy = match visible {

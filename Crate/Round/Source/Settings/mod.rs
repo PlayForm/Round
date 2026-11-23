@@ -142,10 +142,20 @@ impl Settings {
 	}
 
 	/// Show or hide one overlay window to match the persisted visibility.
+	///
+	/// A window already in the wanted state is left untouched - not as an
+	/// optimisation, but because showing one is not a no-op. On macOS
+	/// `show()` orders the window front by making it key, so the Menu panel
+	/// resigns key, the blur arrives with the app still frontmost, and the
+	/// panel reads it as a dismissal and closes under the control that was
+	/// just used. Every command ends in a broadcast, so re-showing an overlay
+	/// that is already up would close the panel on every slider step.
 	pub fn visible<R:Runtime>(&self, window:&WebviewWindow<R>) -> tauri::Result<()> {
-		match self.hidden {
-			true => window.hide(),
-			false => window.show(),
+		match (!self.hidden, window.is_visible().unwrap_or(false)) {
+			// Wanted up and up, wanted down and down: nothing to do.
+			(true, true) | (false, false) => Ok(()),
+			(true, false) => crate::Overlay::present(window),
+			(false, true) => window.hide(),
 		}
 	}
 

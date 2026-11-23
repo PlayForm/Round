@@ -119,6 +119,19 @@ fn blurred_now() -> bool { Blurred.lock().ok().and_then(|at| *at).is_some_and(|a
 
 fn settling() -> bool { Shown.lock().ok().and_then(|at| *at).is_some_and(|at| at.elapsed() < Settle) }
 
+/// Whether another window of this app holds the keyboard.
+///
+/// Focus that moved between our own windows is not the user leaving: the
+/// overlay windows are ours, and a command that brings one of them forward must
+/// not read as a dismissal of the panel the command came from. Only a blur with
+/// the keyboard outside Round - another application, the desktop - is a
+/// dismissal, which is what [`dismissed`] then confirms.
+fn elsewhere<R:Runtime>(app:&AppHandle<R>) -> bool {
+	app.webview_windows()
+		.into_values()
+		.any(|window| window.label() != Label && window.is_focused().unwrap_or(false))
+}
+
 /// Whether the app still holds focus when the window resigns the keyboard.
 ///
 /// On macOS, ordering a window front keys it before the app is active, and the
@@ -157,14 +170,17 @@ fn build<R:Runtime>(app:&AppHandle<R>) -> tauri::Result<WebviewWindow<R>> {
 	// A popover dismisses when it loses focus, exactly like the menu it replaces.
 	let handle = window.clone();
 
+	let owner = app.clone();
+
 	window.on_window_event(move |event| {
 		if let WindowEvent::Focused(false) = event {
 			// Hiding a window that is already hidden emits another blur, a
-			// window that was just ordered front is still settling, and an
-			// activation the system took back is not the user leaving. None of
-			// those is a dismissal, and recording one would swallow the next
-			// tray click.
-			if !handle.is_visible().unwrap_or(false) || settling() || !dismissed() {
+			// window that was just ordered front is still settling, focus that
+			// only moved to another window of this app is not the user
+			// leaving, and an activation the system took back is not the user
+			// leaving either. None of those is a dismissal, and recording one
+			// would swallow the next tray click.
+			if !handle.is_visible().unwrap_or(false) || settling() || elsewhere(&owner) || !dismissed() {
 				return;
 			}
 

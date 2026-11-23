@@ -26,6 +26,13 @@ updates:
           - dependency-name: "tailwindcss"
             versions:
                 - "^4.0.0"
+          # Solid 2 replaces the reactive core (fine-grained signals rewritten,
+          # `solid-js/web` entry no longer exported) - a migration, not a bump.
+          # `vite-plugin-solid` 2.x peers on `solid-js` ^1.7.2, so no 2.x major
+          # can land until that plugin migrates; cap below 2.0.0.
+          - dependency-name: "solid-js"
+            versions:
+                - ">=2.0.0"
 
     # `increase`, not `lockfile-only`: Cargo.lock is untracked by policy, so the
     # only thing a cargo update can move is the manifest's version ranges - which

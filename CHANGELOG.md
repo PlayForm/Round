@@ -22,6 +22,16 @@ the npm packages and `pround`.
   all open it when it is closed and close it when it is open. A right click used
   to reach the native menu; with no menu left there is nothing for it to show,
   so it is the same switch as every other button.
+- The panel stays open while it is being used. Every command ends in a broadcast
+  over the overlay windows, and that broadcast used to re-show windows that were
+  already showing - which on macOS keys the overlay, blurs the panel, and read as
+  a dismissal, so moving a slider or clicking Dark/Light closed the panel under
+  the control. `Settings::visible` now compares against `is_visible()` and does
+  nothing when the window is already in the wanted state, and the overlay show
+  path orders windows front without taking the keyboard (`orderFrontRegardless`
+  on macOS; Windows already had `WS_EX_NOACTIVATE`). A blur that only moves focus
+  to another window of Round is no longer a dismissal either, so only a click
+  outside the app or the tray icon closes the panel.
 
 ### Dependencies
 

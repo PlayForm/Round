@@ -39,6 +39,12 @@ declares them and holds nothing else.
   icon, toggles it on a click, dismisses it when it really loses focus, and
   exposes the panel's commands - `state`, `set_size`, `set_mode`, `set_hidden`,
   `set_dock`, `reset`, `quit` - each of which returns the state to render.
+  "Really" is three guards on the blur: a window that is already hidden, a blur
+  inside the settle window after `show`, and a blur that only moved the keyboard
+  to another window of Round are all ignored; only a blur with focus outside the
+  app (`NSApplication.isActive` still true) is a dismissal. Without the third
+  guard every command would close the panel it was clicked in, because a command
+  ends in a broadcast over the overlay windows and showing a window can key it.
 - **`Mode`** - the two inks a corner can be drawn in. Serialises to the
   lowercase word the webview reads (`dark`, `light`); unknown store values fall
   back to the default.
@@ -52,18 +58,25 @@ declares them and holds nothing else.
   a webview window takes. Labels keep ASCII alphanumerics only (Tauri rejects
   the rest); an unnamed monitor becomes `monitor<index>`.
 - **`Overlay`** - lifting a transparent webview above the OS chrome. Exactly one
-  `raise`/`dock` pair is re-exported per platform, so call sites are identical
-  everywhere and there is no runtime branch to get wrong:
+  `raise`/`present`/`dock` trio is re-exported per platform, so call sites are
+  identical everywhere and there is no runtime branch to get wrong:
     - `MacOS.rs` - `NSStatusWindowLevel` (25), collection behaviour
       `canJoinAllSpaces | stationary | ignoresCycle | fullScreenAuxiliary`,
-      `setIgnoresMouseEvents:YES`, and `setActivationPolicy` for the dock
-      toggle.
+      `setIgnoresMouseEvents:YES`, `orderFrontRegardless` for `present`, and
+      `setActivationPolicy` for the dock toggle.
     - `Windows.rs` - `SetWindowPos(HWND_TOPMOST, ..., SWP_NOACTIVATE)` plus
       `WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT` on top of
       Tauri's `WS_EX_LAYERED`, and `DWMWCP_DONOTROUND` so Windows 11 does not
       draw a second set of corners.
     - `Linux.rs` - nothing beyond the builder's `always_on_top` +
       `skip_taskbar`; a compositor may still draw panels over the corners.
+  `present` is the one place a window is put on screen, and it is deliberately
+  not `WebviewWindow::show`: that forwards to tao's `set_visible(true)`, which
+  calls `makeKeyAndOrderFront:` and makes the overlay the key window. An overlay
+  never receives a click, so taking the keyboard from the Menu panel buys
+  nothing and costs the panel its open state; `orderFrontRegardless` orders the
+  window front without the key change (and still works while the app is
+  inactive, where `makeKeyAndOrderFront:` does nothing).
 - **`Tray`** - the tray icon and its click, nothing else. No native menu is
   attached: a click calls `Menu::toggle`, so the tray owns no command, no label
   and no state.
@@ -84,7 +97,8 @@ the same map with the edges drawn.
 4. For every monitor: build a borderless, transparent, non-focusable,
    non-resizable, always-on-top webview at the monitor's logical bounds, run the
    init script (`window.settings = {"size":23,"mode":"dark"};`), build it
-   hidden, `Overlay::raise` it, then show it unless the saved state is hidden.
+   hidden, `Overlay::raise` it, then `Settings::visible` it - which `present`s it
+   unless the saved state is hidden.
 5. `Tray::install` builds the icon and wires its click to `Menu::toggle`. The
    menu window itself is built on the first click, not at startup, so a launch
    that never opens the panel never pays for it.
@@ -101,7 +115,9 @@ tray click
   -> the panel invokes a command: state / set_size / set_mode /
      set_hidden / set_dock / reset / quit
   -> Settings::load(&store) -> mutate -> Settings::save(&store)
-  -> broadcast: for every window emit "size", emit "mode", apply visibility
+  -> broadcast: for every overlay window emit "size", emit "mode", and apply
+     visibility only where it differs from `is_visible()` - a window already in
+     the wanted state is left alone, because showing it is not a no-op
   -> the command returns the new State, which the panel renders
 ```
 

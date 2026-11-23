@@ -51,6 +51,13 @@ pub fn raise<R:Runtime>(window:&WebviewWindow<R>) {
 	});
 }
 
+/// Put one overlay window on screen.
+///
+/// `WS_EX_NOACTIVATE` above already means showing it cannot take the keyboard,
+/// so the portable call is the whole of it here: the no-keying order-front that
+/// macOS needs has no Windows equivalent to ask for.
+pub fn present<R:Runtime>(window:&WebviewWindow<R>) -> tauri::Result<()> { window.show() }
+
 /// Windows has no dock icon to hide; the setting exists so the menu and the
 /// store keep one shape on every platform.
 pub fn dock(_visible:bool) {}
