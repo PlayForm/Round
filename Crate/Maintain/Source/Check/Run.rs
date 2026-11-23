@@ -11,7 +11,11 @@ use crate::Process::Run;
 pub fn Fn(Root:&Path) -> Result<()> {
 	Run::Fn(Root, "cargo", &["fmt", "--all", "--", "--check"])?;
 
-	Run::Fn(Root, "cargo", &["clippy", "--workspace", "--all-targets", "--", "-D", "warnings"])?;
+	Run::Fn(
+		Root,
+		"cargo",
+		&["clippy", "--workspace", "--all-targets", "--", "-D", "warnings"],
+	)?;
 
 	Run::Fn(Root, "cargo", &["check", "--workspace", "--all-targets"])
 }

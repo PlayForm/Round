@@ -17,7 +17,9 @@ use crate::{
 pub fn Fn(Root:&Path, Option:&Release, Steps:&[Step]) -> Result<()> {
 	Promote::Fn(Root, &Option.Version)?;
 
-	Entry::Fn(Root).iter().try_for_each(|Manifest| Write::Fn(Manifest, &Option.Version))?;
+	Entry::Fn(Root)
+		.iter()
+		.try_for_each(|Manifest| Write::Fn(Manifest, &Option.Version))?;
 
 	let Stale = Drift::Fn(Root, &Option.Version)?;
 

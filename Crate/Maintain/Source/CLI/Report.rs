@@ -23,7 +23,10 @@ pub fn Fn(Root:&Path) -> Result<()> {
 	let Shown:Vec<(String, String)> = Rows
 		.iter()
 		.map(|(File, Held)| {
-			let Value = Held.as_ref().map(ToString::to_string).unwrap_or_else(|| format!("inherits {Current}"));
+			let Value = Held
+				.as_ref()
+				.map(ToString::to_string)
+				.unwrap_or_else(|| format!("inherits {Current}"));
 
 			(File.clone(), Value)
 		})

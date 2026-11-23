@@ -1,9 +1,6 @@
 //! Running a tool for its answer rather than its transcript.
 
-use std::{
-	path::Path,
-	process::Command,
-};
+use std::{path::Path, process::Command};
 
 use anyhow::{Context, Result, anyhow};
 

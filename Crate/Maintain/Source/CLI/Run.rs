@@ -1,13 +1,12 @@
 //! Parsing the command line and routing it to the ceremony it names.
 
 use anyhow::Result;
-
 use clap::Parser;
 
 use crate::{
 	Build,
-	Check,
 	CLI::{Enum::Enum as Command, Publish, Struct::Struct as Cli, Version},
+	Check,
 	Release,
 	Root::Find,
 };

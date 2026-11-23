@@ -2,10 +2,7 @@
 
 use clap::Subcommand;
 
-use crate::{
-	CLI::Version::Enum::Enum as Action,
-	Version::Struct::Struct as Number,
-};
+use crate::{CLI::Version::Enum::Enum as Action, Version::Struct::Struct as Number};
 
 #[derive(Subcommand)]
 pub enum Enum {

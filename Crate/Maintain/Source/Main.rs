@@ -1,5 +1,8 @@
 //! The `Maintain` binary.
 
+// House style: locals and parameters are PascalCase, the same as the library's.
+#![allow(non_snake_case)]
+
 use Maintain::CLI;
 
 fn main() {

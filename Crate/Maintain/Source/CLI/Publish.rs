@@ -11,7 +11,15 @@ use crate::Process;
 pub fn Fn(Root:&Path, DryRun:bool) -> Result<()> {
 	let Branch = Process::Capture::Fn(Root, "git", &["rev-parse", "--abbrev-ref", "HEAD"])?;
 
-	let Args = ["workflow", "run", "Publish.yml", "--ref", Branch.as_str(), "-f", "publish_crates=true"];
+	let Args = [
+		"workflow",
+		"run",
+		"Publish.yml",
+		"--ref",
+		Branch.as_str(),
+		"-f",
+		"publish_crates=true",
+	];
 
 	DryRun
 		.then(|| println!("$ gh {}", Args.join(" ")))

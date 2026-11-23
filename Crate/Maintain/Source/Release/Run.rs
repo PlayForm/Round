@@ -10,7 +10,10 @@ use crate::{
 	Release::{
 		Clean,
 		Mode::{Enum::Enum as Mode, Of},
-		Perform, Preview, Remote, Steps,
+		Perform,
+		Preview,
+		Remote,
+		Steps,
 		Struct::Struct as Release,
 	},
 };

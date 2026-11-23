@@ -32,7 +32,10 @@ pub fn Fn(Root:&Path, Option:&Release, Branch:&str, Remote:&str) -> Vec<Step> {
 	];
 
 	Steps.extend(Option.Publish.then(|| {
-		New::Fn("gh", &["workflow", "run", "Publish.yml", "--ref", Branch, "-f", "publish_crates=true"])
+		New::Fn(
+			"gh",
+			&["workflow", "run", "Publish.yml", "--ref", Branch, "-f", "publish_crates=true"],
+		)
 	}));
 
 	Steps

@@ -18,5 +18,7 @@ pub fn Fn(Path:&Path, Text:&str) -> Result<Number> {
 		.and_then(|Version| Version.as_str())
 		.ok_or_else(|| anyhow!("{} has no [workspace.package].version", Path.display()))?;
 
-	Field.parse().with_context(|| format!("{} has a version that is not semver", Path.display()))
+	Field
+		.parse()
+		.with_context(|| format!("{} has a version that is not semver", Path.display()))
 }

@@ -1,9 +1,6 @@
 //! Running a tool, with the transcript a human needs when it fails.
 
-use std::{
-	path::Path,
-	process::Command,
-};
+use std::{path::Path, process::Command};
 
 use anyhow::{Context, Result, anyhow};
 
