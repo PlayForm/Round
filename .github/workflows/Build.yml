@@ -1,0 +1,248 @@
+name: Build
+
+concurrency:
+  group: Build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags: ["Round/v*"]
+  workflow_dispatch:
+
+env:
+  ADBLOCK: true
+  ASTRO_TELEMETRY_DISABLED: 1
+  AUTOMATEDLAB_TELEMETRY_OPTOUT: 1
+  AZURE_CORE_COLLECT_TELEMETRY: 0
+  CARGO_TERM_COLOR: always
+  CHOOSENIM_NO_ANALYTICS: 1
+  DIEZ_DO_NOT_TRACK: 1
+  DO_NOT_TRACK: 1
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_INTERACTIVE_CLI_TELEMETRY_OPTOUT: 1
+  ET_NO_TELEMETRY: 1
+  GATSBY_TELEMETRY_DISABLED: 1
+  GATSBY_TELEMETRY_OPT_OUT: 1
+  GATSBY_TELEMETRY_OPTOUT: 1
+  GRIT_TELEMETRY_DISABLED: 1
+  HASURA_GRAPHQL_ENABLE_TELEMETRY: false
+  HINT_TELEMETRY: off
+  HOMEBREW_NO_ANALYTICS: 1
+  INFLUXD_REPORTING_DISABLED: true
+  ITERATIVE_DO_NOT_TRACK: 1
+  NEXT_TELEMETRY_DEBUG: 1
+  NEXT_TELEMETRY_DISABLED: 1
+  NG_CLI_ANALYTICS: false
+  NUXT_TELEMETRY_DISABLED: 1
+  PIN_DO_NOT_TRACK: 1
+  POWERSHELL_TELEMETRY_OPTOUT: 1
+  SAM_CLI_TELEMETRY: 0
+  STNOUPGRADE: 1
+  STRIPE_CLI_TELEMETRY_OPTOUT: 1
+  TELEMETRY_DISABLED: 1
+  TERRAFORM_TELEMETRY: 0
+  VCPKG_DISABLE_METRICS: 1
+
+jobs:
+  # Created exactly once, before any matrix leg attaches a file, so four
+  # concurrent `action-gh-release` invocations never race to create it.
+  Release:
+    name: Release
+    if: startsWith(github.ref, 'refs/tags/Round/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@e598afbe1493e6b1bafb1f389cabb956eab91231 # v3.0.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Built once, shared with every platform: the binary embeds this directory at
+  # compile time, and four Node installs for one identical build is waste.
+  Web:
+    name: webview build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: pnpm/action-setup@9bbca1e9dc2902adb87e8780fe5c98796985a62d # v6.1.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm run Build
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: Web
+          path: Package/Web/Target
+          if-no-files-found: error
+          retention-days: 7
+
+  Bundle:
+    name: Bundle ${{ matrix.target }}
+    needs: [Release, Web]
+    if: always() && needs.Web.result == 'success' && (needs.Release.result == 'success' || needs.Release.result == 'skipped')
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Let every platform finish and attach its assets even when one leg is
+      # slow or fails - the `Finalize` job then fails loudly on an incomplete
+      # matrix, so a partial upload is caught instead of silently shipped.
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: macos-latest # cross-compiled from arm64; macos-13 (real Intel host) queues indefinitely
+            target: x86_64-apple-darwin
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Tauri system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
+        with:
+          toolchain: nightly
+          targets: ${{ matrix.target }}
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry/
+            ~/.cargo/git/
+            Target/
+          key: cargo-build-${{ runner.os }}-${{ matrix.target }}-${{ hashFiles('Cargo.toml', 'Crate/**/Cargo.toml', 'rust-toolchain.toml') }}
+          restore-keys: cargo-build-${{ runner.os }}-${{ matrix.target }}-
+
+      - uses: pnpm/action-setup@9bbca1e9dc2902adb87e8780fe5c98796985a62d # v6.1.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: Web
+          path: Package/Web/Target
+
+      # The Tauri CLI runs from the repository root: it finds the crate's
+      # `tauri.conf.json` by walking down, and treats the root as the frontend
+      # directory, so `beforeBuildCommand` (`pnpm run Build`) resolves here.
+      - name: Build bundles
+        run: pnpm tauri build --target ${{ matrix.target }}
+
+      # One staging directory, so the upload globs are identical on every
+      # platform and a leg that produced nothing fails here instead of shipping
+      # an empty release.
+      - name: Stage artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          find "Target/${{ matrix.target }}/release/bundle" -maxdepth 2 -type f \
+            \( -name '*.dmg' -o -name '*.deb' -o -name '*.rpm' -o -name '*.AppImage' -o -name '*.msi' -o -name '*.exe' \) \
+            -exec cp -v {} dist/ \;
+          count=$(find dist -type f | wc -l)
+          if [ "$count" -eq 0 ]; then
+            echo "::error::no bundles produced for ${{ matrix.target }}"
+            exit 1
+          fi
+          ls -lh dist
+
+      # Windows gets its own PowerShell step (Get-FileHash): Git Bash's MSYS
+      # path conversion mangles single-slash flags, and `sha256sum` is not
+      # guaranteed on the Windows runner.
+      - name: Checksums (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $target = "${{ matrix.target }}"
+          $lines = Get-ChildItem dist -File | Where-Object { $_.Name -notlike 'SHA256SUMS-*' } | ForEach-Object {
+            "{0}  {1}" -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower(), $_.Name
+          }
+          $lines | Out-File -FilePath "dist/SHA256SUMS-$target.txt" -Encoding ascii
+          Get-Content "dist/SHA256SUMS-$target.txt"
+
+      - name: Checksums
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd dist
+          files=()
+          for file in *; do
+            case "$file" in
+              SHA256SUMS-*) ;;
+              *) files+=("$file") ;;
+            esac
+          done
+          shasum -a 256 "${files[@]}" > "SHA256SUMS-${{ matrix.target }}.txt"
+          cat "SHA256SUMS-${{ matrix.target }}.txt"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: bundle-${{ matrix.target }}
+          path: dist/*
+          retention-days: 30
+
+      - name: Upload to release
+        if: startsWith(github.ref, 'refs/tags/Round/v')
+        uses: softprops/action-gh-release@e598afbe1493e6b1bafb1f389cabb956eab91231 # v3.0.3
+        with:
+          files: dist/*
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  Finalize:
+    name: Finalize release assets
+    needs: Bundle
+    if: startsWith(github.ref, 'refs/tags/Round/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Verify every platform's assets are attached
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          assets=$(gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --json assets -q '.assets[].name')
+          echo "Attached assets:"; echo "$assets"
+          missing=0
+          for target in aarch64-apple-darwin x86_64-apple-darwin x86_64-unknown-linux-gnu x86_64-pc-windows-msvc; do
+            echo "$assets" | grep -q "SHA256SUMS-${target}.txt" || {
+              echo "::error::missing checksums for ${target} - the bundle leg did not finish"
+              missing=1
+            }
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+          echo "All four platforms present."

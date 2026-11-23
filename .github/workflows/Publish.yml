@@ -1,0 +1,138 @@
+name: Publish
+
+concurrency:
+  group: Publish-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+on:
+  # Only a SUCCESSFUL `Build` run that a `Round/v*` tag started may publish, so a
+  # bundle that failed on one platform can never ship a crate.
+  workflow_run:
+    workflows: [Build]
+    types: [completed]
+  # Manual runs are a deliberate opt-in: without `publish: true` this workflow
+  # does nothing.
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the current version to crates.io
+        type: boolean
+        default: false
+
+env:
+  ADBLOCK: true
+  ASTRO_TELEMETRY_DISABLED: 1
+  AUTOMATEDLAB_TELEMETRY_OPTOUT: 1
+  AZURE_CORE_COLLECT_TELEMETRY: 0
+  CARGO_TERM_COLOR: always
+  CHOOSENIM_NO_ANALYTICS: 1
+  DIEZ_DO_NOT_TRACK: 1
+  DO_NOT_TRACK: 1
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_INTERACTIVE_CLI_TELEMETRY_OPTOUT: 1
+  ET_NO_TELEMETRY: 1
+  GATSBY_TELEMETRY_DISABLED: 1
+  GATSBY_TELEMETRY_OPT_OUT: 1
+  GATSBY_TELEMETRY_OPTOUT: 1
+  GRIT_TELEMETRY_DISABLED: 1
+  HASURA_GRAPHQL_ENABLE_TELEMETRY: false
+  HINT_TELEMETRY: off
+  HOMEBREW_NO_ANALYTICS: 1
+  INFLUXD_REPORTING_DISABLED: true
+  ITERATIVE_DO_NOT_TRACK: 1
+  NEXT_TELEMETRY_DEBUG: 1
+  NEXT_TELEMETRY_DISABLED: 1
+  NG_CLI_ANALYTICS: false
+  NUXT_TELEMETRY_DISABLED: 1
+  PIN_DO_NOT_TRACK: 1
+  POWERSHELL_TELEMETRY_OPTOUT: 1
+  SAM_CLI_TELEMETRY: 0
+  STNOUPGRADE: 1
+  STRIPE_CLI_TELEMETRY_OPTOUT: 1
+  TELEMETRY_DISABLED: 1
+  TERRAFORM_TELEMETRY: 0
+  VCPKG_DISABLE_METRICS: 1
+
+jobs:
+  Crates:
+    name: Publish pround
+    if: >-
+      (github.event_name == 'workflow_dispatch' && inputs.publish) ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' &&
+      startsWith(github.event.workflow_run.head_branch, 'Round/v'))
+    runs-on: ubuntu-latest
+    environment: Release
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Pin to the exact tag Build ran: the published crate must be the code
+          # that was bundled, not whatever the branch happens to hold now.
+          ref: ${{ github.event.workflow_run.head_branch || github.ref }}
+
+      - name: Tauri system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
+        with:
+          toolchain: nightly
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry/
+            ~/.cargo/git/
+            Target/
+          key: cargo-publish-${{ runner.os }}-${{ hashFiles('Cargo.toml', 'Crate/**/Cargo.toml', 'rust-toolchain.toml') }}
+          restore-keys: cargo-publish-${{ runner.os }}-
+
+      - name: Published tarball carries the crate
+        run: |
+          set -euo pipefail
+          cargo package -p pround --list --allow-dirty > tarball.txt
+          for file in Source/Library.rs Source/Main.rs tauri.conf.json icons/tray.png README.md; do
+            grep -qxF "$file" tarball.txt || {
+              echo "::error::$file is missing from the published tarball"
+              exit 1
+            }
+          done
+          echo "packaging guard: all required entries present"
+
+      # The published surface is the LIBRARY (`cargo add pround`). Prove it from
+      # a throwaway consumer outside the workspace, before publishing: a broken
+      # public path is not something a later consumer should discover.
+      - name: Library consumer probe
+        run: |
+          set -euo pipefail
+          cargo new --lib /tmp/probe
+          cd /tmp/probe
+          cargo add pround --path "$GITHUB_WORKSPACE/Crate/Round"
+          cat >> src/lib.rs <<'RS'
+          pub fn probe() -> pround::Settings::Settings {
+              pround::Settings::Settings::default()
+          }
+          RS
+          cargo build
+
+      - name: Publish to crates.io
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          set -euo pipefail
+          version=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "pround") | .version')
+          echo "pround version: $version"
+          if curl -fsS -H "User-Agent: PlayForm-Round-CI" "https://crates.io/api/v1/crates/pround/$version" > /dev/null; then
+            echo "pround $version is already on crates.io - nothing to publish"
+            exit 0
+          fi
+          # `--no-verify` is deliberate: the verification build compiles the
+          # `round` binary, whose `tauri::generate_context!` reads
+          # `Package/Web/Target` - a directory outside the package, built by the
+          # web job and embedded at compile time. The library target, which is
+          # what `cargo add pround` compiles, is covered by the probe above.
+          cargo publish -p pround --no-verify --allow-dirty

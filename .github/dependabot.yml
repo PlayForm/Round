@@ -7,19 +7,31 @@ updates:
       schedule:
           interval: "daily"
 
+    # Root: the workspace file and the Tauri CLI.
     - package-ecosystem: "npm"
       directory: "/"
       schedule:
           interval: "daily"
       versioning-strategy: increase
+
+    # The webview package: Solid, Vite, PostCSS, Tailwind.
+    - package-ecosystem: "npm"
+      directory: "/Package/Web"
+      schedule:
+          interval: "daily"
+      versioning-strategy: increase
       ignore:
+          # Tailwind 4 replaces the JS config and the PostCSS plugin chain this
+          # package is built on; that migration is a decision, not a bump.
           - dependency-name: "tailwindcss"
             versions:
                 - "^4.0.0"
 
+    # `increase`, not `lockfile-only`: Cargo.lock is untracked by policy, so the
+    # only thing a cargo update can move is the manifest's version ranges - which
+    # is exactly what should move.
     - package-ecosystem: "cargo"
-      directory: "/src-tauri"
+      directory: "/Crate/Round"
       schedule:
           interval: "daily"
-      versioning-strategy: lockfile-only
-      
+      versioning-strategy: increase

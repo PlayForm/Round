@@ -1,0 +1,170 @@
+name: Check
+
+concurrency:
+  group: Check-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [Current]
+    paths-ignore: [".github/Update.md"]
+  pull_request:
+    branches: [Current]
+  workflow_dispatch:
+  workflow_call:
+
+env:
+  ADBLOCK: true
+  ASTRO_TELEMETRY_DISABLED: 1
+  AUTOMATEDLAB_TELEMETRY_OPTOUT: 1
+  AZURE_CORE_COLLECT_TELEMETRY: 0
+  CARGO_TERM_COLOR: always
+  CHOOSENIM_NO_ANALYTICS: 1
+  DIEZ_DO_NOT_TRACK: 1
+  DO_NOT_TRACK: 1
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_INTERACTIVE_CLI_TELEMETRY_OPTOUT: 1
+  ET_NO_TELEMETRY: 1
+  GATSBY_TELEMETRY_DISABLED: 1
+  GATSBY_TELEMETRY_OPT_OUT: 1
+  GATSBY_TELEMETRY_OPTOUT: 1
+  GRIT_TELEMETRY_DISABLED: 1
+  HASURA_GRAPHQL_ENABLE_TELEMETRY: false
+  HINT_TELEMETRY: off
+  HOMEBREW_NO_ANALYTICS: 1
+  INFLUXD_REPORTING_DISABLED: true
+  ITERATIVE_DO_NOT_TRACK: 1
+  NEXT_TELEMETRY_DEBUG: 1
+  NEXT_TELEMETRY_DISABLED: 1
+  NG_CLI_ANALYTICS: false
+  NUXT_TELEMETRY_DISABLED: 1
+  PIN_DO_NOT_TRACK: 1
+  POWERSHELL_TELEMETRY_OPTOUT: 1
+  SAM_CLI_TELEMETRY: 0
+  STNOUPGRADE: 1
+  STRIPE_CLI_TELEMETRY_OPTOUT: 1
+  TELEMETRY_DISABLED: 1
+  TERRAFORM_TELEMETRY: 0
+  VCPKG_DISABLE_METRICS: 1
+
+jobs:
+  # The webview is built exactly once and shared: every Rust job below needs
+  # `Package/Web/Target` to exist, because `tauri::generate_context!` embeds it
+  # into the binary at compile time.
+  Web:
+    name: webview build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # No `version:` input - pnpm/action-setup reads `packageManager` from
+      # package.json, so CI and a developer's machine run the same pnpm.
+      - uses: pnpm/action-setup@9bbca1e9dc2902adb87e8780fe5c98796985a62d # v6.1.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm run Build
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: Web
+          path: Package/Web/Target
+          if-no-files-found: error
+          retention-days: 7
+
+  Rust:
+    name: fmt, clippy, check
+    needs: Web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Tauri's Linux build needs WebKitGTK, the app-indicator library and
+      # patchelf; without them `cargo check` fails at wry's build script.
+      - name: Tauri system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      # Floating `nightly`, exactly as rust-toolchain.toml declares it. The
+      # components are explicit because a bare toolchain install may omit
+      # rustfmt/clippy, and both are hard gates here. A nightly that gains a
+      # lint is a code fix, never a reason to freeze the compiler.
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
+        with:
+          toolchain: nightly
+          components: rustfmt, clippy
+
+      # Keyed on the manifests, never on a lockfile: Cargo.lock is untracked by
+      # policy (the crate publishes to crates.io and every consumer resolves its
+      # own graph), so hashing it would key every run to the same empty value.
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry/
+            ~/.cargo/git/
+            Target/
+          key: cargo-check-${{ runner.os }}-${{ hashFiles('Cargo.toml', 'Crate/**/Cargo.toml', 'rust-toolchain.toml') }}
+          restore-keys: cargo-check-${{ runner.os }}-
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: Web
+          path: Package/Web/Target
+
+      - name: cargo fmt --check
+        run: cargo fmt --all -- --check
+
+      - name: cargo clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: cargo check
+        run: cargo check --workspace --all-targets
+
+  Package:
+    name: packaging guard
+    needs: Rust
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
+        with:
+          toolchain: nightly
+
+      # `--list` does not build, which is the point: it answers "what would
+      # crates.io receive" without a Node toolchain or the webview build. A
+      # recursive exclude once stripped embedded files from a published crate in
+      # this organisation; this job is the reason that cannot happen silently
+      # again. `--allow-dirty` because CI checkouts of a tag can carry build
+      # output that the `include` list deliberately ignores.
+      - name: Published tarball carries the crate
+        run: |
+          set -euo pipefail
+          cargo package -p pround --list --allow-dirty > tarball.txt
+          for file in \
+            Source/Library.rs \
+            Source/Main.rs \
+            Source/Tray/mod.rs \
+            tauri.conf.json \
+            capabilities/default.json \
+            icons/tray.png \
+            README.md; do
+            grep -qxF "$file" tarball.txt || {
+              echo "::error::$file is missing from the published tarball"
+              exit 1
+            }
+          done
+          echo "packaging guard: $(wc -l < tarball.txt) files, all required entries present"
