@@ -19,11 +19,10 @@
 	},
 	"type": "module",
 	"scripts": {
-		"Build": "vite build && node Script/Embed.mjs",
+		"Build": "vite build",
 		"dev": "vite",
 		"serve": "vite preview",
-		"start": "vite",
-		"tauri": "tauri"
+		"start": "vite"
 	},
 	"dependencies": {
 		"@tauri-apps/api": "2.12.5",
@@ -31,7 +30,6 @@
 	},
 	"devDependencies": {
 		"@playform/build": "0.3.5",
-		"@tauri-apps/cli": "2.12.6",
 		"@types/node": "26.6.6",
 		"autoprefixer": "10.7.0",
 		"cssnano": "9.9.0",
