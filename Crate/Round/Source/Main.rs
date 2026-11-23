@@ -2,8 +2,8 @@
 
 //! The `round` binary: one overlay webview per monitor, then the tray icon.
 
-use pround::{Menu, Overlay, Screen::Screen, Settings::Settings, Tray};
-use tauri::{WebviewUrl, WebviewWindowBuilder};
+use pround::{Menu, Overlay, Probe, Screen::Screen, Settings::Settings, Tray};
+use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 use tauri_plugin_store::StoreExt;
 
 fn main() {
@@ -64,6 +64,46 @@ fn main() {
 			})?;
 
 			Tray::install(app.handle(), &settings)?;
+
+			if std::env::var("ROUND_DIAG").is_ok() {
+				let handle = app.handle().clone();
+
+				std::thread::spawn(move || {
+					std::thread::sleep(std::time::Duration::from_secs(3));
+
+					let once = handle.clone();
+
+					let _ = handle.run_on_main_thread(move || {
+						let _ = Menu::toggle(&once, None);
+					});
+
+					std::thread::sleep(std::time::Duration::from_secs(2));
+
+					let once = handle.clone();
+
+					let _ = handle.run_on_main_thread(move || {
+						if let Some(window) = once.get_webview_window(Menu::Label) {
+							eprintln!(
+								"[diag] after 2s visible={:?} key={:?} pos={:?} size={:?}",
+								window.is_visible(),
+								window.is_focused(),
+								window.outer_position(),
+								window.outer_size()
+							);
+
+							let _ = Menu::toggle(&once, None);
+
+							eprintln!("[diag] after second toggle visible={:?}", window.is_visible());
+						} else {
+							eprintln!("[diag] no window");
+						}
+					});
+
+					std::thread::sleep(std::time::Duration::from_millis(500));
+
+					handle.exit(0);
+				});
+			}
 
 			Ok(())
 		})

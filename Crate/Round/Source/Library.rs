@@ -30,6 +30,7 @@ pub mod Menu;
 pub mod Message;
 pub mod Mode;
 pub mod Overlay;
+pub mod Probe;
 pub mod Screen;
 pub mod Settings;
 pub mod Tray;

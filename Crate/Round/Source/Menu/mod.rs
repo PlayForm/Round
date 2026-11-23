@@ -40,7 +40,26 @@ pub const Label:&str = "menu";
 /// inside this window after a blur is the dismissal, not a new opening.
 static Blurred:Mutex<Option<Instant>> = Mutex::new(None);
 
+/// When the panel was last shown.
+///
+/// Ordering a window front keys it and then drops it again in the same tick:
+/// macOS activates the app only after the window is already key, and refuses
+/// that activation when the show did not come from a user gesture. A blur that
+/// arrives this soon after `show` is the show settling, not a dismissal.
+static Shown:Mutex<Option<Instant>> = Mutex::new(None);
+
 const Blur:Duration = Duration::from_millis(250);
+
+/// How long after `show` a focus loss still counts as the show settling.
+const Settle:Duration = Duration::from_millis(500);
+
+/// The panel's size in logical pixels, before the webview measures its content.
+const Width:f64 = 320.0;
+
+const Height:f64 = 340.0;
+
+/// The gap between the tray icon and the panel, in physical pixels.
+const Gap:f64 = 6.0;
 
 /// What the panel renders.
 #[derive(Clone, Debug, Serialize)]
@@ -80,19 +99,33 @@ pub fn toggle<R:Runtime>(app:&AppHandle<R>, anchor:Option<Rect>) -> tauri::Resul
 		return Ok(());
 	}
 
-	place(app, &window, anchor)?;
+	place(app, &window, anchor);
+
+	// Recorded before `show`, because the focus change can arrive inside it.
+	if let Ok(mut at) = Shown.lock() {
+		*at = Some(Instant::now());
+	}
+
+	eprintln!("[menu] show");
 
 	window.show()?;
 
+	eprintln!("[menu] shown {:?}", window.is_visible());
+
+	// `show` already orders the window front and makes it key; this is what
+	// asks the app to activate. If macOS refuses, the panel is still visible
+	// and the settle window below keeps the refusal from hiding it.
 	window.set_focus()
 }
 
 fn blurred_now() -> bool { Blurred.lock().ok().and_then(|at| *at).is_some_and(|at| at.elapsed() < Blur) }
 
+fn settling() -> bool { Shown.lock().ok().and_then(|at| *at).is_some_and(|at| at.elapsed() < Settle) }
+
 fn build<R:Runtime>(app:&AppHandle<R>) -> tauri::Result<WebviewWindow<R>> {
 	let window = WebviewWindowBuilder::new(app, Label, WebviewUrl::App("menu.html".into()))
 		.title("Round")
-		.inner_size(320.0, 340.0)
+		.inner_size(Width, Height)
 		.decorations(false)
 		.transparent(true)
 		.resizable(false)
@@ -102,11 +135,27 @@ fn build<R:Runtime>(app:&AppHandle<R>) -> tauri::Result<WebviewWindow<R>> {
 		.visible(false)
 		.build()?;
 
+	eprintln!("[menu] created visible={:?} position={:?}", window.is_visible(), window.outer_position());
+
 	// A popover dismisses when it loses focus, exactly like the menu it replaces.
 	let handle = window.clone();
 
 	window.on_window_event(move |event| {
 		if let WindowEvent::Focused(false) = event {
+			eprintln!(
+				"[menu] blur visible={:?} since_show={:?}",
+				handle.is_visible(),
+				Shown.lock().ok().and_then(|at| *at).map(|at| at.elapsed())
+			);
+
+			// Hiding a window that is already hidden emits another blur, and a
+			// window that was just ordered front is still settling. Neither is
+			// the user dismissing the panel, and recording one would swallow
+			// the next tray click.
+			if !handle.is_visible().unwrap_or(false) || settling() {
+				return;
+			}
+
 			if let Ok(mut at) = Blurred.lock() {
 				*at = Some(Instant::now());
 			}
@@ -118,31 +167,58 @@ fn build<R:Runtime>(app:&AppHandle<R>) -> tauri::Result<WebviewWindow<R>> {
 	Ok(window)
 }
 
-fn place<R:Runtime>(app:&AppHandle<R>, window:&WebviewWindow<R>, anchor:Option<Rect>) -> tauri::Result<()> {
+fn place<R:Runtime>(app:&AppHandle<R>, window:&WebviewWindow<R>, anchor:Option<Rect>) {
 	let Some(anchor) = anchor else {
-		return window.center();
+		let _ = window.center();
+
+		return;
 	};
 
 	let scale = window.scale_factor().unwrap_or(1.0);
 
 	let (x, y, width, height) = physical(&anchor, scale);
 
-	let panel = window.outer_size()?;
+	let (panel_width, panel_height) = window
+		.outer_size()
+		.map_or((Width * scale, Height * scale), |size| {
+			(f64::from(size.width), f64::from(size.height))
+		});
 
-	let panel_width = f64::from(panel.width);
+	// The screen the icon lives on, not the primary one: an icon on a second
+	// display must not drag the panel back to the first.
+	let (left_edge, top_edge, right_edge, bottom_edge) =
+		app.monitor_from_point(x, y).ok().flatten().map_or(
+			(0.0, 0.0, f64::MAX, f64::MAX),
+			|monitor| {
+				let position = monitor.position();
 
-	let left = x + width / 2.0 - panel_width / 2.0;
+				let size = monitor.size();
 
-	// Keep the panel on the screen the tray icon lives on; an icon near the right
-	// edge would otherwise push half the panel off-screen.
-	let limit = app
-		.primary_monitor()?
-		.map(|monitor| f64::from(monitor.size().width) - panel_width);
+				(
+					f64::from(position.x),
+					f64::from(position.y),
+					f64::from(position.x) + f64::from(size.width),
+					f64::from(position.y) + f64::from(size.height),
+				)
+			},
+		);
 
-	window.set_position(PhysicalPosition::new(
-		left.max(0.0).min(limit.unwrap_or(f64::MAX)),
-		y + height + 6.0,
-	))
+	let left = (x + width / 2.0 - panel_width / 2.0)
+		.clamp(left_edge, (right_edge - panel_width).max(left_edge));
+
+	// Under the icon when there is room, above it otherwise - a tray at the
+	// bottom of the screen (Windows) would push the panel off it.
+	let below = y + height + Gap;
+
+	let top = if below + panel_height <= bottom_edge {
+		below
+	} else {
+		(y - panel_height - Gap).max(top_edge)
+	};
+
+	// Placement is a nicety: a panel in the wrong place is still a panel, so a
+	// failure here must never abort the show.
+	let _ = window.set_position(PhysicalPosition::new(left, top));
 }
 
 /// The tray rect as physical pixels, whichever unit the platform reported.
@@ -163,7 +239,13 @@ fn physical(anchor:&Rect, scale:f64) -> (f64, f64, f64, f64) {
 // --- Commands ----------------------------------------------------------------
 
 #[tauri::command]
-pub fn state(app:AppHandle) -> Result<State, String> { read(&app) }
+pub fn state(app:AppHandle) -> Result<State, String> {
+	if std::env::var("ROUND_DIAG").is_ok() {
+		eprintln!("[diag] menu page called state");
+	}
+
+	read(&app)
+}
 
 #[tauri::command]
 pub fn set_size(app:AppHandle, label:Option<String>, value:i64) -> Result<State, String> {
