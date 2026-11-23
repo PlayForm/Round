@@ -3,6 +3,7 @@
 use std::path::{Path, PathBuf};
 
 use crate::{
+	Changelog,
 	Error::{Error, Result},
 	Manifest,
 	Process,
@@ -54,7 +55,7 @@ pub fn run(root:&Path, options:&Options) -> Result<()> {
 	let remote = remote(root)?;
 	let tag = options.version.tag();
 
-	let mut add:Vec<String> = vec!["add".to_owned()];
+	let mut add:Vec<String> = vec!["add".to_owned(), "CHANGELOG.md".to_owned()];
 	Manifest::entries(root).iter().for_each(|manifest| {
 		add.push(manifest.path.strip_prefix(root).unwrap_or(&manifest.path).display().to_string());
 	});
@@ -75,11 +76,16 @@ pub fn run(root:&Path, options:&Options) -> Result<()> {
 	}));
 
 	if options.dry_run {
-		println!("would write {} to every manifest, then run:", options.version);
+		println!(
+			"would promote the changelog to {}, write {} to every manifest, then run:",
+			options.version, options.version
+		);
 		steps.iter().for_each(|step| println!("{}", step.render()));
 
 		return Ok(());
 	}
+
+	Changelog::promote(root, &options.version)?;
 
 	Manifest::entries(root)
 		.iter()

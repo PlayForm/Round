@@ -12,6 +12,9 @@
 //! snake_case module lint is switched off crate-wide rather than renamed away
 //! at every declaration.
 #![allow(non_snake_case)]
+// House style: constants are PascalCase (`const Unreleased`), the same
+// convention as every other item, which is the opposite of the lint's default.
+#![allow(non_upper_case_globals)]
 // House style in the rest of the tree turns a two-branch decision into a value,
 // but this is a command-line tool whose job is to fail loudly and early: a guard
 // that returns reads as the guard, while `cond.then(..).ok_or(..)` at every
@@ -20,6 +23,7 @@
 #![allow(clippy::obfuscated_if_else)]
 
 pub mod Build;
+pub mod Changelog;
 pub mod CLI;
 pub mod Check;
 pub mod Error;
