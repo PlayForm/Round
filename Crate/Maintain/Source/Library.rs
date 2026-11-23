@@ -22,11 +22,13 @@
 #![allow(non_upper_case_globals)]
 // Acronyms are fully cased rather than spelled as a word: `CLI`, `JSON`.
 #![allow(clippy::upper_case_acronyms)]
-// House style in the rest of the tree turns a two-branch decision into a value,
-// but this is a command-line tool whose job is to fail loudly and early: a guard
-// that returns reads as the guard, while `cond.then(..).ok_or(..)` at every
-// precondition hides which check refused. `if` stays where it is the clearest
-// statement of an early exit, and nowhere else.
+// House style: a two-branch decision is a value, not a branch - the condition
+// carries the value (`DryRun.then_some(Mode::Preview).unwrap_or(Mode::Perform)`),
+// so a call site reads as one expression instead of a statement with two arms,
+// and an ordered precondition reads as `(Cond).then_some(()).ok_or_else(..)`
+// rather than an early `return`. That is the opposite of `obfuscated_if_else`'s
+// default, which asks for the `if .. else ..` back, so the lint is switched off
+// crate-wide rather than re-branching every site.
 #![allow(clippy::obfuscated_if_else)]
 
 pub mod Build;
