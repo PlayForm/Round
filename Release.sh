@@ -42,6 +42,13 @@ TAG="${TAG:-$DEFAULT_TAG}"
 # --- Build (signed) ----------------------------------------------------------
 # The Tauri CLI runs from the repository root: it finds Crate/Round's
 # tauri.conf.json by walking down and treats the root as the frontend directory.
+#
+# `dmg` is bundled by driving Finder through AppleScript, so the process that
+# runs this script needs macOS Automation permission for Finder. Without it the
+# dmg step dies with `Finder got an error: Can't set toolbar visible ... (-10006)`
+# *after* Round.app has been built and signed - grant the permission to your
+# terminal (System Settings -> Privacy & Security -> Automation) or build with
+# `--bundles app` and package the dmg yourself.
 # shellcheck disable=SC2155
 export TAURI_SIGNING_PRIVATE_KEY="$(cat "$KEY_FILE")"
 export TAURI_SIGNING_PRIVATE_KEY_PASSWORD

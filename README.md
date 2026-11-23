@@ -1,76 +1,209 @@
-<table><tr> <td colspan="1"> <h3 align="center"> <picture> <source media="(prefers-color-scheme: dark)" srcset="https://PlayForm.Cloud/Image/GitHub/Round/32x32.png"> <source media="(prefers-color-scheme: light)" srcset="https://PlayForm.Cloud/Image/GitHub/Round/32x32.png"> <img width="28" alt="" src="https://PlayForm.Cloud/Image/GitHub/Round/32x32.png"> </picture>  </h3> </td> <td colspan="3" valign="top"> <h3 align="center"> Round </h3> </td> </tr><tr><td valign="top" colspan="2"><a href="https://GitHub.Com/PlayForm/Round" target="_blank"> <picture> <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/github/last-commit/PlayForm/Round?label=Update&color=black&labelColor=black&logoColor=white&logoWidth=0"> <source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/github/last-commit/PlayForm/Round?label=Update&color=white&labelColor=white&logoColor=black&logoWidth=0"> <img src="https://img.shields.io/github/last-commit/PlayForm/Round?label=Update&color=black&labelColor=black&logoColor=white&logoWidth=0" alt="Update" title="Update"> </picture> </a><br><a href="https://GitHub.Com/PlayForm/Round" target="_blank"> <picture> <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/github/issues/PlayForm/Round?label=Issue&color=black&labelColor=black&logoColor=white&logoWidth=0"> <source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/github/issues/PlayForm/Round?label=Issue&color=white&labelColor=white&logoColor=black&logoWidth=0"> <img src="https://img.shields.io/github/issues/PlayForm/Round?label=Issue&color=black&labelColor=black&logoColor=white&logoWidth=0" alt="Issue" title="Issue"> </picture> </a><br></td><td valign="top" colspan="2"><a href="https://github.com/PlayForm/Round" target="_blank"><picture><source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/github/stars/PlayForm/Round?style=flat&label=Star&logo=github&color=black&labelColor=black&logoColor=white&logoWidth=0"><source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/github/stars/PlayForm/Round?style=flat&label=Star&logo=github&color=white&labelColor=white&logoColor=black&logoWidth=0"><img src="https://img.shields.io/github/stars/PlayForm/Round?style=flat&label=Star&logo=github&color=black&labelColor=black&logoColor=white&logoWidth=0" alt="Star"></picture></a><br><a href="https://GitHub.Com/PlayForm/Round" target="_blank"> <picture> <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/github/downloads/PlayForm/Round/total?label=Download&color=black&labelColor=black&logoColor=white&logoWidth=0&v=2"> <source media="(prefers-color-scheme: light)" srcset="https://img.shields.io/github/downloads/PlayForm/Round/total?label=Download&color=white&labelColor=white&logoColor=black&logoWidth=0&v=2"> <img src="https://img.shields.io/github/downloads/PlayForm/Round/total?label=Download&color=black&labelColor=black&logoColor=white&logoWidth=0&v=2" alt="Download" title="Download"> </picture> </a><br><a href="https://github.com/PlayForm/Round" target="_blank"><b>Round ⬜</b></a></td></tr></table>
-
 <p align="center">
-  <img width="64" height="64" src="https://PlayForm.Cloud/Image/GitHub/Round/icon.ico?v=2" alt="Round" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://PlayForm.Cloud/Image/GitHub/Round/icon.ico?v=2">
+    <source media="(prefers-color-scheme: light)" srcset="https://PlayForm.Cloud/Image/GitHub/Round/icon.ico?v=2">
+    <img width="72" height="72" alt="Round" src="https://PlayForm.Cloud/Image/GitHub/Round/icon.ico?v=2">
+  </picture>
 </p>
 
-# Round ⬜
+---
 
-A transparent, click-through overlay that draws rounded corners on every
-connected monitor. Native on **macOS** and **Windows**; **Linux** should build
-but is untested.
+# [Round] ⬜
+
+> [!NOTE]
+>
+> A transparent, click-through overlay that draws rounded corners on every
+> connected monitor. Native on **macOS** and **Windows**; **Linux** builds but
+> is untested.
+>
+> _One tray icon. One overlay per screen. No window manager plugins._
+
+[![release](https://img.shields.io/github/v/release/PlayForm/Round?label=release&color=blue)](https://github.com/PlayForm/Round/releases)
+[![crate](https://img.shields.io/static/v1?label=crate&message=pround&color=orange)](https://crates.io/crates/pround)
+[![rust](https://img.shields.io/static/v1?label=rust&message=1.88%2B&color=orange)](https://www.rust-lang.org)
+[![license](https://img.shields.io/static/v1?label=license&message=CC0-1.0&color=lightgrey)](LICENSE)
+[![update](https://img.shields.io/github/last-commit/PlayForm/Round?label=update&color=black)](https://github.com/PlayForm/Round)
+[![issue](https://img.shields.io/github/issues/PlayForm/Round?label=issue&color=black)](https://github.com/PlayForm/Round/issues)
+[![star](https://img.shields.io/github/stars/PlayForm/Round?label=star&logo=github&color=black)](https://github.com/PlayForm/Round)
+[![download](https://img.shields.io/github/downloads/PlayForm/Round/total?label=download&color=black)](https://github.com/PlayForm/Round/releases)
 
 ![`Round`](https://PlayForm.Cloud/Image/GitHub/Round/Cover.png?v=2)
 
-## Getting started
+---
 
-`Round` ⬜ is a Tauri 2 tray app. It spawns one borderless, transparent webview
-per monitor sized to the monitor's bounds, draws four rounded corners with
-Solid, and is controlled from the system tray. State (size, theme, hidden,
-no-dock) is persisted via `tauri-plugin-store`.
+## What it does
 
-Each window is lifted above OS chrome so the corners cover the full screen:
+Round is a Tauri 2 tray application. It spawns one borderless, transparent
+webview per monitor, sized to that monitor's bounds, draws four rounded corners
+inside it with Solid, and is controlled from the system tray. Size, ink, and
+visibility are persisted through `tauri-plugin-store`, so the desktop looks the
+same after a reboot.
+
+Each window is lifted above the OS chrome, because a corner that the menu bar or
+the taskbar draws over is not a corner:
 
 - **macOS** sets `NSStatusWindowLevel`, the collection behaviour
   `canJoinAllSpaces | stationary | ignoresCycle | fullScreenAuxiliary`, and
   `setIgnoresMouseEvents:YES`. Transparency requires `macOSPrivateApi`.
 - **Windows** calls `SetWindowPos(HWND_TOPMOST, ..., SWP_NOACTIVATE)` and adds
   `WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT` on top of Tauri's
-  `WS_EX_LAYERED`.
-- **Linux** falls back to `always_on_top` + `skip_taskbar`; struts/panels may
-  still draw over the corners.
+  `WS_EX_LAYERED`, then switches off Windows 11's own corner rounding
+  (`DWMWCP_DONOTROUND`) so the drawn corners are the only ones.
+- **Linux** falls back to `always_on_top` + `skip_taskbar`; struts and panels
+  from the desktop environment may still draw over the corners.
 
-## Dependencies
+---
 
-- `tauri` 2 with the `tray-icon` and `macos-private-api` features
-- `tauri-plugin-store` for persisting size, theme, and visibility
-- `regex`, `serde`, `serde_json`
-- `objc2` (macOS only) - lifts windows above the menu bar and toggles the dock
-  activation policy
-- `windows-sys` (Windows only) - lifts windows above the taskbar
+## Install
 
-Frontend: Solid 1.9 + Vite 8 + `@tauri-apps/api` 2, bundled by
-`@playform/build`.
+### Release bundle
 
-## Options
+Download the macOS `.dmg` or the Windows installer from
+[releases](https://github.com/PlayForm/Round/releases) and launch it. Round
+lives in the tray - there is no dock window and no main window.
 
-The app has several menu items:
+> [!IMPORTANT]
+>
+> The macOS bundle is ad-hoc signed (`signingIdentity: "-"`) and not notarised,
+> because hardened-runtime signing without a Developer ID is rejected on Apple
+> Silicon. Gatekeeper asks you to confirm the first launch.
 
-- **Increase Size** ➕
-- **Decrease Size** ➖
-- **Reset** ↩️
-- **Dark** 🌑
-- **Light** ☀️
-- **Show** 👨🏻
-- **Hide** 🥷🏽
-- **No Dock** ⚓
-- **Exit** ❌
+### From source
 
-Clicking on **Increase Size** or **Decrease Size** increases or decreases the
-roundness of the windows, respectively.
+```sh
+git clone https://github.com/PlayForm/Round.git
+cd Round
+pnpm install
+pnpm run Build # vite -> Package/Web/Target
+cargo build --release
+./Target/release/round
+```
 
-**Reset** sets the corner radius back to the default value of _23px_.
+To produce the installers instead of the bare binary:
 
-**Dark** and **Light** switch the app between dark and light mode.
+```sh
+pnpm tauri build
+```
 
-**Show** and **Hide** show or hide all windows, respectively.
+### As a Rust library
 
-**No Dock** (macOS only) toggles the dock icon via
-`NSApplicationActivationPolicy.Accessory`; the menu item is checked when the
-dock icon is hidden.
+The same engine is published as a crate, so an overlay can be added to another
+Tauri application without copying this one:
 
-**Exit** closes the app.
+```sh
+cargo add pround
+```
+
+```rust
+use pround::{Overlay, Screen::Screen};
+
+// One overlay per monitor, then lift it above the OS chrome.
+let screen = Screen::of(monitor, index);
+
+let window = tauri::WebviewWindowBuilder::new(app, &screen.label, tauri::WebviewUrl::App("index.html".into()))
+	.inner_size(screen.width.into(), screen.height.into())
+	.position(screen.x.into(), screen.y.into())
+	.transparent(true)
+	.build()?;
+
+Overlay::raise(&window); // platform-correct lift, no cfg at the call site
+```
+
+The crate ships the library target and the `round` binary. The binary embeds the
+webview build (`Package/Web/Target`) at compile time, so it is built from a
+checkout where `pnpm run Build` has run - a `cargo install pround` without that
+directory has no corners to draw and the build says so.
+
+---
+
+## The tray menu
+
+- **Increase Size** ➕ - grow the corner radius by 6px.
+- **Decrease Size** ➖ - shrink it by 6px, never below 0.
+- **Reset** ↩️ - back to the default radius of _23px_.
+- **Dark** 🌑 / **Light** ☀️ - draw the corners in black or white.
+- **Show** 👨🏻 / **Hide** 🥷🏽 - show or hide every overlay at once.
+- **No Dock** ⚓ - macOS only; toggles the dock icon through
+  `NSApplicationActivationPolicy.Accessory` and is checked while the icon is
+  hidden.
+- **Exit** ❌ - quit.
+
+Every entry is one variant of `pround::Action::Action`, which owns both the menu
+identifier and the menu text; the handler is a match over `Action` and returns
+an `Effect` (`Persist`, `Dock(hidden)`, `Exit`) rather than re-deriving what the
+click meant.
+
+---
+
+## Repository layout
+
+- **`Crate/Round`** - the Rust crate, published to crates.io as **`pround`**.
+  `Source/Library.rs` is the crate root (the overlay engine), `Source/Main.rs`
+  is the `round` binary, and each domain (`Action`, `Effect`, `Message`, `Mode`,
+  `Overlay`, `Screen`, `Settings`, `Tray`) is its own PascalCase directory with
+  a `mod.rs` facade.
+- **`Package/Web`** - the webview package: Solid 1.9 + Vite 8 + Tailwind 3,
+  built by `@playform/build`'s tsconfig base into `Package/Web/Target`. The
+  crate embeds that directory at compile time; it is never copied into the
+  crate.
+- **`Documentation`** - the architecture graphs (`Knowledge.dot`,
+  `Knowledge.svg`).
+- **`.github/workflows`** - `Check`, `Build`, `Publish`, `Auto`, `Dependabot`,
+  `GitHub`.
+
+---
+
+## Development
+
+Prerequisites: the Rust **nightly** toolchain from `rust-toolchain.toml`
+(rustfmt + clippy included), Node **≥ 22.22.3**, and pnpm **12** (pinned in
+`package.json`).
+
+```sh
+pnpm install   # workspace install, Package/Web included
+pnpm run dev   # vite dev server on :1420
+pnpm tauri dev # the app against the dev server
+pnpm run Build # production webview build
+cargo build    # debug binary at Target/debug/round
+cargo clippy --workspace --all-targets -- -D warnings
+cargo fmt --all -- --check
+```
+
+`Cargo.lock` is deliberately untracked: the crate publishes to crates.io and
+every consumer resolves its own graph. `Target/` and `Package/Web/Target/` are
+build output and are ignored.
+
+---
+
+## Continuous integration
+
+- **`Check.yml`** - on every push and pull request to `Current`: builds the
+  webview package once, shares it as an artifact, then runs `cargo fmt --check`,
+  `cargo clippy -D warnings`, `cargo check`, and a packaging guard that asserts
+  the crate's own files (`Source/`, `icons/`, `tauri.conf.json`) are in the
+  published tarball.
+- **`Build.yml`** - on a `Round/v*` tag: creates the release once, then bundles
+  on macOS (arm64 and x86_64), Linux, and Windows, checksums every artifact,
+  attaches them to the release, and fails if a platform is missing.
+- **`Publish.yml`** - on a `Round/v*` tag: the packaging guard and a library
+  consumer probe run against the crate. Publishing to crates.io is an explicit
+  opt-in (`workflow_dispatch` with `publish_crates=true`), so a tag push can
+  never burn an immutable version; it authenticates through crates.io trusted
+  publishing (OIDC, no stored registry token) and skips a version that is
+  already live.
+- **`Auto.yml`** - a daily heartbeat that touches `.github/Update.md`, nothing
+  else.
+- **`Dependabot.yml`** - daily updates for npm, cargo, and GitHub Actions, with
+  Tailwind pinned to 3.x.
+
+---
 
 ## Changelog
 
-See [`CHANGELOG.md`](https://github.com/PlayForm/Round/blob/Current/CHANGELOG.md) for a history of changes to this app.
+See
+[`CHANGELOG.md`](https://github.com/PlayForm/Round/blob/Current/CHANGELOG.md)
+for a history of changes to this app.
+
+## License
+
+[CC0-1.0](LICENSE) - public domain dedication.
