@@ -1,11 +1,12 @@
 //! The Menu window: the app's controls, in a panel that opens under the tray
 //! icon and behaves like that icon's menu.
 //!
-//! The tray menu itself is native - `muda` draws it, so it cannot be HTML.
-//! Everything a list of menu items cannot express (a radius per monitor, a value
-//! you can read while dragging it) lives in this window instead. It is a window,
-//! but it is used as a menu: it opens on click, closes when it loses focus,
-//! hugs its content, never appears in the taskbar and never sits in the dock.
+//! It is Round's only control surface - the tray is an icon and a click, with
+//! no native menu behind it. Everything the app can be told to do lives here,
+//! including what a list of menu items could never express: a radius per
+//! monitor, a value you can read while dragging it. It is a window, but it is
+//! used as a menu: it opens on click, closes when it loses focus, hugs its
+//! content, never appears in the taskbar and never sits in the dock.
 
 use std::{
 	sync::Mutex,
@@ -82,9 +83,9 @@ pub struct Monitor {
 
 /// Show the panel under `anchor`, or hide it when it is already open.
 ///
-/// `anchor` is the tray icon's rect; without one (the menu entry) the panel
-/// centres itself.
-pub fn toggle<R:Runtime>(app:&AppHandle<R>, anchor:Option<Rect>) -> tauri::Result<()> {
+/// `anchor` is the tray icon's rect: the panel opens under the icon, on
+/// whichever screen that icon lives on.
+pub fn toggle<R:Runtime>(app:&AppHandle<R>, anchor:Rect) -> tauri::Result<()> {
 	let window = match app.get_webview_window(Label) {
 		Some(window) => window,
 		None => build(app)?,
@@ -178,13 +179,7 @@ fn build<R:Runtime>(app:&AppHandle<R>) -> tauri::Result<WebviewWindow<R>> {
 	Ok(window)
 }
 
-fn place<R:Runtime>(app:&AppHandle<R>, window:&WebviewWindow<R>, anchor:Option<Rect>) {
-	let Some(anchor) = anchor else {
-		let _ = window.center();
-
-		return;
-	};
-
+fn place<R:Runtime>(app:&AppHandle<R>, window:&WebviewWindow<R>, anchor:Rect) {
 	let scale = window.scale_factor().unwrap_or(1.0);
 
 	let (x, y, width, height) = physical(&anchor, scale);

@@ -1,7 +1,7 @@
 # Architecture
 
 How Round is put together: two workspace crates, one pnpm package, one process,
-one webview per monitor.
+one webview per monitor plus the menu window that drives them.
 
 ---
 
@@ -34,13 +34,11 @@ the crate has a Rust toolchain and none. Keeping them apart is what lets
 Each domain is a PascalCase directory with a `mod.rs` facade; `Library.rs`
 declares them and holds nothing else.
 
-- **`Action`** - every command the tray can send. One variant per menu entry,
-  owning both its identifier (`increase`) and its label
-  (`Increase Size\u{2001}➕`), plus `Action::of(id)` derived from a single
-  `Every` array so the lookup cannot drift from the menu.
-- **`Effect`** - what the caller does after an action is applied: `Persist`,
-  `Dock(hidden)`, `Exit`. A value, not a flag: the tray matches on it instead of
-  re-deriving intent from the action id.
+- **`Menu`** - the menu window, and the app's whole control surface. It builds a
+  borderless, transparent, always-on-top webview (`menu.html`) under the tray
+  icon, toggles it on a click, dismisses it when it really loses focus, and
+  exposes the panel's commands - `state`, `set_size`, `set_mode`, `set_hidden`,
+  `set_dock`, `reset`, `quit` - each of which returns the state to render.
 - **`Mode`** - the two inks a corner can be drawn in. Serialises to the
   lowercase word the webview reads (`dark`, `light`); unknown store values fall
   back to the default.
@@ -48,9 +46,8 @@ declares them and holds nothing else.
   `Message::Size(i64)` inside `Payload { message }`, externally tagged so the
   frontend reads `payload.message.Size`.
 - **`Settings`** - the persisted state (`size`, `mode`, `hidden`,
-  `dock_hidden`), its store file (`settings.json`), `next(action)` → the new
-  state plus an `Effect`, the `window.settings` init script, per-window
-  visibility, and the broadcast to every window.
+  `dock_hidden`), its store file (`settings.json`), the `window.settings` init
+  script, per-window visibility, and the broadcast to every window.
 - **`Screen`** - one monitor resolved to the window label and the logical bounds
   a webview window takes. Labels keep ASCII alphanumerics only (Tauri rejects
   the rest); an unnamed monitor becomes `monitor<index>`.
@@ -67,9 +64,9 @@ declares them and holds nothing else.
       draw a second set of corners.
     - `Linux.rs` - nothing beyond the builder's `always_on_top` +
       `skip_taskbar`; a compositor may still draw panels over the corners.
-- **`Tray`** - the tray icon, its menu, and the event handler. The menu is built
-  from `Action`'s own identifiers and labels; the handler is one match over
-  `Effect`.
+- **`Tray`** - the tray icon and its click, nothing else. No native menu is
+  attached: a click calls `Menu::toggle`, so the tray owns no command, no label
+  and no state.
 
 The graph in [`Knowledge.dot`](Knowledge.dot) (rendered to `Knowledge.svg`) is
 the same map with the edges drawn.
@@ -88,7 +85,9 @@ the same map with the edges drawn.
    non-resizable, always-on-top webview at the monitor's logical bounds, run the
    init script (`window.settings = {"size":23,"mode":"dark"};`), build it
    hidden, `Overlay::raise` it, then show it unless the saved state is hidden.
-5. `Tray::install` builds the menu and attaches the handler.
+5. `Tray::install` builds the icon and wires its click to `Menu::toggle`. The
+   menu window itself is built on the first click, not at startup, so a launch
+   that never opens the panel never pays for it.
 
 ---
 
@@ -96,19 +95,19 @@ the same map with the edges drawn.
 
 ```
 tray click
-  -> Action::of(event.id)
-  -> Settings::load(&store).next(action)   ->  (Settings, Effect)
-  -> Settings::save(&store)
-  -> match Effect
-       Persist    -> broadcast
-       Dock(x)    -> Overlay::dock(!x) + broadcast
-       Exit       -> app.exit(0)
+  -> Menu::toggle(app, rect)
+       hidden -> place under the icon, show, focus
+       visible -> hide
+  -> the panel invokes a command: state / set_size / set_mode /
+     set_hidden / set_dock / reset / quit
+  -> Settings::load(&store) -> mutate -> Settings::save(&store)
   -> broadcast: for every window emit "size", emit "mode", apply visibility
+  -> the command returns the new State, which the panel renders
 ```
 
 The webview is deliberately dumb: it holds no state of its own beyond two
 signals initialised from `window.settings` and updated by those events. All
-decisions - including the size step and the reset value - live in Rust.
+decisions - including the reset value and the clamp - live in Rust.
 
 ---
 
@@ -129,15 +128,17 @@ decisions - including the size step and the reset value - live in Rust.
   and rotates the four corners.
 
 Both `data-mode` and `--Corner` are emitted inside Solid render effects that
-read the signal accessors, so the tray's changes repaint live.
+read the signal accessors, so the panel's changes repaint live.
 
 ---
 
 ## Where to change what
 
-- **A new tray command** - one `Action` variant, its `id()`/`label()` arms, and
-  an arm in `Settings::next`. If it has a side effect the settings cannot
-  express, add an `Effect` variant and match it in `Tray::install`.
+- **A new control** - a `#[tauri::command]` on `Menu` that mutates `Settings`
+  and returns the `State` the panel should render, its entry in the
+  `invoke_handler` in `Main.rs`, and the row in `Package/Web/Source/Menu.tsx`
+  that calls it. Add the field to `Menu::State` when the panel has to display
+  it.
 - **A new persisted setting** - a field on `Settings`, its key in `load`/`save`,
   and (if the webview needs it) a field in `window.settings` plus the matching
   TypeScript type in `Package/Web/Source/Type/Settings.ts`.

@@ -35,9 +35,9 @@
 
 Round is a Tauri 2 tray application. It spawns one borderless, transparent
 webview per monitor, sized to that monitor's bounds, draws four rounded corners
-inside it with Solid, and is controlled from the system tray. Size, ink, and
-visibility are persisted through `tauri-plugin-store`, so the desktop looks the
-same after a reboot.
+inside it with Solid, and is controlled from a panel that opens under the tray
+icon. Size, ink, and visibility are persisted through `tauri-plugin-store`, so
+the desktop looks the same after a reboot.
 
 Each window is lifted above the OS chrome, because a corner that the menu bar or
 the taskbar draws over is not a corner:
@@ -60,7 +60,8 @@ the taskbar draws over is not a corner:
 
 Download the macOS `.dmg` or the Windows installer from
 [releases](https://github.com/PlayForm/Round/releases) and launch it. Round
-lives in the tray - there is no dock window and no main window.
+lives in the tray: the icon opens its controls, and there is no dock window and
+no main window.
 
 > [!IMPORTANT]
 >
@@ -122,22 +123,28 @@ directory has no corners to draw and the build says so.
 
 ---
 
-## The tray menu
+## The menu window
 
-- **Increase Size** ➕ - grow the corner radius by 6px.
-- **Decrease Size** ➖ - shrink it by 6px, never below 0.
-- **Reset** ↩️ - back to the default radius of _23px_.
-- **Dark** 🌑 / **Light** ☀️ - draw the corners in black or white.
-- **Show** 👨🏻 / **Hide** 🥷🏽 - show or hide every overlay at once.
-- **No Dock** ⚓ - macOS only; toggles the dock icon through
-  `NSApplicationActivationPolicy.Accessory` and is checked while the icon is
-  hidden.
-- **Exit** ❌ - quit.
+The tray icon carries no native menu. Clicking it opens a panel under the icon -
+a real window, drawn by the same webview stack as the overlays and used as a
+menu: it hugs its content, closes when it loses focus, and never appears in the
+taskbar or the dock.
 
-Every entry is one variant of `pround::Action::Action`, which owns both the menu
-identifier and the menu text; the handler is a match over `Action` and returns
-an `Effect` (`Persist`, `Dock(hidden)`, `Exit`) rather than re-deriving what the
-click meant.
+- **All monitors** - one slider for the default corner radius (_23px_ on a fresh
+  install). Moving it drops the per-monitor overrides, because "all monitors" is
+  what you meant.
+- **A row per monitor** - that monitor's radius, read while you drag it, and a
+  ↺ that hands the monitor back to the default.
+- **Appearance** - **Dark** or **Light**: draw the corners in black or white.
+- **Overlay** - **Show** or **Hide** every overlay at once.
+- **Dock icon** - macOS only; unticking it hides the dock icon through
+  `NSApplicationActivationPolicy.Accessory`.
+- **Quit Round** - quit.
+
+Each control is one Tauri command on `pround::Menu` - `state`, `set_size`,
+`set_mode`, `set_hidden`, `set_dock`, `reset`, `quit` - and each returns the
+state the panel should now render, so the panel never keeps a second copy of the
+truth. `Settings` remains the only place the values live.
 
 ---
 
@@ -145,9 +152,9 @@ click meant.
 
 - **`Crate/Round`** - the Rust crate, published to crates.io as **`pround`**.
   `Source/Library.rs` is the crate root (the overlay engine), `Source/Main.rs`
-  is the `round` binary, and each domain (`Action`, `Effect`, `Message`, `Mode`,
-  `Overlay`, `Screen`, `Settings`, `Tray`) is its own PascalCase directory with
-  a `mod.rs` facade.
+  is the `round` binary, and each domain (`Menu`, `Message`, `Mode`, `Overlay`,
+  `Screen`, `Settings`, `Tray`) is its own PascalCase directory with a `mod.rs`
+  facade.
 - **`Package/Web`** - the webview package: Solid 1.9 + Vite 8 + Tailwind 3,
   built by `@playform/build`'s tsconfig base into `Package/Web/Target`. The
   crate embeds that directory at compile time; it is never copied into the
@@ -171,7 +178,7 @@ click meant.
 ## Documentation
 
 - **[Architecture](Documentation/Architecture.md)** - the module map, the
-  startup sequence, the tray → settings → webview event flow, the webview
+  startup sequence, the menu window → settings → webview event flow, the webview
   contract, and where to change what.
 - **[Releasing](Documentation/Releasing.md)** - one version in `Cargo.toml`, the
   `Maintain` CLI that writes it everywhere, the `Round/v*` tag, the opt-in

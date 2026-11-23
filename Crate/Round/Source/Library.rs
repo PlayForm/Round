@@ -9,8 +9,9 @@
 //!
 //! * the `round` binary (`Source/Main.rs`) - the tray application;
 //! * this library - [`Settings`](Settings::Settings), [`Mode`](Mode::Mode),
-//!   [`Action`](Action::Action) and [`Overlay`], for anyone embedding the same
-//!   overlay in their own Tauri app (`cargo add pround`).
+//!   [`Overlay`], the [`Tray`](Tray::install) icon and the [`Menu`](Menu) panel
+//!   that drives them, for anyone embedding the same overlay in their own Tauri
+//!   app (`cargo add pround`).
 //!
 //! House style: module directories and item names are PascalCase, so the
 //! snake_case module lint is switched off crate-wide rather than renamed away
@@ -24,8 +25,6 @@
 // the lint is switched off crate-wide rather than re-branching every site.
 #![allow(clippy::obfuscated_if_else)]
 
-pub mod Action;
-pub mod Effect;
 pub mod Menu;
 pub mod Message;
 pub mod Mode;

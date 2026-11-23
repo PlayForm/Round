@@ -63,7 +63,7 @@ fn main() {
 				settings.visible(&window)
 			})?;
 
-			Tray::install(app.handle(), &settings)?;
+			Tray::install(app.handle())?;
 
 			Ok(())
 		})

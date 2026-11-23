@@ -28,10 +28,9 @@ digraph Round {
         fillcolor = "#58D68D20";
         "Main" [label = "Main.rs\nround binary";shape = note;fillcolor = "#FADBD8";penwidth = 1;];
         "Library" [label = "Library.rs\ncrate root";shape = note;fillcolor = "#FADBD8";penwidth = 1;];
+        "Menu" [label = "Menu";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
         "Settings" [label = "Settings";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
         "Mode" [label = "Mode";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
-        "Action" [label = "Action";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
-        "Effect" [label = "Effect";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
         "Message" [label = "Message";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
         "Screen" [label = "Screen";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
         "Tray" [label = "Tray";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
@@ -44,6 +43,7 @@ digraph Round {
         color = "#AF7AC5";
         fillcolor = "#AF7AC520";
         "Index" [label = "Index.tsx";shape = note;fillcolor = "#FADBD8";penwidth = 1;];
+        "Panel" [label = "Menu.tsx";shape = note;fillcolor = "#FADBD8";penwidth = 1;];
         "Corner" [label = "Corner.tsx";shape = note;fillcolor = "#FADBD8";penwidth = 1;];
         "Style" [label = "Asset/CSS";shape = note;fillcolor = "#FADBD8";penwidth = 1;];
     }
@@ -66,8 +66,7 @@ digraph Round {
     "repository" -> "documentation" [label = "Contain"; style = solid; color = "blue"; weight = 2; arrowsize = 0.8;];
     
     "Main" -> "Library" [label = "uses"; style = solid; color = "blue"; arrowsize = 0.8;];
-    "Library" -> "Action" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
-    "Library" -> "Effect" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
+    "Library" -> "Menu" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
     "Library" -> "Message" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
     "Library" -> "Mode" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
     "Library" -> "Overlay" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
@@ -78,9 +77,9 @@ digraph Round {
     "Main" -> "Screen" [label = "one window per monitor"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Main" -> "Overlay" [label = "raise"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Main" -> "Tray" [label = "install"; style = solid; color = "blue"; arrowsize = 0.8;];
-    "Tray" -> "Action" [label = "menu items"; style = solid; color = "blue"; arrowsize = 0.8;];
-    "Tray" -> "Settings" [label = "apply"; style = solid; color = "blue"; arrowsize = 0.8;];
-    "Tray" -> "Effect" [label = "match"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Main" -> "Menu" [label = "commands"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Tray" -> "Menu" [label = "toggle"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Menu" -> "Settings" [label = "mutate"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Settings" -> "Mode" [label = "typed field"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Settings" -> "Message" [label = "broadcast"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Settings" -> "store" [label = "persist"; style = dashed; color = "red"; arrowsize = 0.8;];
@@ -88,14 +87,19 @@ digraph Round {
     "Overlay" -> "objc2" [label = "macOS"; style = dashed; color = "red"; arrowsize = 0.8;];
     "Overlay" -> "win" [label = "Windows"; style = dashed; color = "red"; arrowsize = 0.8;];
     "Main" -> "tauri" [label = "runtime"; style = dashed; color = "red"; arrowsize = 0.8;];
-    "Tray" -> "tauri" [label = "tray + menu"; style = dashed; color = "red"; arrowsize = 0.8;];
+    "Tray" -> "tauri" [label = "tray icon"; style = dashed; color = "red"; arrowsize = 0.8;];
+    "Menu" -> "tauri" [label = "window"; style = dashed; color = "red"; arrowsize = 0.8;];
     
     "web" -> "Index" [label = "entry"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "web" -> "Panel" [label = "entry"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Index" -> "Corner" [label = "four corners"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Index" -> "Style" [label = "Window.css"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Panel" -> "Style" [label = "Menu.css"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Corner" -> "Style" [label = "Corner.css"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Index" -> "api" [label = "listen"; style = dashed; color = "red"; arrowsize = 0.8;];
     "Index" -> "solid" [label = "signals"; style = dashed; color = "red"; arrowsize = 0.8;];
+    "Panel" -> "api" [label = "invoke"; style = dashed; color = "red"; arrowsize = 0.8;];
+    "Panel" -> "solid" [label = "signals"; style = dashed; color = "red"; arrowsize = 0.8;];
     
     subgraph cluster_legend {
         label = "Legend";

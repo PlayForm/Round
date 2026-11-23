@@ -7,8 +7,6 @@ use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow};
 use tauri_plugin_store::Store;
 
 use crate::{
-	Action::Action,
-	Effect::Effect,
 	Message::{Message, Payload},
 	Mode::Mode,
 };
@@ -17,8 +15,8 @@ use crate::{
 ///
 /// `size` is the default every monitor takes; `sizes` holds the monitors that
 /// were tuned on their own, keyed by their window label. A monitor with no entry
-/// follows the default - which is what makes "Increase" a global gesture and a
-/// slider in the controls window a per-monitor one.
+/// follows the default - which is what makes the all-monitors slider one gesture
+/// and a per-monitor slider a local one.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Settings {
 	pub size:i64,
@@ -46,10 +44,7 @@ impl Settings {
 	/// Corner radius, in logical pixels, on a fresh install.
 	pub const Size:i64 = 23;
 
-	/// How far one Increase/Decrease click moves the radius.
-	pub const Step:i64 = 6;
-
-	/// The largest radius the controls window offers.
+	/// The largest radius the menu window offers.
 	pub const Maximum:i64 = 120;
 
 	/// The store file `tauri-plugin-store` writes under the app config dir.
@@ -90,44 +85,6 @@ impl Settings {
 				self.sizes.clear();
 			}
 		}
-	}
-
-	/// Move the default and every override together, so a global step keeps the
-	/// per-monitor relationships a user set up.
-	fn shift(&mut self, delta:i64) {
-		self.size = (self.size + delta).clamp(0, Self::Maximum);
-
-		self.sizes
-			.iter_mut()
-			.for_each(|(_, size)| *size = (*size + delta).clamp(0, Self::Maximum));
-	}
-
-	/// Apply one tray command and say what the caller does next.
-	///
-	/// The whole menu is one match over a domain enum: no string comparison
-	/// survives past [`Action::of`], and the follow-up work is returned as an
-	/// [`Effect`] instead of being re-derived at the call site.
-	pub fn next(mut self, action:Action) -> (Self, Effect) {
-		match action {
-			Action::Increase => self.shift(Self::Step),
-			Action::Decrease => self.shift(-Self::Step),
-			Action::Reset => self.clear(None),
-			Action::Dark => self.mode = Mode::Dark,
-			Action::Light => self.mode = Mode::Light,
-			Action::Show => self.hidden = false,
-			Action::Hide => self.hidden = true,
-			Action::Dock => {
-				self.dock_hidden = !self.dock_hidden;
-
-				let hidden = self.dock_hidden;
-
-				return (self, Effect::Dock(hidden));
-			}
-			Action::Menu => return (self, Effect::Menu),
-			Action::Exit => return (self, Effect::Exit),
-		}
-
-		(self, Effect::Persist)
 	}
 
 	/// Read the settings back, falling back per field to [`Settings::default`].
@@ -194,7 +151,7 @@ impl Settings {
 
 	/// Push the current state to every overlay window.
 	///
-	/// The controls window is skipped: it is an ordinary window, and hiding or
+	/// The menu window is skipped: it is an ordinary window, and hiding or
 	/// resizing it with the overlays would take away the panel the user is using.
 	pub fn broadcast<R:Runtime>(&self, app:&AppHandle<R>) {
 		app.webview_windows()

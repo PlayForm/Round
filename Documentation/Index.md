@@ -8,7 +8,7 @@ historical record.
 ## Guides
 
 - **[Architecture](Architecture.md)** - the three packages, the module map, the
-  startup sequence, the tray → settings → webview event flow, the webview
+  startup sequence, the menu window → settings → webview event flow, the webview
   contract, and where to change what.
 - **[Releasing](Releasing.md)** - the version in `Cargo.toml` and the `Maintain`
   CLI that writes it everywhere, the `Round/v*` tag, what each workflow does,
@@ -29,8 +29,8 @@ dot -Tsvg Documentation/Knowledge.dot -o Documentation/Knowledge.svg
 
 ## Outside this directory
 
-- **[`README.md`](../README.md)** - what Round is, install paths, the tray menu,
-  the repository layout, development commands.
+- **[`README.md`](../README.md)** - what Round is, install paths, the menu
+  window, the repository layout, development commands.
 - **[`CHANGELOG.md`](../CHANGELOG.md)** - what changed in each version.
 - **[`.github/workflows/`](../.github/workflows)** - `Check.yml`, `Build.yml`,
   `Publish.yml`, `Auto.yml`; `Dependabot.yml` covers GitHub Actions, both npm
