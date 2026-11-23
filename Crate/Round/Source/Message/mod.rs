@@ -1,10 +1,6 @@
 //! What the tray broadcasts to the corner windows.
 
-mod Payload;
-
 use serde::Serialize;
-
-pub use Payload::Payload;
 
 use crate::Mode::Mode;
 
@@ -17,4 +13,10 @@ use crate::Mode::Mode;
 pub enum Message {
 	Mode(Mode),
 	Size(i64),
+}
+
+/// The envelope Tauri hands to a `listen` callback.
+#[derive(Clone, Copy, Debug, Serialize)]
+pub struct Payload {
+	pub message:Message,
 }

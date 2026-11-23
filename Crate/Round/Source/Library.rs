@@ -17,6 +17,12 @@
 //! at every declaration.
 #![allow(non_snake_case)]
 #![allow(non_upper_case_globals)]
+// House style: a two-branch decision is a value, not a branch - the condition
+// carries the value (`Cond.then(..).unwrap_or(B)`), so the call site reads as one
+// expression instead of a statement with two arms. That is the opposite of
+// `obfuscated_if_else`'s default, which asks for the `if .. else ..` back, so
+// the lint is switched off crate-wide rather than re-branching every site.
+#![allow(clippy::obfuscated_if_else)]
 
 pub mod Action;
 pub mod Effect;

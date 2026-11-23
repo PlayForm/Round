@@ -24,7 +24,7 @@ impl Mode {
 	/// Read a mode back from the store. Anything unrecognised - a hand-edited
 	/// settings file, a value written by a future version - falls back to the
 	/// same default a fresh install gets, never an error at startup.
-	pub fn of(value: &str) -> Self {
+	pub fn of(value:&str) -> Self {
 		match value {
 			"light" => Self::Light,
 			_ => Self::Dark,
@@ -33,7 +33,7 @@ impl Mode {
 }
 
 impl Serialize for Mode {
-	fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+	fn serialize<S:Serializer>(&self, serializer:S) -> Result<S::Ok, S::Error> {
 		serializer.serialize_str(self.as_str())
 	}
 }

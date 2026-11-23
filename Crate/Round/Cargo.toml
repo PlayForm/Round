@@ -11,17 +11,13 @@ readme = "../../README.md"
 keywords = ["tauri", "rounded", "overlay", "monitor", "tray"]
 categories = ["gui"]
 
-# `Web/` is vite's output, mirrored here by `Package/Web/Script/Embed.mjs` and
-# gitignored. It MUST ship: `tauri::generate_context!` embeds the frontend into
-# the binary at compile time, so `cargo install pround` has to work on a machine
-# with no Node toolchain. An `include` list overrides .gitignore, which is the
-# only reason those files reach crates.io at all.
+# `Package/Web/Target` is vite's output and is embedded into the binary at
+# compile time. It lives outside the crate, so there is nothing to stage; the
+# library target does not need it at all.
 include = [
 	"/Source/**",
-	"/Web/**",
 	"/icons/**",
 	"/capabilities/**",
-	"/gen/**",
 	"/tauri.conf.json",
 	"/build.rs",
 ]

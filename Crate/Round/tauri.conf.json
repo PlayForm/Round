@@ -7,7 +7,7 @@
 		"beforeBuildCommand": "pnpm run Build",
 		"beforeDevCommand": "pnpm run dev",
 		"devUrl": "http://localhost:1420",
-		"frontendDist": "Web"
+		"frontendDist": "../../Package/Web/Target"
 	},
 	"app": {
 		"macOSPrivateApi": true,

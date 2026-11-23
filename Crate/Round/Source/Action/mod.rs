@@ -23,7 +23,7 @@ pub enum Action {
 impl Action {
 	/// Every command, in one place, so [`Action::of`] cannot drift from the
 	/// identifiers the menu items were built with.
-	pub const Every: [Self; 9] = [
+	pub const Every:[Self; 9] = [
 		Self::Increase,
 		Self::Decrease,
 		Self::Reset,
@@ -65,7 +65,5 @@ impl Action {
 		}
 	}
 
-	pub fn of(id: &str) -> Option<Self> {
-		Self::Every.into_iter().find(|action| action.id() == id)
-	}
+	pub fn of(id:&str) -> Option<Self> { Self::Every.into_iter().find(|action| action.id() == id) }
 }
