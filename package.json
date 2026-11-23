@@ -18,15 +18,18 @@
 		"url": "https://PlayForm.Cloud"
 	},
 	"type": "module",
-	"packageManager": "pnpm@12.16.1",
-	"engines": {
-		"node": "^22.22.3 || ^24.15.0 || >=26.0.0"
-	},
 	"scripts": {
 		"Build": "pnpm --filter @application/round-web run Build",
 		"dev": "pnpm --filter @application/round-web run dev",
 		"serve": "pnpm --filter @application/round-web run serve",
 		"start": "pnpm --filter @application/round-web run dev",
-		"tauri": "pnpm --filter @application/round-web run tauri"
+		"tauri": "tauri"
+	},
+	"devDependencies": {
+		"@tauri-apps/cli": "2.12.6"
+	},
+	"packageManager": "pnpm@12.16.1",
+	"engines": {
+		"node": "^22.22.3 || ^24.15.0 || >=26.0.0"
 	}
 }
