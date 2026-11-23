@@ -19,7 +19,9 @@ name = "Maintain"
 path = "Source/Main.rs"
 
 [dependencies]
+# One error type for the whole binary: every failure is a message for a human,
+# and nothing here matches on a variant.
+anyhow = "1.0.105"
 clap = { version = "4.6.9", features = ["derive"] }
 serde_json = "1.0.154"
-thiserror = "2.0.21"
 toml_edit = "0.25.20"
