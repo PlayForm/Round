@@ -7,7 +7,7 @@ the npm packages and `pround`.
 
 ---
 
-## Unreleased
+## 0.0.10
 
 ### Repository
 
@@ -50,7 +50,7 @@ the npm packages and `pround`.
   failing the package: a library consumer never expands `generate_context!` and
   must not be blocked by a frontend it does not need.
 - The crate name was reserved on crates.io as `pround` 0.0.1 (a one-version
-  stub); this release is 0.0.9, which supersedes it.
+  stub); this release is 0.0.10, which supersedes it.
 
 ### Webview (`@application/round-web`)
 
