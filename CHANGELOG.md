@@ -18,6 +18,10 @@ the npm packages and `pround`.
 - `Action`, `Effect` and `Settings::next` are gone with the menu they modelled:
   the panel's `#[tauri::command]`s are the command surface, and `Settings` is
   still the only place the values live.
+- Any button on the tray icon toggles the Menu window: left, right and middle
+  all open it when it is closed and close it when it is open. A right click used
+  to reach the native menu; with no menu left there is nothing for it to show,
+  so it is the same switch as every other button.
 
 ### Dependencies
 

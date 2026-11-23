@@ -19,14 +19,22 @@ pub fn install<R:Runtime>(app:&AppHandle<R>) -> tauri::Result<()> {
 		.icon_as_template(true)
 		.icon(tauri::include_image!("icons/tray.png"))
 		.on_tray_icon_event(|tray, event| {
-			let TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, rect, .. } =
-				event
-			else {
+			// A click counts on the way up: the down half of a press that ends
+			// somewhere else, or a button still held, is not a click yet.
+			let TrayIconEvent::Click { button, button_state: MouseButtonState::Up, rect, .. } = event else {
 				return;
 			};
 
-			if let Err(error) = crate::Menu::toggle(tray.app_handle(), rect) {
-				eprintln!("round: the menu window could not be opened: {error}");
+			// Every button is the same switch, because there is no menu behind
+			// the icon for a right click to open. The match is exhaustive on
+			// purpose: a button the platform grows later has to be wired here
+			// rather than quietly ignored.
+			match button {
+				MouseButton::Left | MouseButton::Right | MouseButton::Middle => {
+					if let Err(error) = crate::Menu::toggle(tray.app_handle(), rect) {
+						eprintln!("round: the menu window could not be opened: {error}");
+					}
+				}
 			}
 		})
 		.build(app)?;
