@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
-# Build, sign, package and publish a Round release.
+# Build, sign, package and publish a macOS Round release by hand.
+#
+# CI does this on a `Round/v*` tag (.github/workflows/Build.yml); this script is
+# the local equivalent, for a signed build produced on a machine that holds the
+# updater key.
 #
 # Prompts for:
 #   - the Tauri signing-key password (hidden input)
 #   - the GitHub release tag to upload assets to (e.g. Round/v0.0.9)
 #
-# Requires: dum, gh (authenticated), codesign, ditto. Round.key must be
-# present in the repo root and remain gitignored.
+# Requires: pnpm, gh (authenticated), codesign, ditto. Round.key must be present
+# in the repo root and remain gitignored.
 
 set -euo pipefail
 
@@ -36,14 +40,16 @@ read -r TAG
 TAG="${TAG:-$DEFAULT_TAG}"
 
 # --- Build (signed) ----------------------------------------------------------
+# The Tauri CLI runs from the repository root: it finds Crate/Round's
+# tauri.conf.json by walking down and treats the root as the frontend directory.
 # shellcheck disable=SC2155
 export TAURI_SIGNING_PRIVATE_KEY="$(cat "$KEY_FILE")"
 export TAURI_SIGNING_PRIVATE_KEY_PASSWORD
 
-dum tauri build
+pnpm tauri build --bundles app,dmg
 
 # --- Verify the signature does NOT carry the runtime flag --------------------
-APP="src-tauri/Target/release/bundle/macos/Round.app"
+APP="Target/release/bundle/macos/Round.app"
 
 if [[ ! -d "$APP" ]]; then
 	echo "Error: $APP not found after build." >&2
@@ -55,12 +61,12 @@ echo "$CODE_LINE"
 
 if echo "$CODE_LINE" | grep -q "runtime"; then
 	echo "Error: bundle is hardened-runtime signed - Apple Silicon will reject the download." >&2
-	echo "Set bundle.macOS.hardenedRuntime to false in tauri.conf.json and rebuild." >&2
+	echo "Set bundle.macOS.hardenedRuntime to false in Crate/Round/tauri.conf.json and rebuild." >&2
 	exit 1
 fi
 
 # --- Package with ditto so xattrs / symlinks / +x survive --------------------
-BUNDLE_DIR="src-tauri/Target/release/bundle"
+BUNDLE_DIR="Target/release/bundle"
 ZIP="$BUNDLE_DIR/macos/Round.app.zip"
 # shellcheck disable=SC2012
 DMG=$(ls "$BUNDLE_DIR/dmg"/Round_*_aarch64.dmg 2>/dev/null | head -n1 || true)
