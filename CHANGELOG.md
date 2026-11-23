@@ -9,7 +9,21 @@ the npm packages and `pround`.
 
 ## Unreleased
 
-_(nothing yet)_
+### Crate (`pround`)
+
+- The tray icon no longer carries a native menu. Every control - the radius for
+  all monitors and for each monitor on its own, appearance, show/hide, the dock
+  toggle and quit - lives in the Menu window a click on the icon opens, which
+  was already doing the job and is now the only way in.
+- `Action`, `Effect` and `Settings::next` are gone with the menu they modelled:
+  the panel's `#[tauri::command]`s are the command surface, and `Settings` is
+  still the only place the values live.
+
+### Dependencies
+
+- `solid-js` pinned back to 1.9.20. 2.0.3 removed the `solid-js/web` entry point
+  this code imports and is outside `vite-plugin-solid` 2.x's `^1.7.2` peer
+  range, so `pnpm run Build` failed with `"./web" is not exported`.
 
 ---
 
