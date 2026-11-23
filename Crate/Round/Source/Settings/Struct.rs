@@ -2,10 +2,7 @@
 
 use std::collections::BTreeMap;
 
-use crate::{
-	Mode::Enum::Enum as Mode,
-	Visibility::Enum::Enum as Visibility,
-};
+use crate::{Mode::Enum::Enum as Mode, Visibility::Enum::Enum as Visibility};
 
 /// Everything Round persists between launches.
 ///

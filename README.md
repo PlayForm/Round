@@ -96,18 +96,21 @@ cargo add pround
 ```
 
 ```rust
-use pround::{Overlay, Screen::Screen};
+use pround::{
+	Overlay::{Layer::Trait::Trait as _, Platform::Struct as Platform},
+	Screen::Of as ScreenOf,
+	Window::Chrome,
+};
 
 // One overlay per monitor, then lift it above the OS chrome.
-let screen = Screen::of(monitor, index);
+let Screen = ScreenOf::Fn(monitor, index);
 
-let window = tauri::WebviewWindowBuilder::new(app, &screen.label, tauri::WebviewUrl::App("index.html".into()))
-	.inner_size(screen.width.into(), screen.height.into())
-	.position(screen.x.into(), screen.y.into())
-	.transparent(true)
+let Window = Chrome::Fn(tauri::WebviewWindowBuilder::new(app, &Screen.Label, tauri::WebviewUrl::App("index.html".into())), "")
+	.inner_size(Screen.Width.into(), Screen.Height.into())
+	.position(Screen.X.into(), Screen.Y.into())
 	.build()?;
 
-Overlay::art(&window); // platform-correct lift, no cfg at the call site
+Platform::Art(&Window); // platform-correct lift, no cfg at the call site
 ```
 
 The crate ships the library target and the `round` binary. The binary embeds the
@@ -147,22 +150,30 @@ closed.
   `NSApplicationActivationPolicy.Accessory`.
 - **Quit Round** - quit.
 
-Each control is one Tauri command on `pround::Menu` - `state`, `set_size`,
-`set_mode`, `set_hidden`, `set_dock`, `reset`, `quit` - and each returns the
-state the panel should now render, so the panel never keeps a second copy of the
-truth. `Settings` remains the only place the values live. The one command that
-is not a control is `dismiss`, which the backdrop's own document invokes on a
-pointer-down: it hides the panel and the backdrop together, and is idempotent.
+Each control is one Tauri command on `pround::Menu::Command` - `state`,
+`set_size`, `set_mode`, `set_hidden`, `set_dock`, `reset`, `quit` - and each
+returns the state the panel should now render, so the panel never keeps a second
+copy of the truth. The function lives in the leaf named after it
+(`Menu::Command::Size::Size`) and pins the name the webview invokes with
+`#[tauri::command(rename = "set_size")]`, so the tree can be PascalCase while the
+wire stays snake_case. `Settings` remains the only place the values live. The one
+command that is not a control is `dismiss`, which the backdrop's own document
+invokes on a pointer-down: it hides the panel and the backdrop together, and is
+idempotent.
 
 ---
 
 ## Repository layout
 
 - **`Crate/Round`** - the Rust crate, published to crates.io as **`pround`**.
-  `Source/Library.rs` is the crate root (the overlay engine), `Source/Main.rs`
-  is the `round` binary, and each domain (`Backdrop`, `Menu`, `Message`, `Mode`,
-  `Overlay`, `Screen`, `Settings`, `Tray`) is its own PascalCase directory with
-  a `mod.rs` facade.
+  `Source/Library.rs` is the crate root (the overlay engine) and `Source/Main.rs`
+  is the `round` binary. Each domain is its own PascalCase directory -
+  `Backdrop`, `Bounds`, `Menu`, `Message`, `Mode`, `Overlay`, `Screen`,
+  `Settings`, `Tray`, `Visibility`, `Window` - and the tree is the API: a leaf
+  exports one item named by its kind (`Struct`, `Enum`, `Fn`, `Trait`, `Const`)
+  and the path says what it is for, so `Menu::Place::Fn` is the one function that
+  places the panel. A `mod.rs` declares its children and nothing else, and
+  nothing is re-exported anywhere.
 - **`Package/Web`** - the webview package: Solid 1.9 + Vite 8 + Tailwind 3,
   built by `@playform/build`'s tsconfig base into `Package/Web/Target`. The
   crate embeds that directory at compile time; it is never copied into the

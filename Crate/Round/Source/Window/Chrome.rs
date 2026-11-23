@@ -15,7 +15,10 @@ use tauri::{Manager, Runtime, WebviewWindowBuilder};
 /// than behind a `cfg`, because the flag states what the window is - a tool
 /// surface, not a document - and a platform that ignores it is not a platform
 /// that disagrees.
-pub fn Fn<'A, R:Runtime, M:Manager<R>>(Builder:WebviewWindowBuilder<'A, R, M>, Title:&str) -> WebviewWindowBuilder<'A, R, M> {
+pub fn Fn<'A, R:Runtime, M:Manager<R>>(
+	Builder:WebviewWindowBuilder<'A, R, M>,
+	Title:&str,
+) -> WebviewWindowBuilder<'A, R, M> {
 	Builder
 		.title(Title)
 		.decorations(false)

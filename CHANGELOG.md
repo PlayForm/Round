@@ -11,6 +11,25 @@ the npm packages and `pround`.
 
 ### Crate (`pround`)
 
+- `Crate/Round/Source` is now the house tree: one item per leaf, named by its
+  kind, with the path carrying the domain. `Menu/mod.rs`'s 338 lines became
+  `Build`, `Open`, `Hide`, `Toggle`, `Place`, `State`, `Monitor` and one leaf per
+  command; `Settings`, `Screen`, `Backdrop`, `Message`, `Mode` and `Tray` split
+  the same way. `Bounds` (physical-pixel geometry, with rounding in one place),
+  `Visibility` (a window's wanted state as a value instead of a `bool`) and
+  `Window::Chrome` (the builder flags all three layers share) are new.
+- `Overlay`'s three `pub use` lines are gone. The platform backends are declared
+  as one `Platform` module with `#[path]`, so a call site reads
+  `Overlay::Platform::Art(window)` on every platform and the compiler resolves
+  `Platform` to whichever file the target compiled - there is no second name for
+  a platform function, and therefore nothing to keep in step.
+  `Overlay::Layer::Trait` states the five-operation contract once, so a backend
+  that forgets an operation no longer compiles.
+- The eight `#[tauri::command]`s are one leaf each and pin their wire name with
+  `#[tauri::command(rename = "...")]`, so the functions are PascalCase
+  (`Menu::Command::Size::Size`) while the webview keeps invoking `set_size`.
+  Every key the panel reads is pinned per field with `#[serde(rename = "...")]`, so
+  the payload is byte-identical.
 - The tray icon no longer carries a native menu. Every control - the radius for
   all monitors and for each monitor on its own, appearance, show/hide, the dock
   toggle and quit - lives in the Menu window a click on the icon opens, which

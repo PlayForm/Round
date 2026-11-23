@@ -11,13 +11,13 @@ use crate::Bounds::Struct::Struct;
 /// the scale factor is what makes them one shape.
 pub fn Fn(Anchor:&Rect, Scale:f64) -> Struct {
 	let (X, Y) = match Anchor.position {
-		Position::Physical(Position) => (f64::from(Position.x), f64::from(Position.y)),
-		Position::Logical(Position) => (Position.x * Scale, Position.y * Scale),
+		Position::Physical(Point) => (f64::from(Point.x), f64::from(Point.y)),
+		Position::Logical(Point) => (Point.x * Scale, Point.y * Scale),
 	};
 
 	let (Width, Height) = match Anchor.size {
-		Size::Physical(Size) => (f64::from(Size.width), f64::from(Size.height)),
-		Size::Logical(Size) => (Size.width * Scale, Size.height * Scale),
+		Size::Physical(Extent) => (f64::from(Extent.width), f64::from(Extent.height)),
+		Size::Logical(Extent) => (Extent.width * Scale, Extent.height * Scale),
 	};
 
 	Struct { X, Y, Width, Height }

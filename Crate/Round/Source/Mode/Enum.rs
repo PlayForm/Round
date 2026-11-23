@@ -17,5 +17,7 @@ pub enum Enum {
 }
 
 impl Serialize for Enum {
-	fn serialize<S:Serializer>(&self, Serializer:S) -> Result<S::Ok, S::Error> { Serializer.serialize_str(crate::Mode::Word::Fn(*self)) }
+	fn serialize<S:Serializer>(&self, Serializer:S) -> Result<S::Ok, S::Error> {
+		Serializer.serialize_str(crate::Mode::Word::Fn(*self))
+	}
 }

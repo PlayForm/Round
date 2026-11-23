@@ -29,11 +29,67 @@ the crate has a Rust toolchain and none. Keeping them apart is what lets
 
 ---
 
+## How the tree is shaped
+
+The module tree **is** the API. There is no facade that renames anything:
+
+- **A leaf exports one item, named by its kind.** `Struct`, `Enum`, `Fn`,
+  `Trait` or `Const`, in a file of that name. `Menu/State.rs` holds
+  `pub struct Struct`; `Menu/Place.rs` holds `pub fn Fn`. The directory chain
+  says what the item is for, so a consumer reads `Menu::Place::Fn` and knows
+  which function it is without opening the file.
+- **A role with one item is a file, not a folder.** `Backdrop/Prefix.rs` holds
+  `pub const Const:&str = "backdrop"`, read as `Backdrop::Prefix::Const`. A
+  folder exists when a role has several leaves (`Menu/Command/`) or groups
+  sub-roles (`Overlay/Layer/`).
+- **`mod.rs` declares its children and nothing else.** No items, no re-exports,
+  no logic. The only attributes a `mod.rs` carries are the `#[cfg]`/`#[path]`
+  pair that select a platform backend.
+- **No `pub use`, anywhere.** A re-export is a second name for one thing, which
+  is exactly what this shape exists to prevent. Where a call site wants a short
+  name it aliases at the `use`: `use crate::Settings::Struct::Struct as
+  Settings;`.
+- **PascalCase everywhere** - fields, locals, parameters and generic parameters
+  as well as types (`pub Size:i64`, `let RequiresFocus = ...`,
+  `fn Fn(Option:ExecutionOption)`), with acronyms fully cased.
+
+`Library.rs` declares the twelve domains and holds nothing else.
+
+---
+
 ## Module map
 
-Each domain is a PascalCase directory with a `mod.rs` facade; `Library.rs`
-declares them and holds nothing else.
-
+- **`Backdrop`** - the scrim. One borderless, transparent, non-focusable webview
+  per monitor (`backdrop.html`), covering that monitor's work area one level
+  above the art and below the panel. It exists only while the panel is open:
+  `Menu::Open::Fn` builds and shows it, `Menu::Hide::Fn` closes it, and
+  `Menu::Command::Dismiss::Dismiss` hides both together. Its document is empty
+  except for one `pointerdown` listener that invokes `dismiss` - any button,
+  capture phase - so the dismissal is a click delivered to a window of Round's
+  own rather than an inference about one.
+  The work area, not the whole rect, is what keeps the tray usable: the menu bar
+  (and, on macOS, the Dock strip; on Windows, the taskbar) is outside the scrim,
+  so a click there reaches the OS chrome and the tray icon still toggles the
+  panel closed. A click in that strip therefore does not dismiss the panel - it
+  activates whatever it landed on - which is the one shape of click the scrim
+  cannot see, and the price of never swallowing the tray.
+  Each scrim carries its own monitor's work area in physical pixels, so a desk
+  that mixes a Retina display with a 1x one, or puts a display at a negative
+  origin, needs no arithmetic. `Backdrop::Owns::Fn` is what the broadcast asks
+  before treating a window as art: the scrims are hidden and shown by the panel
+  and never restored by a broadcast, or a slider step would put a click-eating
+  window back on the desktop with the panel closed.
+  Its leaves are `Build` (the window), `Show` (place, size, raise one monitor's
+  scrim), `Open` (one per monitor, plus the reconciliation that hides a scrim
+  whose display went away), `Close`, `Owns`, `Label` (index → label) and
+  `Prefix` (the label prefix).
+- **`Bounds`** - physical-pixel geometry, shared by everything that places a
+  window. `Struct` is a rect in physical `f64`; `Rect` converts the tray icon's
+  rect from whichever unit the platform reported, `Monitor` reads a work area,
+  `Outer` reads a window's own outer size, and `Position`/`Size` turn the `f64`
+  rect into the whole-pixel forms `set_position`/`set_size` take. Rounding
+  happens in exactly those two leaves, so a panel that kept a fractional value
+  through its centring arithmetic lands on the same pixel it always did.
 - **`Menu`** - the menu window, and the app's whole control surface. It builds a
   borderless, transparent, always-on-top webview (`menu.html`) under the tray
   icon, opens the `Backdrop` scrims under it, toggles it on a click, and exposes
@@ -49,48 +105,52 @@ declares them and holds nothing else.
   them produced a wrong answer at least once: the panel closed under the control
   being used, then on a click inside the app. All four are gone. What is left is
   `dismiss`, invoked by the scrim's own document when a pointer goes down on it,
-  and `toggle` from the tray icon. Nothing in this module reads focus,
+  and `Toggle` from the tray icon. Nothing in this module reads focus,
   activation, a timer or geometry.
-- **`Backdrop`** - the scrim. One borderless, transparent, non-focusable webview
-  per monitor (`backdrop.html`), covering that monitor's work area one level
-  above the art and below the panel. It exists only while the panel is open:
-  `Menu::open` builds and shows it, `Menu::hide` closes it, and `dismiss` hides
-  both together. Its document is empty except for one `pointerdown` listener
-  that invokes `dismiss` - any button, capture phase - so the dismissal is a
-  click delivered to a window of Round's own rather than an inference about one.
-  The work area, not the whole rect, is what keeps the tray usable: the menu bar
-  (and, on macOS, the Dock strip; on Windows, the taskbar) is outside the scrim,
-  so a click there reaches the OS chrome and the tray icon still toggles the
-  panel closed. A click in that strip therefore does not dismiss the panel - it
-  activates whatever it landed on - which is the one shape of click the scrim
-  cannot see, and the price of never swallowing the tray.
-  Each scrim carries its own monitor's work area in physical pixels, so a desk
-  that mixes a Retina display with a 1x one, or puts a display at a negative
-  origin, needs no arithmetic. `Backdrop::owns` is what the broadcast asks
-  before treating a window as art: the scrims are hidden and shown by the panel
-  and never restored by a broadcast, or a slider step would put a click-eating
-  window back on the desktop with the panel closed.
-- **`Mode`** - the two inks a corner can be drawn in. Serialises to the
-  lowercase word the webview reads (`dark`, `light`); unknown store values fall
-  back to the default.
-- **`Message`** - the wire pair pushed to every window: `Message::Mode(Mode)` /
-  `Message::Size(i64)` inside `Payload { message }`, externally tagged so the
-  frontend reads `payload.message.Size`.
-- **`Settings`** - the persisted state (`size`, `mode`, `hidden`,
-  `dock_hidden`), its store file (`settings.json`), the `window.settings` init
-  script, per-window visibility, and the broadcast to every window.
-- **`Screen`** - one monitor resolved to the window label and the logical bounds
-  a webview window takes. Labels keep ASCII alphanumerics only (Tauri rejects
-  the rest); an unnamed monitor becomes `monitor<index>`.
+  - `Toggle`, `Open`, `Hide`, `Build`, `Place` - the window's life.
+  - `State` - the struct the panel renders, one `Serialize` field per control.
+  - `Monitor` - one row of the panel's per-monitor list.
+  - `Label`, `Width`, `Height`, `Gap` - the window label and the three
+    measurements placement needs.
+  - `Store` - `Load` (settings as they are on disk) and `Commit` (save, then
+    broadcast, then answer). Every command ends in `Commit`, so no command can
+    save without broadcasting or broadcast without having saved.
+  - `Command` - the eight `#[tauri::command]`s, one leaf each.
+- **`Message`** - the wire pair pushed to every window: `Message::Enum::Mode(Mode)`
+  / `Message::Enum::Size(i64)` inside `Payload { Message }`, externally tagged so
+  the frontend reads `payload.message.Size`. The envelope's key is pinned with
+  `#[serde(rename = "message")]`, because the field is `Message` and the wire key
+  is lowercase.
+- **`Mode`** - the two inks a corner can be drawn in. `Enum` is the value,
+  `Word` is the one place the lowercase spelling the webview reads (`dark`,
+  `light`) is decided, and `Of` reads one back from the store, falling back to
+  the default for anything unrecognised.
 - **`Overlay`** - the window ladder, and the one place it is spelled out.
-  Exactly one `art`/`scrim`/`panel`/`front`/`dock` set is re-exported per
-  platform, so call sites are identical everywhere and there is no runtime
-  branch to get wrong. Three layers, bottom to top:
-    - **art** - the corner overlay, one window per monitor. Click-through, so a
-      click on it is a click on whatever is under it.
-    - **scrim** - the backdrop. It takes the mouse, which is the whole point of
-      it.
-    - **panel** - the Menu window, above the scrim, owning its own clicks.
+  Three layers, bottom to top:
+  - **art** - the corner overlay, one window per monitor. Click-through, so a
+    click on it is a click on whatever is under it.
+  - **scrim** - the backdrop. It takes the mouse, which is the whole point of
+    it.
+  - **panel** - the Menu window, above the scrim, owning its own clicks.
+
+  The contract is one `Trait` leaf and one backend per platform, and the
+  platform is selected with `#[path]` rather than re-exported:
+
+  ```rust
+  #[cfg(target_os = "macos")]
+  #[path = "Platform/MacOS/Struct.rs"]
+  pub mod Platform;
+  ```
+
+  All three files are declared as the *same* module, so a call site writes
+  `Overlay::Platform::Art(window)` on every platform and the compiler resolves
+  `Platform` to whichever file this target compiled. That is what replaced the
+  three `pub use MacOS::{art, dock, front, panel, scrim}` lines: there is no
+  second name for a platform function, and therefore no re-export to keep in
+  step. `Overlay::Layer::Trait` is the five-operation contract - `Art`, `Scrim`,
+  `Panel`, `Front`, `Dock` - stated once, so a backend that forgets an operation
+  does not compile.
+
   On macOS the order is a level: `NSStatusWindowLevel` (25) for the art, 26 for
   the scrim, 27 for the panel. A level is a fact about the window rather than a
   fact about the last call, so re-showing a scrim can never lift it over the
@@ -111,16 +171,35 @@ declares them and holds nothing else.
   and then the panel are raised with `set_always_on_top(true)`, and a compositor
   that refuses to stack one client over another leaves the scrim under the
   panel, where a click on the panel is still the panel's.
-  `front` is the one place a window is put on screen, and it is deliberately not
+  `Front` is the one place a window is put on screen, and it is deliberately not
   `WebviewWindow::show`: that forwards to tao's `set_visible(true)`, which calls
   `makeKeyAndOrderFront:` and makes the window key. Neither the art nor the
   scrim has any use for the keyboard, and taking it would pull focus out of
   whatever the user was using; `orderFrontRegardless` orders the window front
   without the key change (and still works while the app is inactive, where
   `makeKeyAndOrderFront:` does nothing).
-- **`Tray`** - the tray icon and its click, nothing else. No native menu is
-  attached: a click calls `Menu::toggle`, so the tray owns no command, no label
-  and no state.
+- **`Screen`** - one monitor resolved to the window label and the logical bounds
+  a webview window takes. `Of` resolves it, `Label` keeps ASCII alphanumerics
+  only (Tauri rejects the rest) and turns an unnamed monitor into
+  `monitor<index>`, and `Struct` is the result.
+- **`Settings`** - the persisted state. `Struct` holds `Size`, `Sizes`, `Mode`,
+  `Hidden` and `Dock`; `Default`, `Maximum` and `Store` are the three constants
+  (radius on a fresh install, the largest radius the panel offers, the store
+  file); `Radius`, `Set` and `Clear` are the per-monitor arithmetic; `Load` and
+  `Save` are the store round trip with every key spelled out; `Script` is the
+  `window.settings` init script; `Visible` and `Broadcast` are what every
+  command pushes to the overlay windows.
+- **`Tray`** - the tray icon and its click, nothing else. `Install` builds the
+  icon and calls `Menu::Toggle::Fn`. No native menu is attached, so the tray
+  owns no command, no label and no state.
+- **`Visibility`** - a window's wanted visibility as a value instead of a `bool`.
+  `Enum` is `Shown`/`Hidden`, `Of` converts the stored boolean, and `Bool`
+  converts back. It serialises as a JSON boolean, so the store keys and the
+  panel's payload are unchanged by the two-variant enum.
+- **`Window`** - `Chrome`, the builder flags all three layers share: borderless,
+  transparent, fixed-size, always-on-top, out of the taskbar, built hidden. The
+  only thing that differs between the art, the scrim and the panel is the title,
+  which is a parameter.
 
 The graph in [`Knowledge.dot`](Knowledge.dot) (rendered to `Knowledge.svg`) is
 the same map with the edges drawn.
@@ -130,18 +209,19 @@ the same map with the edges drawn.
 ## Startup
 
 1. `tauri-plugin-store` opens `settings.json` under the app config dir.
-2. `Settings::load` reads the four keys, falling back per field to the default
-   (`size` 23, `mode` dark, `hidden` false, `dock_hidden` false), then `save`
-   writes the result back - which is how a fresh install gets its defaults.
-3. macOS: `Overlay::dock(!settings.dock_hidden)` applies the saved activation
-   policy before any window exists.
-4. For every monitor: build a borderless, transparent, non-focusable,
-   non-resizable, always-on-top webview at the monitor's logical bounds, run the
-   init script (`window.settings = {"size":23,"mode":"dark"};`), build it
-   hidden, `Overlay::art` it, then `Settings::visible` it - which `front`s it
-   unless the saved state is hidden.
-5. `Tray::install` builds the icon and wires its click to `Menu::toggle`. The
-   panel and the scrims are built on the first click, not at startup, so a
+2. `Settings::Load::Fn` reads the five keys, falling back per field to the
+   default (`size` 23, `mode` dark, `hidden` false, `dock_hidden` false), then
+   `Settings::Save::Fn` writes the result back - which is how a fresh install
+   gets its defaults.
+3. `Overlay::Platform::Dock(settings.Dock)` applies the saved activation policy
+   before any window exists.
+4. For every monitor: `Screen::Of::Fn` resolves the label and bounds,
+   `Settings::Script::Fn` builds the init script
+   (`window.settings = {"size":23,"mode":"dark"};`), `Window::Chrome::Fn` applies
+   the shared flags, the window is built hidden, `Overlay::Platform::Art` lifts
+   it, then `Settings::Visible::Fn` fronts it unless the saved state is hidden.
+5. `Tray::Install::Fn` builds the icon and wires its click to `Menu::Toggle::Fn`.
+   The panel and the scrims are built on the first click, not at startup, so a
    launch that never opens the panel never pays for them.
 
 ---
@@ -150,29 +230,36 @@ the same map with the edges drawn.
 
 ```
 tray click
-  -> Menu::toggle(app, rect)
-       hidden -> place under the icon, open the scrims, show, raise the panel
-                 above them, focus
-       visible -> hide the panel and the scrims
+  -> Menu::Toggle::Fn(app, rect)
+       hidden -> Menu::Place::Fn under the icon, Backdrop::Open::Fn,
+                 window.show(), Overlay::Platform::Panel above them, set_focus
+       visible -> Menu::Hide::Fn: Backdrop::Close::Fn, then window.hide()
   -> the panel invokes a command: state / set_size / set_mode /
      set_hidden / set_dock / reset / quit
-  -> Settings::load(&store) -> mutate -> Settings::save(&store)
-  -> broadcast: for every ART window emit "size", emit "mode", and apply
-     visibility only where it differs from `is_visible()` - a window already in
-     the wanted state is left alone, because showing it is not a no-op. The
-     panel and the scrims are skipped: the panel renders the state the command
-     returns, and the scrim has no state at all
-  -> the command returns the new State, which the panel renders
+  -> Menu::Store::Load::Fn -> mutate -> Menu::Store::Commit::Fn
+       Settings::Save::Fn
+       Settings::Broadcast::Fn: for every ART window emit "size", emit "mode",
+         and apply visibility only where it differs from `is_visible()` - a
+         window already in the wanted state is left alone, because showing it is
+         not a no-op. The panel and the scrims are skipped: the panel renders
+         the state the command returns, and the scrim has no state at all
+       Menu::Command::State::State - the answer the panel renders
 
 pointerdown on a scrim
   -> invoke("dismiss")
-  -> Menu::dismiss: hide the panel and every scrim
+  -> Menu::Command::Dismiss::Dismiss: Menu::Hide::Fn, or Backdrop::Close::Fn
+     when no panel window is left
 ```
 
 There is no other way into a dismissal. No focus event, activation probe, timer
 or geometry test decides one, so none of them can get it wrong: the panel closes
 when a click lands on Round's own scrim, when the tray icon is clicked, or when
 the app quits.
+
+The command names are a wire contract, not a consequence of the tree: each
+command leaf holds a function named after its own path (`Size::Size`) and pins
+the name the webview invokes with `#[tauri::command(rename = "set_size")]`. The
+rename is what lets the function be PascalCase and the wire name stay snake_case.
 
 The webview is deliberately dumb: it holds no state of its own beyond two
 signals initialised from `window.settings` and updated by those events. All
@@ -189,6 +276,11 @@ decisions - including the reset value and the clamp - live in Rust.
   `listen("mode", ({ payload }) => payload.message.Mode)` are the only inbound
   channels; both are externally tagged serde enums, which is why the payload key
   is capitalised.
+- The `State` a command returns is
+  `{ size, mode, hidden, dock_hidden, maximum, monitors: [{ label, name, size,
+  overridden }] }`. Every one of those keys is pinned with a per-field
+  `#[serde(rename = "...")]`: the fields are PascalCase and the keys are not, so
+  deriving one from the other is the one thing the struct cannot do.
 - `data-mode` on the `.Window` element switches the corner ink
   (`.Window[data-mode="light"] .Corner` paints white, the default is black).
 - `--Corner` is set inline per corner from the size signal; `Corner.css` derives
@@ -207,19 +299,25 @@ holds no signals, which is what lets its window stay invisible.
 
 ## Where to change what
 
-- **A new control** - a `#[tauri::command]` on `Menu` that mutates `Settings`
-  and returns the `State` the panel should render, its entry in the
+- **A new control** - a leaf under `Menu/Command/` holding the function (named
+  after the leaf, with `#[tauri::command(rename = "<wire name>")]` pinning what
+  the webview invokes) that mutates `Settings` and returns the
+  `Menu::State::Struct` the panel should render, its entry in the
   `invoke_handler` in `Main.rs`, and the row in `Package/Web/Source/Menu.tsx`
-  that calls it. Add the field to `Menu::State` when the panel has to display
-  it.
-- **A new persisted setting** - a field on `Settings`, its key in `load`/`save`,
-  and (if the webview needs it) a field in `window.settings` plus the matching
-  TypeScript type in `Package/Web/Source/Type/Settings.ts`.
-- **A platform behaviour** - only the matching file under `Source/Overlay/`; the
-  re-export in `Overlay/mod.rs` means no call site changes.
+  that calls it. Add the field to `Menu::State::Struct` - with its
+  `#[serde(rename = "...")]` - when the panel has to display it.
+- **A new persisted setting** - a field on `Settings::Struct`, its key in
+  `Settings::Load::Fn`/`Settings::Save::Fn`, and (if the webview needs it) a
+  field in `window.settings` plus the matching TypeScript type in
+  `Package/Web/Source/Type/Settings.ts`.
+- **A platform behaviour** - only the matching file under
+  `Source/Overlay/Platform/`; it implements `Overlay::Layer::Trait`, so a missing
+  operation fails to compile and no call site changes.
 - **The order the three layers sit in** - the const block at the top of each
-  file under `Source/Overlay/`: the AppKit levels on macOS, the topmost insert
-  on Windows, the raise order on X11. `art`, `scrim` and `panel` are the only
-  places a level is chosen.
+  platform file: the AppKit levels on macOS, the topmost insert on Windows, the
+  raise order on X11. `Art`, `Scrim` and `Panel` are the only places a level is
+  chosen.
+- **A window's chrome** - `Window::Chrome::Fn`, which all three layers go
+  through. A flag added there reaches the art, the scrim and the panel at once.
 - **A corner's look** - `Package/Web/Source/Asset/CSS/Corner.css` and the
   `.Window` markup in `Source/Index.tsx`; the Rust side only carries numbers.

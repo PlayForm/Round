@@ -8,10 +8,7 @@
 use objc2::{class, msg_send, runtime::AnyObject};
 use tauri::{Runtime, WebviewWindow};
 
-use crate::{
-	Overlay::Layer::Trait::Trait,
-	Visibility::{Enum::Enum as Visibility, Of as VisibilityOf},
-};
+use crate::{Overlay::Layer::Trait::Trait, Visibility::Enum::Enum as Visibility};
 
 /// `NSStatusWindowLevel` - above the menu bar and every normal window.
 const Status:isize = 25;
@@ -151,8 +148,3 @@ impl Trait for Struct {
 		}
 	}
 }
-
-/// `VisibilityOf` is what the trait takes; this keeps the conversion visible at
-/// the top of the file rather than inline in a `match` arm.
-#[allow(unused_imports)]
-use VisibilityOf as _Unused;

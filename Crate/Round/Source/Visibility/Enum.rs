@@ -19,5 +19,7 @@ pub enum Enum {
 /// The store and the webview both carry this as a JSON boolean, so the wire
 /// shape is unchanged by the two-variant enum.
 impl Serialize for Enum {
-	fn serialize<S:Serializer>(&self, Serializer:S) -> Result<S::Ok, S::Error> { Serializer.serialize_bool(crate::Visibility::Bool::Fn(*self)) }
+	fn serialize<S:Serializer>(&self, Serializer:S) -> Result<S::Ok, S::Error> {
+		Serializer.serialize_bool(crate::Visibility::Bool::Fn(*self))
+	}
 }

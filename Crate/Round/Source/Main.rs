@@ -1,8 +1,17 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+// House style: locals and parameters are PascalCase, the same as the library's.
+#![allow(non_snake_case)]
 
 //! The `round` binary: one overlay webview per monitor, then the tray icon.
 
-use pround::{Menu, Overlay, Screen::Screen, Settings::Settings, Tray};
+use pround::{
+	Menu::Command::{Dismiss, Dock, Hidden, Mode, Quit, Reset, Size, State},
+	Overlay::{Layer::Trait::Trait as _, Platform::Struct as Platform},
+	Screen::Of as ScreenOf,
+	Settings::{Load as SettingsLoad, Save as SettingsSave, Script, Store::Const as StoreFile, Visible},
+	Tray::Install,
+	Window::Chrome,
+};
 use tauri::{WebviewUrl, WebviewWindowBuilder};
 use tauri_plugin_store::StoreExt;
 
@@ -10,61 +19,62 @@ fn main() {
 	tauri::Builder::default()
 		.plugin(tauri_plugin_store::Builder::new().build())
 		.invoke_handler(tauri::generate_handler![
-			Menu::state,
-			Menu::set_size,
-			Menu::set_mode,
-			Menu::set_hidden,
-			Menu::set_dock,
-			Menu::reset,
-			Menu::dismiss,
-			Menu::quit,
+			State::State,
+			Size::Size,
+			Mode::Mode,
+			Hidden::Hidden,
+			Dock::Dock,
+			Reset::Reset,
+			Dismiss::Dismiss,
+			Quit::Quit,
 		])
-		.setup(|app| {
-			let store = app.store(Settings::Store)?;
+		.setup(|App| {
+			let Storage = App.store(StoreFile)?;
 
-			let settings = Settings::load(&store);
+			// Read, then write back: that round trip is how a fresh install gets
+			// its defaults on disk before anything reads them again.
+			let Preferences = SettingsLoad::Fn(&Storage);
 
-			settings.save(&store)?;
+			SettingsSave::Fn(&Preferences, &Storage)?;
 
-			Overlay::dock(!settings.dock_hidden);
+			// macOS: the activation policy is process-wide, so it is applied
+			// before any window exists.
+			Platform::Dock(Preferences.Dock);
 
-			app.available_monitors()?.iter().enumerate().try_for_each(|(index, monitor)| {
-				let screen = Screen::of(monitor, index);
+			App.available_monitors()?.iter().enumerate().try_for_each(|(Index, Device)| {
+				let Screen = ScreenOf::Fn(Device, Index);
 
 				// Per monitor: the script carries the radius THIS window should
 				// draw, so a tuned monitor paints correctly before any event.
-				let script = settings.script(&screen.label);
+				let Script = Script::Fn(&Preferences, &Screen.Label);
 
-				#[allow(unused_mut)]
-				let mut builder = WebviewWindowBuilder::new(app, &screen.label, WebviewUrl::App("index.html".into()))
-					.accept_first_mouse(false)
-					.always_on_top(true)
-					.decorations(false)
-					.disable_drag_drop_handler()
-					.focused(false)
-					.fullscreen(false)
-					.initialization_script(&script)
-					.inner_size(screen.width.into(), screen.height.into())
-					.maximized(false)
-					.position(screen.x.into(), screen.y.into())
-					.resizable(false)
-					.title("")
-					.transparent(true)
-					.visible(false);
+				let Builder = Chrome::Fn(
+					WebviewWindowBuilder::new(App, &Screen.Label, WebviewUrl::App("index.html".into())),
+					"",
+				)
+				.accept_first_mouse(false)
+				.focused(false)
+				.fullscreen(false)
+				.initialization_script(&Script)
+				.inner_size(Screen.Width.into(), Screen.Height.into())
+				.maximized(false)
+				.position(Screen.X.into(), Screen.Y.into())
+				.disable_drag_drop_handler();
 
+				// Windows draws its own shadow under a transparent window, which
+				// is a grey halo around corners that are meant to be the only
+				// edge on screen.
 				#[cfg(target_os = "windows")]
-				{
-					builder = builder.skip_taskbar(true).shadow(false);
-				}
+				let Builder = Builder.shadow(false);
 
-				let window = builder.build()?;
+				let Window = Builder.build()?;
 
-				Overlay::art(&window);
+				Platform::Art(&Window);
 
-				settings.visible(&window)
+				Visible::Fn(&Preferences, &Window)
 			})?;
 
-			Tray::install(app.handle())?;
+			Install::Fn(App.handle())?;
 
 			Ok(())
 		})

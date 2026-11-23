@@ -16,7 +16,7 @@ digraph Round {
         color = "#5DADE2";
         fillcolor = "#5DADE220";
         "repository" [label = "Round";shape = folder;fillcolor = "#5DADE2";penwidth = 1.5;];
-        "crate" [label = "Crate/Round\npround v0.0.9";shape = ellipse;fillcolor = "#EB984E";penwidth = 1.5;];
+        "crate" [label = "Crate/Round\npround v0.0.11";shape = ellipse;fillcolor = "#EB984E";penwidth = 1.5;];
         "web" [label = "Package/Web\n@application/round-web";shape = ellipse;fillcolor = "#EB984E";penwidth = 1.5;];
         "documentation" [label = "Documentation";shape = folder;fillcolor = "#5DADE2";penwidth = 1.5;];
     }
@@ -36,6 +36,9 @@ digraph Round {
         "Tray" [label = "Tray";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
         "Overlay" [label = "Overlay";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
         "Backdrop" [label = "Backdrop";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
+        "Bounds" [label = "Bounds";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
+        "Visibility" [label = "Visibility";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
+        "Window" [label = "Window";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
     }
     
     subgraph cluster_web {
@@ -76,6 +79,9 @@ digraph Round {
     "Library" -> "Screen" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
     "Library" -> "Settings" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
     "Library" -> "Tray" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
+    "Library" -> "Bounds" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
+    "Library" -> "Visibility" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
+    "Library" -> "Window" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
     
     "Main" -> "Screen" [label = "one window per monitor"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Main" -> "Overlay" [label = "art"; style = solid; color = "blue"; arrowsize = 0.8;];
@@ -87,6 +93,12 @@ digraph Round {
     "Menu" -> "Overlay" [label = "panel"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Backdrop" -> "Overlay" [label = "scrim"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Settings" -> "Mode" [label = "typed field"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Settings" -> "Visibility" [label = "hidden / dock"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Menu" -> "Visibility" [label = "state"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Menu" -> "Bounds" [label = "place"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Backdrop" -> "Bounds" [label = "work area"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Menu" -> "Window" [label = "chrome"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Backdrop" -> "Window" [label = "chrome"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Settings" -> "Message" [label = "broadcast"; style = solid; color = "blue"; arrowsize = 0.8;];
     "Settings" -> "store" [label = "persist"; style = dashed; color = "red"; arrowsize = 0.8;];
     
