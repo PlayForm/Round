@@ -1,9 +1,23 @@
 # Changelog
 
 Every notable change to Round, newest first. Versions are the application's
-(`Crate/Round/tauri.conf.json` → `productName`/`version`), and the crate on
-crates.io follows the same number, so a release is one version across the app,
+(`Cargo.toml` → `[workspace.package].version`, which the app, the bundles and
+the crate on crates.io all follow), so a release is one version across the app,
 the npm packages and `pround`.
+
+---
+
+## Unreleased
+
+### Repository
+
+- One source of truth for the version: `Cargo.toml` →
+  `[workspace.package].version`. `Crate/Round/tauri.conf.json` no longer carries
+  a `version` field, so the app and its bundles take `CARGO_PKG_VERSION` from the
+  workspace manifest, and `Scripts/Version.mjs` writes the two npm manifests that
+  cannot inherit it - `node Scripts/Version.mjs 0.0.11` replaces the four-place
+  edit. `Release.sh` reads the same source and refuses a drifted tree instead of
+  offering a tag that disagrees with the crate.
 
 ---
 

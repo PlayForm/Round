@@ -34,10 +34,24 @@ if [[ -z "$TAURI_SIGNING_PRIVATE_KEY_PASSWORD" ]]; then
 fi
 
 # --- Prompt for release tag --------------------------------------------------
-DEFAULT_TAG="Round/v$(node -p "require('./package.json').version" 2>/dev/null || echo "0.0.0")"
+# The version comes from `Cargo.toml`, the single source of truth: the script
+# prints it alone on stdout and the manifest table on stderr, and exits non-zero
+# when an npm manifest has drifted from it. A tag that disagrees with the crate
+# ships assets whose version is not the version crates.io receives, so a drifted
+# tree stops here instead of offering a wrong default.
+if ! VERSION=$(node Scripts/Version.mjs); then
+	echo "Error: the manifests disagree; run 'node Scripts/Version.mjs --sync'." >&2
+	exit 1
+fi
+
+DEFAULT_TAG="Round/v$VERSION"
 printf "Release tag [%s]: " "$DEFAULT_TAG"
 read -r TAG
 TAG="${TAG:-$DEFAULT_TAG}"
+
+if [[ "$TAG" != "$DEFAULT_TAG" ]]; then
+	echo "Warning: $TAG does not match the manifest version $VERSION." >&2
+fi
 
 # --- Build (signed) ----------------------------------------------------------
 # The Tauri CLI runs from the repository root: it finds Crate/Round's

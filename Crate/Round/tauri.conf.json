@@ -1,7 +1,6 @@
 {
 	"$schema": "https://schema.tauri.app/config/2",
 	"productName": "Round",
-	"version": "0.0.10",
 	"identifier": "app.roundedcorners.binary",
 	"build": {
 		"beforeBuildCommand": "pnpm run Build",

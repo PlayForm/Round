@@ -157,6 +157,12 @@ click meant.
   [`Releasing.md`](Documentation/Releasing.md), an
   [`Index.md`](Documentation/Index.md) map) and the architecture graphs
   (`Knowledge.dot`, `Knowledge.svg`).
+- **`Scripts`** - repository tooling. `Version.mjs` is the single writer for the
+  version: it reads `[workspace.package].version` from `Cargo.toml`, writes the
+  two npm manifests that cannot inherit it, and exits non-zero when they
+  disagree.
+- **`Release.sh`** - the local signed macOS release; the tag it offers comes from
+  the same `Scripts/Version.mjs`, so a drifted tree cannot start one.
 - **`.github/workflows`** - `Check`, `Build`, `Publish`, `Auto`, `Dependabot`,
   `GitHub`.
 
@@ -167,9 +173,9 @@ click meant.
 - **[Architecture](Documentation/Architecture.md)** - the module map, the
   startup sequence, the tray → settings → webview event flow, the webview
   contract, and where to change what.
-- **[Releasing](Documentation/Releasing.md)** - the version in four files, the
-  `Round/v*` tag, the opt-in crates.io publish, and how to test a publish
-  without burning a version.
+- **[Releasing](Documentation/Releasing.md)** - one version in `Cargo.toml`, the
+  `Scripts/Version.mjs` bump, the `Round/v*` tag, the opt-in crates.io publish,
+  and how to test a publish without burning a version.
 - **[Documentation index](Documentation/Index.md)** - the map of the set.
 
 ---

@@ -1,31 +1,46 @@
 # Releasing
 
-One version, four files, one tag. This is the order that keeps the app, the
-bundles and the crate on the same number.
+One version, one file to edit, one tag. This is the order that keeps the app,
+the bundles and the crate on the same number.
 
 ---
 
 ## 1. Bump the version
 
-The version lives in four places and all four must move together:
+One number, written once. `Cargo.toml` → `[workspace.package].version` is the
+source of truth, and everything else either inherits it or is written from it:
 
-- `Cargo.toml` → `[workspace.package].version` (this is the number crates.io
-  sees; the crate inherits it with `version.workspace = true`)
-- `Crate/Round/tauri.conf.json` → `version` (the bundle version)
-- `package.json` → `version`
-- `Package/Web/package.json` → `version`
+- **The crate** inherits it with `version.workspace = true`, and `Publish.yml`
+  reads it back through `cargo metadata` - this is the number crates.io sees.
+- **The app and its bundles** read `CARGO_PKG_VERSION`, because
+  `Crate/Round/tauri.conf.json` carries no `version` field at all and Tauri
+  falls back to the manifest when the field is absent. Putting a literal back is
+  supported, but it is then a copy that must be kept in step - and
+  `Scripts/Version.mjs` refuses a tree where it disagrees.
+- **The two npm manifests** cannot inherit anything from a Cargo manifest, so
+  `package.json` and `Package/Web/package.json` are the only copies left. The
+  script writes both.
 
-`Release.sh` reads the root `package.json` to suggest the tag, and `Publish.yml`
-reads the workspace manifest, so a half-finished bump produces a release whose
-assets and crate disagree.
+```sh
+node Scripts/Version.mjs 0.0.11 # set the version everywhere
+node Scripts/Version.mjs --sync # re-propagate after editing Cargo.toml
+node Scripts/Version.mjs        # version on stdout, manifest table on stderr
+```
+
+The bare form is also the guard: it exits non-zero when a manifest has drifted
+from `Cargo.toml`, and it prints the version alone on stdout, so
+`$(node Scripts/Version.mjs)` is exactly the tag suffix. `Release.sh` calls it
+before offering a tag and stops on drift, so a half-finished bump cannot produce
+a release whose assets and crate disagree.
 
 ---
 
 ## 2. Tag
 
 ```sh
-git tag -a Round/v0.0.10 -m Round/v0.0.10
-git push origin Round/v0.0.10
+VERSION=$(node Scripts/Version.mjs)
+git tag -a "Round/v$VERSION" -m "Round/v$VERSION"
+git push origin "Round/v$VERSION"
 ```
 
 The tag is the release trigger, and only `Build.yml` listens to it.
