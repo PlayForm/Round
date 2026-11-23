@@ -11,8 +11,8 @@ pub enum Effect {
 	Persist,
 	/// Persist, then show or hide the macOS dock icon (`true` = hidden).
 	Dock(bool),
-	/// Open the controls window.
-	Controls,
+	/// Open the Menu window.
+	Menu,
 	/// Quit.
 	Exit,
 }

@@ -32,7 +32,13 @@ pub struct Settings {
 
 impl Default for Settings {
 	fn default() -> Self {
-		Self { size:Self::Size, sizes:BTreeMap::new(), mode:Mode::Dark, hidden:false, dock_hidden:false }
+		Self {
+			size:Self::Size,
+			sizes:BTreeMap::new(),
+			mode:Mode::Dark,
+			hidden:false,
+			dock_hidden:false,
+		}
 	}
 }
 
@@ -63,12 +69,12 @@ impl Settings {
 		match label {
 			Some(label) => {
 				self.sizes.insert(label.to_owned(), value);
-			},
+			}
 			None => {
 				self.size = value;
 
 				self.sizes.clear();
-			},
+			}
 		}
 	}
 
@@ -77,12 +83,12 @@ impl Settings {
 		match label {
 			Some(label) => {
 				self.sizes.remove(label);
-			},
+			}
 			None => {
 				self.size = Self::Size;
 
 				self.sizes.clear();
-			},
+			}
 		}
 	}
 
@@ -91,7 +97,9 @@ impl Settings {
 	fn shift(&mut self, delta:i64) {
 		self.size = (self.size + delta).clamp(0, Self::Maximum);
 
-		self.sizes.iter_mut().for_each(|(_, size)| *size = (*size + delta).clamp(0, Self::Maximum));
+		self.sizes
+			.iter_mut()
+			.for_each(|(_, size)| *size = (*size + delta).clamp(0, Self::Maximum));
 	}
 
 	/// Apply one tray command and say what the caller does next.
@@ -114,8 +122,8 @@ impl Settings {
 				let hidden = self.dock_hidden;
 
 				return (self, Effect::Dock(hidden));
-			},
-			Action::Controls => return (self, Effect::Controls),
+			}
+			Action::Menu => return (self, Effect::Menu),
 			Action::Exit => return (self, Effect::Exit),
 		}
 
@@ -170,7 +178,10 @@ impl Settings {
 	/// before the frontend does, so the first paint already has the right size
 	/// and ink instead of flashing the defaults.
 	pub fn script(&self, label:&str) -> String {
-		format!("window.settings = {};", json!({ "size": self.size_for(label), "mode": self.mode }))
+		format!(
+			"window.settings = {};",
+			json!({ "size": self.size_for(label), "mode": self.mode })
+		)
 	}
 
 	/// Show or hide one overlay window to match the persisted visibility.
@@ -188,7 +199,7 @@ impl Settings {
 	pub fn broadcast<R:Runtime>(&self, app:&AppHandle<R>) {
 		app.webview_windows()
 			.into_values()
-			.filter(|window| window.label() != crate::Controls::Label)
+			.filter(|window| window.label() != crate::Menu::Label)
 			.for_each(|window| {
 				let label = window.label().to_owned();
 

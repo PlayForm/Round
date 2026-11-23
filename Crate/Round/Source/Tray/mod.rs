@@ -4,11 +4,11 @@ use tauri::{
 	AppHandle,
 	Runtime,
 	menu::{CheckMenuItem, IsMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu},
-	tray::TrayIconBuilder,
+	tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
 };
 use tauri_plugin_store::StoreExt;
 
-use crate::{Action::Action, Controls, Effect::Effect, Mode::Mode, Overlay, Settings::Settings};
+use crate::{Action::Action, Effect::Effect, Mode::Mode, Overlay, Settings::Settings};
 
 /// Install the tray icon and wire the menu.
 ///
@@ -45,7 +45,7 @@ pub fn install<R:Runtime>(app:&AppHandle<R>, settings:&Settings) -> tauri::Resul
 
 	let hide = item(Action::Hide)?;
 
-	let controls = item(Action::Controls)?;
+	let menu_item = item(Action::Menu)?;
 
 	let exit = item(Action::Exit)?;
 
@@ -74,7 +74,7 @@ pub fn install<R:Runtime>(app:&AppHandle<R>, settings:&Settings) -> tauri::Resul
 		items.push(&third);
 	}
 
-	items.push(&controls);
+	items.push(&menu_item);
 
 	items.push(&exit);
 
@@ -89,8 +89,19 @@ pub fn install<R:Runtime>(app:&AppHandle<R>, settings:&Settings) -> tauri::Resul
 
 	let _tray = TrayIconBuilder::new()
 		.menu(&menu)
+		// Left click opens the HTML panel; the native menu stays on right click,
+		// where a menu is expected and where the entries that need no value live.
+		.show_menu_on_left_click(false)
 		.icon_as_template(true)
 		.icon(tauri::include_image!("icons/tray.png"))
+		.on_tray_icon_event(|tray, event| {
+			if let TrayIconEvent::Click {
+				button: MouseButton::Left, button_state: MouseButtonState::Up, rect, ..
+			} = event
+			{
+				let _ = crate::Menu::toggle(tray.app_handle(), Some(rect));
+			}
+		})
 		.on_menu_event(move |app, event| {
 			let Some(action) = Action::of(event.id.as_ref()) else {
 				return;
@@ -114,9 +125,9 @@ pub fn install<R:Runtime>(app:&AppHandle<R>, settings:&Settings) -> tauri::Resul
 			match effect {
 				Effect::Exit => app.exit(0),
 				Effect::Persist => settings.broadcast(app),
-				Effect::Controls => {
-					let _ = Controls::open(app);
-				},
+				Effect::Menu => {
+					let _ = crate::Menu::toggle(app, None);
+				}
 				Effect::Dock(hidden) => {
 					#[cfg(target_os = "macos")]
 					let _ = dock_item.set_checked(hidden);
@@ -124,7 +135,7 @@ pub fn install<R:Runtime>(app:&AppHandle<R>, settings:&Settings) -> tauri::Resul
 					Overlay::dock(!hidden);
 
 					settings.broadcast(app);
-				},
+				}
 			}
 		})
 		.build(app)?;

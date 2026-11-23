@@ -1,0 +1,87 @@
+/* The window is transparent and borderless; this file paints only the panel. */
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+	background: transparent;
+	font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.Panel {
+	box-sizing: border-box;
+	margin: 6px;
+	padding: 10px 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 7px;
+	background: #ffffff;
+	color: #111111;
+	border: 1px solid #c9c9c9;
+	border-radius: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+	.Panel {
+		background: #1f1f1f;
+		color: #eeeeee;
+		border-color: #454545;
+	}
+}
+
+.Row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.Row > span:first-child {
+	flex: 0 0 92px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.Row input[type="range"] {
+	flex: 1;
+	min-width: 0;
+}
+
+.Number {
+	width: 28px;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+button {
+	font: inherit;
+	padding: 2px 8px;
+	border: 1px solid #c9c9c9;
+	border-radius: 5px;
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+}
+
+@media (prefers-color-scheme: dark) {
+	button {
+		border-color: #454545;
+	}
+}
+
+button.On {
+	font-weight: 600;
+}
+
+.Reset {
+	padding: 0 6px;
+	border-color: transparent;
+}
+
+.Quit {
+	margin-top: 4px;
+}
+
+.Empty {
+	margin: 0;
+}

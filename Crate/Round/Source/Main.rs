@@ -2,7 +2,7 @@
 
 //! The `round` binary: one overlay webview per monitor, then the tray icon.
 
-use pround::{Controls, Overlay, Screen::Screen, Settings::Settings, Tray};
+use pround::{Menu, Overlay, Screen::Screen, Settings::Settings, Tray};
 use tauri::{WebviewUrl, WebviewWindowBuilder};
 use tauri_plugin_store::StoreExt;
 
@@ -10,12 +10,13 @@ fn main() {
 	tauri::Builder::default()
 		.plugin(tauri_plugin_store::Builder::new().build())
 		.invoke_handler(tauri::generate_handler![
-			Controls::state,
-			Controls::set_size,
-			Controls::set_mode,
-			Controls::set_hidden,
-			Controls::set_dock,
-			Controls::reset,
+			Menu::state,
+			Menu::set_size,
+			Menu::set_mode,
+			Menu::set_hidden,
+			Menu::set_dock,
+			Menu::reset,
+			Menu::quit,
 		])
 		.setup(|app| {
 			let store = app.store(Settings::Store)?;

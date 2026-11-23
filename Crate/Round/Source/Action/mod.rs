@@ -17,8 +17,8 @@ pub enum Action {
 	Hide,
 	/// macOS only: hide the dock icon while Round is running.
 	Dock,
-	/// Open the controls window.
-	Controls,
+	/// Open the Menu window.
+	Menu,
 	Exit,
 }
 
@@ -34,7 +34,7 @@ impl Action {
 		Self::Show,
 		Self::Hide,
 		Self::Dock,
-		Self::Controls,
+		Self::Menu,
 		Self::Exit,
 	];
 
@@ -48,7 +48,7 @@ impl Action {
 			Self::Show => "show",
 			Self::Hide => "hide",
 			Self::Dock => "dock",
-			Self::Controls => "controls",
+			Self::Menu => "menu",
 			Self::Exit => "exit",
 		}
 	}
@@ -65,7 +65,7 @@ impl Action {
 			Self::Show => "Show\u{2001}👨🏻",
 			Self::Hide => "Hide\u{2001}🥷🏽",
 			Self::Dock => "No Dock\u{2001}⚓",
-			Self::Controls => "Controls\u{2001}⚙️",
+			Self::Menu => "Menu\u{2001}⚙️",
 			Self::Exit => "Exit\u{2001}❌",
 		}
 	}

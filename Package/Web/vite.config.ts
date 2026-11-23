@@ -25,10 +25,10 @@ export default (await import("vite")).defineConfig({
 		sourcemap: !!process.env["TAURI_DEBUG"],
 		rollupOptions: {
 			// Two documents: `index.html` is the overlay every monitor renders,
-			// `controls.html` is the panel the tray opens.
+			// `menu.html` is the Menu window the tray icon opens.
 			input: {
 				index: fileURLToPath(new URL("index.html", import.meta.url)),
-				controls: fileURLToPath(new URL("controls.html", import.meta.url)),
+				menu: fileURLToPath(new URL("menu.html", import.meta.url)),
 			},
 		},
 	},
