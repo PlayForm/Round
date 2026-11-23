@@ -1,0 +1,113 @@
+digraph Round {
+    newrank = true;
+    rankdir = LR;
+    splines = spline;
+    overlap = false;
+    nodesep = 0.5;
+    ranksep = 0.8;
+    concentrate = true;
+    graph [bgcolor = "#f9f9f9"; color = "#888888"; penwidth = 2; fontname = "Arial";];
+    node [fontname = "Arial"; fontsize = 14; style = filled; margin = "0.3,0.2";];
+    edge [fontname = "Arial"; fontsize = 10; color = "#555555"; fontcolor = "gray";];
+    
+    subgraph cluster_repository {
+        label = "Repository";
+        style = filled;
+        color = "#5DADE2";
+        fillcolor = "#5DADE220";
+        "repository" [label = "Round";shape = folder;fillcolor = "#5DADE2";penwidth = 1.5;];
+        "crate" [label = "Crate/Round\npround v0.0.9";shape = ellipse;fillcolor = "#EB984E";penwidth = 1.5;];
+        "web" [label = "Package/Web\n@application/round-web";shape = ellipse;fillcolor = "#EB984E";penwidth = 1.5;];
+        "documentation" [label = "Documentation";shape = folder;fillcolor = "#5DADE2";penwidth = 1.5;];
+    }
+    
+    subgraph cluster_crate {
+        label = "Crate/Round/Source";
+        style = filled;
+        color = "#58D68D";
+        fillcolor = "#58D68D20";
+        "Main" [label = "Main.rs\nround binary";shape = note;fillcolor = "#FADBD8";penwidth = 1;];
+        "Library" [label = "Library.rs\ncrate root";shape = note;fillcolor = "#FADBD8";penwidth = 1;];
+        "Settings" [label = "Settings";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
+        "Mode" [label = "Mode";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
+        "Action" [label = "Action";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
+        "Effect" [label = "Effect";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
+        "Message" [label = "Message";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
+        "Screen" [label = "Screen";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
+        "Tray" [label = "Tray";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
+        "Overlay" [label = "Overlay";shape = box;fillcolor = "#FDEBD0";penwidth = 1;];
+    }
+    
+    subgraph cluster_web {
+        label = "Package/Web/Source";
+        style = filled;
+        color = "#AF7AC5";
+        fillcolor = "#AF7AC520";
+        "Index" [label = "Index.tsx";shape = note;fillcolor = "#FADBD8";penwidth = 1;];
+        "Corner" [label = "Corner.tsx";shape = note;fillcolor = "#FADBD8";penwidth = 1;];
+        "Style" [label = "Asset/CSS";shape = note;fillcolor = "#FADBD8";penwidth = 1;];
+    }
+    
+    subgraph cluster_external {
+        label = "External";
+        style = filled;
+        color = "#EC7063";
+        fillcolor = "#EC706320";
+        "tauri" [label = "tauri 2";shape = trapezium;fillcolor = "#EC7063";penwidth = 1;];
+        "store" [label = "tauri-plugin-store";shape = trapezium;fillcolor = "#EC7063";penwidth = 1;];
+        "objc2" [label = "objc2 (macOS)";shape = trapezium;fillcolor = "#EC7063";penwidth = 1;];
+        "win" [label = "windows-sys (Windows)";shape = trapezium;fillcolor = "#EC7063";penwidth = 1;];
+        "api" [label = "@tauri-apps/api";shape = trapezium;fillcolor = "#EC7063";penwidth = 1;];
+        "solid" [label = "solid-js";shape = trapezium;fillcolor = "#EC7063";penwidth = 1;];
+    }
+    
+    "repository" -> "crate" [label = "Contain"; style = solid; color = "blue"; weight = 2; arrowsize = 0.8;];
+    "repository" -> "web" [label = "Contain"; style = solid; color = "blue"; weight = 2; arrowsize = 0.8;];
+    "repository" -> "documentation" [label = "Contain"; style = solid; color = "blue"; weight = 2; arrowsize = 0.8;];
+    
+    "Main" -> "Library" [label = "uses"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Library" -> "Action" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
+    "Library" -> "Effect" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
+    "Library" -> "Message" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
+    "Library" -> "Mode" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
+    "Library" -> "Overlay" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
+    "Library" -> "Screen" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
+    "Library" -> "Settings" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
+    "Library" -> "Tray" [label = "declares"; style = dashed; color = "gray"; arrowsize = 0.8;];
+    
+    "Main" -> "Screen" [label = "one window per monitor"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Main" -> "Overlay" [label = "raise"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Main" -> "Tray" [label = "install"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Tray" -> "Action" [label = "menu items"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Tray" -> "Settings" [label = "apply"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Tray" -> "Effect" [label = "match"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Settings" -> "Mode" [label = "typed field"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Settings" -> "Message" [label = "broadcast"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Settings" -> "store" [label = "persist"; style = dashed; color = "red"; arrowsize = 0.8;];
+    
+    "Overlay" -> "objc2" [label = "macOS"; style = dashed; color = "red"; arrowsize = 0.8;];
+    "Overlay" -> "win" [label = "Windows"; style = dashed; color = "red"; arrowsize = 0.8;];
+    "Main" -> "tauri" [label = "runtime"; style = dashed; color = "red"; arrowsize = 0.8;];
+    "Tray" -> "tauri" [label = "tray + menu"; style = dashed; color = "red"; arrowsize = 0.8;];
+    
+    "web" -> "Index" [label = "entry"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Index" -> "Corner" [label = "four corners"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Index" -> "Style" [label = "Window.css"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Corner" -> "Style" [label = "Corner.css"; style = solid; color = "blue"; arrowsize = 0.8;];
+    "Index" -> "api" [label = "listen"; style = dashed; color = "red"; arrowsize = 0.8;];
+    "Index" -> "solid" [label = "signals"; style = dashed; color = "red"; arrowsize = 0.8;];
+    
+    subgraph cluster_legend {
+        label = "Legend";
+        fontsize = 14;
+        style = dashed;
+        color = gray;
+        "dir" [label = "Directory";shape = folder;fillcolor = "#5DADE2";];
+        "file" [label = "File";shape = note;fillcolor = "#FADBD8";];
+        "module" [label = "Module";shape = box;fillcolor = "#FDEBD0";];
+        "pkg" [label = "Package";shape = ellipse;fillcolor = "#EB984E";];
+        "ext" [label = "External";shape = trapezium;fillcolor = "#EC7063";];
+        "dir" -> "file" [label = "Contain"; style = solid; color = blue;];
+        "pkg" -> "ext" [label = "Dependency"; style = dashed; color = red;];
+    }
+}

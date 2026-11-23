@@ -1,0 +1,177 @@
+# Releasing
+
+One version, four files, one tag. This is the order that keeps the app, the
+bundles and the crate on the same number.
+
+---
+
+## 1. Bump the version
+
+The version lives in four places and all four must move together:
+
+- `Cargo.toml` → `[workspace.package].version` (this is the number crates.io
+  sees; the crate inherits it with `version.workspace = true`)
+- `Crate/Round/tauri.conf.json` → `version` (the bundle version)
+- `package.json` → `version`
+- `Package/Web/package.json` → `version`
+
+`Release.sh` reads the root `package.json` to suggest the tag, and `Publish.yml`
+reads the workspace manifest, so a half-finished bump produces a release whose
+assets and crate disagree.
+
+---
+
+## 2. Tag
+
+```sh
+git tag -a Round/v0.0.10 -m Round/v0.0.10
+git push origin Round/v0.0.10
+```
+
+The tag is the release trigger, and only `Build.yml` listens to it.
+
+- `Build.yml` creates the GitHub release exactly once, then bundles macOS
+  (arm64 + x86_64), Linux and Windows from one shared web artifact, writes
+  `SHA256SUMS-<target>.txt` per platform, attaches everything, and a `Finalize`
+  job fails if any of the four targets is missing.
+- `Publish.yml` also runs on the tag, but only its `Verify` job: the packaging
+  guard and the library consumer probe. **A tag push never publishes to
+  crates.io.**
+
+---
+
+## 3. Publish the crate (opt-in)
+
+crates.io versions are immutable, so publishing is a separate, explicit act:
+
+```sh
+gh workflow run Publish.yml --ref Current -f publish_crates=true
+gh run watch
+```
+
+What the job does:
+
+1. reads the version from the workspace manifest;
+2. skips everything when that version is already on the sparse index
+   (`https://index.crates.io/pr/ou/pround`);
+3. exchanges GitHub's OIDC identity for a short-lived crates.io token
+   (`rust-lang/crates-io-auth-action`) - there is no stored registry secret;
+4. `cargo publish -p pround --no-verify`.
+
+`--no-verify` is deliberate. The verification build compiles the `round` binary,
+whose `tauri::generate_context!` reads `Package/Web/Target` - a directory
+outside the package and therefore absent from the tarball. Library consumers
+never expand that macro, and the `Verify` job's consumer probe is what proves
+the published surface.
+
+### Trusted publisher on crates.io
+
+The crate's trusted publisher must name, exactly:
+
+- repository `PlayForm/Round`
+- workflow file `Publish.yml`
+- environment `Release`
+
+A mismatch fails at token exchange, before `cargo publish` runs.
+
+---
+
+## 4. How to test a publish
+
+Four levels, cheapest first. Only the last one burns a version.
+
+### a. Package without uploading
+
+```sh
+cargo publish -p pround --dry-run --no-verify
+```
+
+Packages the crate and stops before upload. Expected shape:
+
+```
+Packaged 79 files, 462.3KiB (282.6KiB compressed)
+Uploading pround v0.0.9 (/.../Crate/Round)
+warning: aborting upload due to dry run
+```
+
+This catches a missing `readme`, a broken `include` list, or a manifest field
+crates.io would reject - the three things that otherwise surface mid-release.
+
+### b. Exercise the workflow without publishing
+
+```sh
+gh workflow run Publish.yml --ref Current # publish_crates defaults to false
+gh run watch
+```
+
+Runs the packaging guard and the consumer probe (`cargo new` →
+`cargo add pround --path` → `cargo build`) against the current tree. Nothing is
+uploaded. This is the check that the _pipeline_ works, including the Linux
+system dependencies and the toolchain.
+
+### c. Rehearse the real thing with a throwaway version
+
+The only way to prove the OIDC exchange end to end without spending `0.0.9`:
+
+```sh
+# bump only the cargo version - crates.io reads this one
+# Cargo.toml -> [workspace.package].version = "0.0.9-rc.1"
+gh workflow run Publish.yml --ref Current -f publish_crates=true
+# then, once it is live:
+cargo yank --version 0.0.9-rc.1 pround
+```
+
+A pre-release sorts below `0.0.9`, so publishing the real version afterwards is
+unaffected, and `cargo add pround` keeps resolving the stable release. Revert
+the manifest afterwards.
+
+### d. The real publish
+
+```sh
+gh workflow run Publish.yml --ref Current -f publish_crates=true
+```
+
+`0.0.9` is free today - the index holds only `0.0.1`, the name reservation. If
+the dispatch is run twice, the second run reads the index, sees the version, and
+exits without touching the registry.
+
+Verify afterwards:
+
+```sh
+curl -sL https://index.crates.io/pr/ou/pround
+cargo new --lib /tmp/pround-probe && cd /tmp/pround-probe
+cargo add pround && cargo build
+```
+
+`cargo install pround` from the registry will _not_ work: the published tarball
+has no webview build, so the binary target cannot embed one. Install the app
+from a checkout (`pnpm run Build` then `cargo install --path Crate/Round`) or
+from the release bundle.
+
+---
+
+## 5. Local macOS release
+
+`Release.sh` is the local equivalent of the tag build: it signs with `Round.key`
+(gitignored), verifies the bundle is not hardened-runtime signed, packs the
+`.app` with `ditto`, and uploads the zip + dmg to an existing release.
+
+```sh
+./Release.sh
+```
+
+The dmg step drives Finder through AppleScript, so the terminal running the
+script needs macOS Automation permission for Finder. Without it the build dies
+with `Finder got an error: Can't set toolbar visible ... (-10006)` **after**
+`Round.app` has been built and signed; `pnpm tauri build --bundles app` is the
+headless-safe target, and a macOS CI runner can produce the dmg.
+
+---
+
+## 6. After the release
+
+- `git tag --list "Round/*"` and `gh release list` agree on the newest version.
+- `crates.io` shows the same version as the tag (or intentionally lags, when the
+  publish dispatch was skipped).
+- `CHANGELOG.md` has a section for the version that was just cut - the
+  `Unreleased` block moves down, it does not get rewritten.

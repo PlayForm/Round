@@ -114,6 +114,12 @@ webview build (`Package/Web/Target`) at compile time, so it is built from a
 checkout where `pnpm run Build` has run - a `cargo install pround` without that
 directory has no corners to draw and the build says so.
 
+> [!NOTE]
+>
+> The published `pround` 0.0.1 is a one-version name reservation. The library
+> described here ships with 0.0.9, which supersedes it; until that version is
+> published, `cargo add pround` resolves the empty reservation.
+
 ---
 
 ## The tray menu
@@ -146,10 +152,25 @@ click meant.
   built by `@playform/build`'s tsconfig base into `Package/Web/Target`. The
   crate embeds that directory at compile time; it is never copied into the
   crate.
-- **`Documentation`** - the architecture graphs (`Knowledge.dot`,
-  `Knowledge.svg`).
+- **`Documentation`** - the guides
+  ([`Architecture.md`](Documentation/Architecture.md),
+  [`Releasing.md`](Documentation/Releasing.md), an
+  [`Index.md`](Documentation/Index.md) map) and the architecture graphs
+  (`Knowledge.dot`, `Knowledge.svg`).
 - **`.github/workflows`** - `Check`, `Build`, `Publish`, `Auto`, `Dependabot`,
   `GitHub`.
+
+---
+
+## Documentation
+
+- **[Architecture](Documentation/Architecture.md)** - the module map, the
+  startup sequence, the tray → settings → webview event flow, the webview
+  contract, and where to change what.
+- **[Releasing](Documentation/Releasing.md)** - the version in four files, the
+  `Round/v*` tag, the opt-in crates.io publish, and how to test a publish
+  without burning a version.
+- **[Documentation index](Documentation/Index.md)** - the map of the set.
 
 ---
 

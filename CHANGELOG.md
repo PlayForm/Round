@@ -84,16 +84,16 @@ the npm packages and `pround`.
   tarball.
 - `Build.yml`: on a `Round/v*` tag, creates the release once, bundles macOS
   (arm64 and x86_64), Linux and Windows from the shared web artifact, stages the
-  bundles, writes per-target `SHA256SUMS`, and fails in a `Finalize` job when the
-  matrix is incomplete.
+  bundles, writes per-target `SHA256SUMS`, and fails in a `Finalize` job when
+  the matrix is incomplete.
 - `Publish.yml`: runs the packaging guard and a library consumer probe on every
   tag; publishing to crates.io is an explicit `workflow_dispatch` with
   `publish_crates=true`, authenticated through crates.io trusted publishing
   (OIDC, no stored registry token) and skipped when the version is already live.
 - `Auto.yml` now commits only `.github/Update.md` with a real message instead of
   sweeping the working tree with `git add .`.
-- `Rust.yml`, `Node.yml` and `NPM.yml` removed; Dependabot covers GitHub Actions,
-  both npm manifests and `Crate/Round` (Tailwind 4 pinned off).
+- `Rust.yml`, `Node.yml` and `NPM.yml` removed; Dependabot covers GitHub
+  Actions, both npm manifests and `Crate/Round` (Tailwind 4 pinned off).
 
 ### Documentation
 
