@@ -16,7 +16,7 @@ use crate::{
 };
 
 #[derive(Parser)]
-#[command(name = "maintain", about = "Round's release CLI", version, disable_help_subcommand = true)]
+#[command(name = "Maintain", about = "Round's release CLI", version, disable_help_subcommand = true)]
 pub struct CLI {
 	#[command(subcommand)]
 	pub command:Command,
@@ -99,7 +99,7 @@ fn write(root:&Path, version:&Version) -> Result<()> {
 }
 
 /// The table is for a human and goes to stderr; stdout carries the version
-/// alone, so `$(maintain version)` is the version.
+/// alone, so `$(Maintain version)` is the version.
 fn report(root:&Path) -> Result<()> {
 	let current = Manifest::current(root)?;
 
@@ -140,7 +140,7 @@ fn report(root:&Path) -> Result<()> {
 
 	stale.is_empty().then(|| println!("{current}")).ok_or_else(|| {
 		Error::Usage(format!(
-			"{} manifest(s) disagree with Cargo.toml ({current}): run `maintain version --sync`",
+			"{} manifest(s) disagree with Cargo.toml ({current}): run `Maintain version sync`",
 			stale.len()
 		))
 	})

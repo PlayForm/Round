@@ -1,6 +1,6 @@
-//! The `maintain` binary.
+//! The `Maintain` binary.
 
-use round_maintain::CLI;
+use Maintain::CLI;
 
 fn main() {
 	match CLI::run() {

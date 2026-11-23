@@ -1,5 +1,5 @@
 [package]
-name = "round-maintain"
+name = "Maintain"
 description = "Round's release CLI: one writer for the version, and the whole ceremony from a terminal."
 version.workspace = true
 edition.workspace = true
@@ -11,15 +11,15 @@ homepage.workspace = true
 publish = false
 
 [lib]
-name = "round_maintain"
+name = "Maintain"
 path = "Source/Library.rs"
 
 [[bin]]
-name = "maintain"
+name = "Maintain"
 path = "Source/Main.rs"
 
 [dependencies]
 clap = { version = "4.6.9", features = ["derive"] }
 serde_json = "1.0.154"
 thiserror = "2.0.21"
-toml_edit = "0.25.20+spec-1.1.0"
+toml_edit = "0.25.20"

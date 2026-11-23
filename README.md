@@ -157,12 +157,12 @@ click meant.
   [`Releasing.md`](Documentation/Releasing.md), an
   [`Index.md`](Documentation/Index.md) map) and the architecture graphs
   (`Knowledge.dot`, `Knowledge.svg`).
-- **`Crate/Maintain`** - the release CLI (`maintain`). One writer for the
+- **`Crate/Maintain`** - the release CLI (`Maintain`). One writer for the
   version across every manifest, the local mirror of the CI gates, the bundle
-  build, and the whole ceremony (`maintain release 0.0.11 --publish`) in one
+  build, and the whole ceremony (`Maintain release 0.0.11 --publish`) in one
   command. `publish = false`: it is a tool for this repository, not a crate.
-- **`Release.sh`** - the local signed macOS release; the tag it offers comes
-  from `maintain version`, so a drifted tree cannot start one.
+- **`Release.sh`** - the local signed macOS release; the tag it offers comes from
+  `Maintain version`, so a drifted tree cannot start one.
 - **`.github/workflows`** - `Check`, `Build`, `Publish`, `Auto`, `Dependabot`,
   `GitHub`.
 
@@ -174,7 +174,7 @@ click meant.
   startup sequence, the tray → settings → webview event flow, the webview
   contract, and where to change what.
 - **[Releasing](Documentation/Releasing.md)** - one version in `Cargo.toml`, the
-  `maintain` CLI that writes it everywhere, the `Round/v*` tag, the opt-in
+  `Maintain` CLI that writes it everywhere, the `Round/v*` tag, the opt-in
   crates.io publish, and how to test a publish without burning a version.
 - **[Documentation index](Documentation/Index.md)** - the map of the set.
 
@@ -194,9 +194,9 @@ pnpm run Build # production webview build
 cargo build    # debug binary at Target/debug/round
 
 # the release CLI (Crate/Maintain)
-cargo install --path Crate/Maintain # once, gives you `maintain`
-pnpm run Version                    # maintain version: the number + drift check
-pnpm run Check                      # maintain check: fmt, clippy -D warnings, check
+cargo install --path Crate/Maintain # once, gives you `Maintain`
+pnpm run Version                    # Maintain version: the number + drift check
+pnpm run Check                      # Maintain check: fmt, clippy -D warnings, check
 ```
 
 `Cargo.lock` is deliberately untracked: the crate publishes to crates.io and

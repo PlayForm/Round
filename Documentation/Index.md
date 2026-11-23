@@ -10,7 +10,7 @@ historical record.
 - **[Architecture](Architecture.md)** - the three packages, the module map, the
   startup sequence, the tray → settings → webview event flow, the webview
   contract, and where to change what.
-- **[Releasing](Releasing.md)** - the version in `Cargo.toml` and the `maintain`
+- **[Releasing](Releasing.md)** - the version in `Cargo.toml` and the `Maintain`
   CLI that writes it everywhere, the `Round/v*` tag, what each workflow does,
   the opt-in crates.io publish with OIDC trusted publishing, and four ways to
   test a publish without burning a version.

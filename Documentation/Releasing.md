@@ -15,36 +15,36 @@ either inherits it or is written from it:
 - **The app and its bundles** read `CARGO_PKG_VERSION`, because
   `Crate/Round/tauri.conf.json` carries no `version` field at all and Tauri
   falls back to the manifest when the field is absent. Putting a literal back is
-  supported, but it is then a copy that must be kept in step - and `maintain`
+  supported, but it is then a copy that must be kept in step - and `Maintain`
   refuses a tree where it disagrees.
 - **The two npm manifests** cannot inherit anything from a Cargo manifest, so
   `package.json` and `Package/Web/package.json` are the only copies left.
 
-`maintain` (`Crate/Maintain`, a Rust CLI in this workspace) is the single writer
+`Maintain` (`Crate/Maintain`, a Rust CLI in this workspace) is the single writer
 for all of it:
 
 ```sh
-cargo install --path Crate/Maintain # once, gives you `maintain`
+cargo install --path Crate/Maintain # once, gives you `Maintain`
 
-maintain version            # version on stdout, manifest table on stderr
-maintain version bump patch # move one field, write it everywhere
-maintain version set 0.0.11 # an explicit version
+Maintain version            # version on stdout, manifest table on stderr
+Maintain version bump patch # move one field, write it everywhere
+Maintain version set 0.0.11 # an explicit version
 ```
 
 The bare form is also the guard: it exits non-zero when a manifest has drifted
 from `Cargo.toml`, and it prints the version alone on stdout, so
-`$(maintain version)` is exactly the tag suffix.
+`$(Maintain version)` is exactly the tag suffix.
 
 ---
 
 ## 2. Tag
 
-`maintain release` does the whole ceremony in one step - bump, commit, tag, push
+`Maintain release` does the whole ceremony in one step - bump, commit, tag, push
 the branch, push the tag, and with `--publish` dispatch the crates.io publish:
 
 ```sh
-maintain release 0.0.11 --publish --dry-run # print the plan, change nothing
-maintain release 0.0.11 --publish           # do it
+Maintain release 0.0.11 --publish --dry-run # print the plan, change nothing
+Maintain release 0.0.11 --publish           # do it
 ```
 
 It refuses a version that does not move forward, refuses a dirty tree unless
@@ -54,7 +54,7 @@ landed everywhere.
 The manual equivalent, when you want each step under your own hand:
 
 ```sh
-VERSION=$(maintain version)
+VERSION=$(Maintain version)
 git add Cargo.toml package.json Package/Web/package.json Crate/Round/tauri.conf.json
 git commit -m "chore(release): $VERSION"
 git tag -a "Round/v$VERSION" -m "Round/v$VERSION"
@@ -79,7 +79,7 @@ The tag is the release trigger, and only `Build.yml` listens to it.
 crates.io versions are immutable, so publishing is a separate, explicit act:
 
 ```sh
-maintain publish # gh workflow run Publish.yml --ref Current -f publish_crates=true
+Maintain publish # gh workflow run Publish.yml --ref Current -f publish_crates=true
 gh run watch
 ```
 

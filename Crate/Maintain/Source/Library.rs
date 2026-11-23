@@ -1,4 +1,4 @@
-//! `round-maintain` - the CLI behind Round's release.
+//! `Maintain` - the CLI behind Round's release.
 //!
 //! One binary, four jobs: keep the version identical across every manifest,
 //! run the gates CI runs, build the app, and cut the release (bump, commit,

@@ -12,7 +12,7 @@ one webview per monitor.
   overlay engine) and `Source/Main.rs` is the `round` binary (the tray app).
   `cargo add pround` gives the engine; `cargo install` from a checkout gives the
   app.
-- **`Crate/Maintain`** - the release CLI (`maintain`), a second workspace member
+- **`Crate/Maintain`** - the release CLI (`Maintain`), a second workspace member
   that is never published. It owns the version across every manifest, mirrors the
   CI gates, builds the bundle, and cuts the release; see
   [`Releasing.md`](Releasing.md). It is separate from `Crate/Round` because the

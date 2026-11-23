@@ -26,7 +26,7 @@ _(nothing yet)_
 
 ### Tooling
 
-- **`Crate/Maintain`** - a Rust CLI (`maintain`) that owns the release. It is
+- **`Crate/Maintain`** - a Rust CLI (`Maintain`) that owns the release. It is
   the single writer for the version (`version`, `version set`, `version bump`,
   `version sync`, refusing drift), the local mirror of the CI gates (`check`),
   the bundle build (`build`), and the whole ceremony in one command
