@@ -19,7 +19,7 @@ name = "maintain"
 path = "Source/Main.rs"
 
 [dependencies]
-clap = { version = "4.6", features = ["derive"] }
-serde_json = "1.0"
-thiserror = "2.0"
-toml_edit = "0.25"
+clap = { version = "4.6.9", features = ["derive"] }
+serde_json = "1.0.154"
+thiserror = "2.0.21"
+toml_edit = "0.25.20+spec-1.1.0"
