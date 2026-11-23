@@ -95,11 +95,15 @@ pub fn install<R:Runtime>(app:&AppHandle<R>, settings:&Settings) -> tauri::Resul
 		.icon_as_template(true)
 		.icon(tauri::include_image!("icons/tray.png"))
 		.on_tray_icon_event(|tray, event| {
-			if let TrayIconEvent::Click {
+			let TrayIconEvent::Click {
 				button: MouseButton::Left, button_state: MouseButtonState::Up, rect, ..
 			} = event
-			{
-				let _ = crate::Menu::toggle(tray.app_handle(), Some(rect));
+			else {
+				return;
+			};
+
+			if let Err(error) = crate::Menu::toggle(tray.app_handle(), Some(rect)) {
+				eprintln!("round: the menu window could not be opened: {error}");
 			}
 		})
 		.on_menu_event(move |app, event| {

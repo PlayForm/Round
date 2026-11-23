@@ -153,12 +153,6 @@ fn build<R:Runtime>(app:&AppHandle<R>) -> tauri::Result<WebviewWindow<R>> {
 		.visible(false)
 		.build()?;
 
-	eprintln!(
-		"[menu] created visible={:?} position={:?}",
-		window.is_visible(),
-		window.outer_position()
-	);
-
 	// A popover dismisses when it loses focus, exactly like the menu it replaces.
 	let handle = window.clone();
 
