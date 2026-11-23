@@ -32,6 +32,16 @@ the npm packages and `pround`.
   on macOS; Windows already had `WS_EX_NOACTIVATE`). A blur that only moves focus
   to another window of Round is no longer a dismissal either, so only a click
   outside the app or the tray icon closes the panel.
+- A click inside the panel no longer closes it. The blur guard asked whether
+  another window of the app held the keyboard, which a click on the panel does
+  not change, so the panel read its own click as a dismissal. It now asks where
+  the pointer is: a blur with the pointer inside a window of the app a click can
+  reach is the user working the panel, and only a pointer outside all of them is
+  a dismissal. The click-through overlays are left out of that test - they cover
+  a whole monitor each and never receive a click, so counting them would read a
+  click on the desktop as a click on Round - and the comparison is made in AppKit
+  points on macOS, where the pointer and a window's frame are reported through
+  different backing scales on a desk that mixes a Retina display with a 1x one.
 
 ### Dependencies
 

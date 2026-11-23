@@ -119,13 +119,123 @@ fn blurred_now() -> bool { Blurred.lock().ok().and_then(|at| *at).is_some_and(|a
 
 fn settling() -> bool { Shown.lock().ok().and_then(|at| *at).is_some_and(|at| at.elapsed() < Settle) }
 
+/// Where the pointer sat when the panel resigned the keyboard.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum Pointer {
+	/// Within a window of this app that a click can reach - the click never
+	/// left Round.
+	Inside,
+	/// Outside every window a click can reach.
+	Outside,
+	/// A window's geometry could not be read, so the pointer cannot be placed.
+	Unknown,
+}
+
+impl Pointer {
+	/// Whether the pointer is known to be outside every window of the app.
+	///
+	/// Only that is the user leaving. A pointer inside the app is the user
+	/// working it - the overlays never take the keyboard, so focus alone cannot
+	/// tell the two apart - and a pointer that cannot be placed leaves the
+	/// answer to the guards that follow, rather than dismissing on missing
+	/// data.
+	fn leaving(self) -> bool { matches!(self, Self::Outside) }
+}
+
+/// Where the pointer is relative to the windows of this app.
+///
+/// A popover dismisses on the click that leaves it, and the only click that has
+/// not left is one landing inside the app itself. Focus cannot answer that: the
+/// overlays are non-activating, so a click on one never makes it key and the
+/// app stays active. The pointer can, and it does so without a timing guess.
+fn locate<R:Runtime>(app:&AppHandle<R>) -> Pointer {
+	let Some(pointer) = cursor(app) else {
+		return Pointer::Unknown;
+	};
+
+	let (inside, unreadable) = app
+		.webview_windows()
+		.into_values()
+		// A click-through window cannot receive a click: its rect covers a whole
+		// monitor, so counting it would read every click on the desktop as a
+		// click on Round.
+		.filter(Overlay::clickable)
+		.fold((false, false), |(inside, unreadable), window| match outer(&window) {
+			Some(rect) => (inside || within(rect, pointer), unreadable),
+			None => (inside, true),
+		});
+
+	match (inside, unreadable) {
+		(true, _) => Pointer::Inside,
+		(false, true) => Pointer::Unknown,
+		(false, false) => Pointer::Outside,
+	}
+}
+
+/// The pointer, in the pixel space a window reports its own frame in.
+///
+/// macOS reports the pointer through the *primary* display's backing scale but
+/// a window reports its frame through *its own* screen's, so on a desk that
+/// mixes a Retina display with a 1x one the two spaces differ by a factor of
+/// two. Both are brought back to AppKit points - the pointer here, the frame in
+/// [`outer`] - which is the one space every display shares. Windows and X11
+/// report raw physical pixels on both sides, where the same division would
+/// invent a difference that is not there.
+#[cfg(target_os = "macos")]
+fn cursor<R:Runtime>(app:&AppHandle<R>) -> Option<PhysicalPosition<f64>> {
+	let scale = app.primary_monitor().ok().flatten()?.scale_factor();
+
+	app.cursor_position()
+		.ok()
+		.map(|pointer| PhysicalPosition::new(pointer.x / scale, pointer.y / scale))
+}
+
+#[cfg(not(target_os = "macos"))]
+fn cursor<R:Runtime>(app:&AppHandle<R>) -> Option<PhysicalPosition<f64>> { app.cursor_position().ok() }
+
+/// The window's outer rect, in the space [`cursor`] reports.
+#[cfg(target_os = "macos")]
+fn outer<R:Runtime>(window:&WebviewWindow<R>) -> Option<(f64, f64, f64, f64)> {
+	let scale = window.scale_factor().ok()?;
+
+	let (left, top, right, bottom) = rect(window)?;
+
+	Some((left / scale, top / scale, right / scale, bottom / scale))
+}
+
+#[cfg(not(target_os = "macos"))]
+fn outer<R:Runtime>(window:&WebviewWindow<R>) -> Option<(f64, f64, f64, f64)> { rect(window) }
+
+/// The window's outer rect as `(left, top, right, bottom)`, in the pixels the
+/// platform reports for that window.
+fn rect<R:Runtime>(window:&WebviewWindow<R>) -> Option<(f64, f64, f64, f64)> {
+	let position = window.outer_position().ok()?;
+
+	let size = window.outer_size().ok()?;
+
+	let left = f64::from(position.x);
+
+	let top = f64::from(position.y);
+
+	Some((left, top, left + f64::from(size.width), top + f64::from(size.height)))
+}
+
+/// Whether the pointer lies within `(left, top, right, bottom)`.
+///
+/// A window on a display left of or above the main one has a negative origin,
+/// so this is a plain range check on both axes and never assumes zero. The far
+/// edges are exclusive, as a half-open rect is.
+fn within((left, top, right, bottom):(f64, f64, f64, f64), pointer:PhysicalPosition<f64>) -> bool {
+	pointer.x >= left && pointer.x < right && pointer.y >= top && pointer.y < bottom
+}
+
 /// Whether another window of this app holds the keyboard.
 ///
 /// Focus that moved between our own windows is not the user leaving: the
 /// overlay windows are ours, and a command that brings one of them forward must
-/// not read as a dismissal of the panel the command came from. Only a blur with
-/// the keyboard outside Round - another application, the desktop - is a
-/// dismissal, which is what [`dismissed`] then confirms.
+/// not read as a dismissal of the panel the command came from. A blur that only
+/// moved the keyboard between our windows is therefore not a dismissal, whatever
+/// [`locate`] makes of the pointer.
 fn elsewhere<R:Runtime>(app:&AppHandle<R>) -> bool {
 	app.webview_windows()
 		.into_values()
@@ -175,12 +285,18 @@ fn build<R:Runtime>(app:&AppHandle<R>) -> tauri::Result<WebviewWindow<R>> {
 	window.on_window_event(move |event| {
 		if let WindowEvent::Focused(false) = event {
 			// Hiding a window that is already hidden emits another blur, a
-			// window that was just ordered front is still settling, focus that
-			// only moved to another window of this app is not the user
-			// leaving, and an activation the system took back is not the user
-			// leaving either. None of those is a dismissal, and recording one
-			// would swallow the next tray click.
-			if !handle.is_visible().unwrap_or(false) || settling() || elsewhere(&owner) || !dismissed() {
+			// window that was just ordered front is still settling, a click
+			// that landed inside a window of this app is the user working it
+			// rather than leaving it, focus that only moved to another window
+			// of this app is not the user leaving either, and an activation the
+			// system took back is not the user leaving either. None of those is
+			// a dismissal, and recording one would swallow the next tray click.
+			if !handle.is_visible().unwrap_or(false)
+				|| settling()
+				|| !locate(&owner).leaving()
+				|| elsewhere(&owner)
+				|| !dismissed()
+			{
 				return;
 			}
 

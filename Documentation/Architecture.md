@@ -39,12 +39,19 @@ declares them and holds nothing else.
   icon, toggles it on a click, dismisses it when it really loses focus, and
   exposes the panel's commands - `state`, `set_size`, `set_mode`, `set_hidden`,
   `set_dock`, `reset`, `quit` - each of which returns the state to render.
-  "Really" is three guards on the blur: a window that is already hidden, a blur
-  inside the settle window after `show`, and a blur that only moved the keyboard
-  to another window of Round are all ignored; only a blur with focus outside the
-  app (`NSApplication.isActive` still true) is a dismissal. Without the third
-  guard every command would close the panel it was clicked in, because a command
-  ends in a broadcast over the overlay windows and showing a window can key it.
+  "Really" is four guards on the blur: a window that is already hidden, a blur
+  inside the settle window after `show`, a blur whose pointer is still inside a
+  window of Round, and a blur that only moved the keyboard to another window of
+  Round are all ignored; a dismissal is a blur with the pointer outside every
+  window a click can reach, while the app itself is still active
+  (`NSApplication.isActive`). The pointer guard is the one that carries clicks:
+  the overlays never take the keyboard, so clicking the panel does not move focus
+  and focus alone cannot tell a click on the app from a click that left it. A
+  window that ignores the mouse is not counted at all - the overlays are
+  click-through and cover a whole monitor each, so counting them would read a
+  click on the desktop as a click on Round. Without the keyboard guard every
+  command would close the panel it was clicked in, because a command ends in a
+  broadcast over the overlay windows and showing a window can key it.
 - **`Mode`** - the two inks a corner can be drawn in. Serialises to the
   lowercase word the webview reads (`dark`, `light`); unknown store values fall
   back to the default.
@@ -58,8 +65,8 @@ declares them and holds nothing else.
   a webview window takes. Labels keep ASCII alphanumerics only (Tauri rejects
   the rest); an unnamed monitor becomes `monitor<index>`.
 - **`Overlay`** - lifting a transparent webview above the OS chrome. Exactly one
-  `raise`/`present`/`dock` trio is re-exported per platform, so call sites are
-  identical everywhere and there is no runtime branch to get wrong:
+  `clickable`/`raise`/`present`/`dock` set is re-exported per platform, so call
+  sites are identical everywhere and there is no runtime branch to get wrong:
     - `MacOS.rs` - `NSStatusWindowLevel` (25), collection behaviour
       `canJoinAllSpaces | stationary | ignoresCycle | fullScreenAuxiliary`,
       `setIgnoresMouseEvents:YES`, `orderFrontRegardless` for `present`, and
@@ -70,6 +77,12 @@ declares them and holds nothing else.
       draw a second set of corners.
     - `Linux.rs` - nothing beyond the builder's `always_on_top` +
       `skip_taskbar`; a compositor may still draw panels over the corners.
+  `clickable` reads back the click-through state each `raise` asked for
+  (`ignoresMouseEvents` on macOS, `WS_EX_TRANSPARENT` on Windows; Linux has no
+  way to ask for it, so there the window does receive clicks). The Menu panel
+  asks it before counting a window as part of the app, and a window whose state
+  cannot be read answers "clickable", so a missing answer keeps the panel open
+  rather than dismissing it.
   `present` is the one place a window is put on screen, and it is deliberately
   not `WebviewWindow::show`: that forwards to tao's `set_visible(true)`, which
   calls `makeKeyAndOrderFront:` and makes the overlay the key window. An overlay

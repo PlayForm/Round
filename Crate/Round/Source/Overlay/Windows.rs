@@ -19,6 +19,26 @@ use windows_sys::Win32::{
 	},
 };
 
+/// Whether a click can reach the window.
+///
+/// [`raise`] sets `WS_EX_TRANSPARENT`, so a click that lands on the overlay's
+/// rect goes to whatever is under it - the desktop, another application - and
+/// is not a click on Round. A window whose handle cannot be read is reported as
+/// clickable, so a caller asking whether the user left keeps the panel open
+/// rather than dismissing on missing data.
+pub fn clickable<R:Runtime>(window:&WebviewWindow<R>) -> bool {
+	let Ok(handle) = window.hwnd() else {
+		return true;
+	};
+
+	let hwnd = handle.0 as HWND;
+
+	match hwnd.is_null() {
+		true => true,
+		false => unsafe { GetWindowLongPtrW(hwnd, GWL_EXSTYLE) & (WS_EX_TRANSPARENT as isize) == 0 },
+	}
+}
+
 /// Lift one overlay window above the taskbar, out of the taskbar list, out of
 /// the alt-tab cycle, and out of the mouse's way. Tauri already made it
 /// `WS_EX_LAYERED`; the three styles below are what a click-through overlay

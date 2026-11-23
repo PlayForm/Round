@@ -2,6 +2,13 @@
 
 use tauri::{Runtime, WebviewWindow};
 
+/// Whether a click can reach the window.
+///
+/// Nothing here makes the overlay click-through - there is no portable way to
+/// ask for it and the compositor decides - so the window does receive the click
+/// and counts as part of the app.
+pub fn clickable<R:Runtime>(_window:&WebviewWindow<R>) -> bool { true }
+
 /// Nothing to do beyond what the window builder already asked for. A
 /// compositor may still draw its own panels over the corners; there is no
 /// in-process API that lifts a window above them on every desktop.

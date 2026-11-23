@@ -24,6 +24,30 @@ const Regular:isize = 0;
 /// `NSApplicationActivationPolicyAccessory` - no dock icon, no menu bar.
 const Accessory:isize = 1;
 
+/// Whether a click can reach the window.
+///
+/// [`raise`] makes the overlay click-through, so a click that lands on its rect
+/// is delivered to whatever is under it - the desktop, another application -
+/// and is not a click on Round. A window whose AppKit handle cannot be read is
+/// reported as clickable, so a caller asking whether the user left keeps the
+/// panel open rather than dismissing on missing data.
+pub fn clickable<R:Runtime>(window:&WebviewWindow<R>) -> bool {
+	let Ok(pointer) = window.ns_window() else {
+		return true;
+	};
+
+	let ns_window = pointer as *mut AnyObject;
+
+	match ns_window.is_null() {
+		true => true,
+		false => {
+			let ignores:bool = unsafe { msg_send![ns_window, ignoresMouseEvents] };
+
+			!ignores
+		}
+	}
+}
+
 /// Lift one overlay window above the menu bar, on every Space, in fullscreen
 /// apps too, and make it ignore the mouse entirely.
 pub fn raise<R:Runtime>(window:&WebviewWindow<R>) {
