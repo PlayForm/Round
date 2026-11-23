@@ -13,8 +13,8 @@ one webview per monitor plus the menu window that drives them.
   `cargo add pround` gives the engine; `cargo install` from a checkout gives the
   app.
 - **`Crate/Maintain`** - the release CLI (`Maintain`), a second workspace member
-  that is never published. It owns the version across every manifest, mirrors the
-  CI gates, builds the bundle, and cuts the release; see
+  that is never published. It owns the version across every manifest, mirrors
+  the CI gates, builds the bundle, and cuts the release; see
   [`Releasing.md`](Releasing.md). It is separate from `Crate/Round` because the
   app must not depend on the tool that releases it.
 - **`Package/Web`** - the webview package. Solid 1.9 + Vite 8 + Tailwind 3,
