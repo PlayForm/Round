@@ -1,7 +1,11 @@
 # Build output ---------------------------------------------------------------
 Target
-/Crate/Round/Web
 /Package/Web/Target
+
+# Tauri's generated ACL schemas: tauri-build writes them on every build, so
+# tracking them is pure churn (the capabilities files reference them for editor
+# autocomplete only).
+/Crate/Round/gen
 
 # Dependencies ---------------------------------------------------------------
 node_modules
