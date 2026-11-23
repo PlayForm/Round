@@ -5,7 +5,11 @@ resolver = "3"
 [workspace.package]
 version = "0.0.9"
 edition = "2024"
-rust-version = "1.88"
+# Tauri 2.12 requires 1.90, so this is the real floor. Declaring a lower one is
+# not harmless: cargo's MSRV-aware resolver then locks older transitive crates
+# ("locking 436 packages to highest Rust 1.88 compatible versions"), so CI would
+# compile a different graph than a machine that ignores the field.
+rust-version = "1.90"
 license = "CC0-1.0"
 # `authors` is deprecated cargo metadata (surfaced only through
 # CARGO_PKG_AUTHORS for backwards compatibility); identity lives in the

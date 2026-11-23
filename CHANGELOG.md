@@ -41,9 +41,11 @@ the npm packages and `pround`.
   setting, never the launch.
 - `regex` dropped: monitor labels are sanitised with an ASCII filter, which is
   the same rule the regex encoded.
-- Workspace root with edition 2024, `rust-version = "1.88"`, a floating
-  `nightly` toolchain, `rustfmt.toml`, one `.cargo/config.toml`, and build
-  profiles moved into the manifest (cargo ignores `[profile]` in a config file).
+- Workspace root with edition 2024, `rust-version = "1.90"` (the floor Tauri
+  2.12 imposes - a lower value makes cargo's MSRV-aware resolver lock older
+  transitive crates), a floating `nightly` toolchain, `rustfmt.toml`, one
+  `.cargo/config.toml`, and build profiles moved into the manifest (cargo
+  ignores `[profile]` in a config file).
 - `build.rs` reports a missing webview build as a `cargo:warning` instead of
   failing the package: a library consumer never expands `generate_context!` and
   must not be blocked by a frontend it does not need.

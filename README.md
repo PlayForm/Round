@@ -20,7 +20,7 @@
 
 [![release](https://img.shields.io/github/v/release/PlayForm/Round?label=release&color=blue)](https://github.com/PlayForm/Round/releases)
 [![crate](https://img.shields.io/static/v1?label=crate&message=pround&color=orange)](https://crates.io/crates/pround)
-[![rust](https://img.shields.io/static/v1?label=rust&message=1.88%2B&color=orange)](https://www.rust-lang.org)
+[![rust](https://img.shields.io/static/v1?label=rust&message=1.90%2B&color=orange)](https://www.rust-lang.org)
 [![license](https://img.shields.io/static/v1?label=license&message=CC0-1.0&color=lightgrey)](LICENSE)
 [![update](https://img.shields.io/github/last-commit/PlayForm/Round?label=update&color=black)](https://github.com/PlayForm/Round)
 [![issue](https://img.shields.io/github/issues/PlayForm/Round?label=issue&color=black)](https://github.com/PlayForm/Round/issues)
