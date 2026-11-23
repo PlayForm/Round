@@ -6,6 +6,10 @@ export default (await import("vite")).defineConfig({
 	plugins: [(await import("vite-plugin-solid")).default()],
 	clearScreen: false,
 	server: {
+		// Bind the IPv4 loopback explicitly: `localhost` resolves to `::1`
+		// first on macOS, so a listener on the default host is unreachable from
+		// anything that dials 127.0.0.1 (including Tauri's own health checks).
+		host: "127.0.0.1",
 		port: 1420,
 		strictPort: true,
 		hmr: {
