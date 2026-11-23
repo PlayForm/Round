@@ -25,6 +25,7 @@
 #![allow(clippy::obfuscated_if_else)]
 
 pub mod Action;
+pub mod Controls;
 pub mod Effect;
 pub mod Message;
 pub mod Mode;

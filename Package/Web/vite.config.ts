@@ -23,5 +23,13 @@ export default (await import("vite")).defineConfig({
 		target: "chrome105",
 		minify: process.env["TAURI_DEBUG"] ? false : "esbuild",
 		sourcemap: !!process.env["TAURI_DEBUG"],
+		rollupOptions: {
+			// Two documents: `index.html` is the overlay every monitor renders,
+			// `controls.html` is the panel the tray opens.
+			input: {
+				index: fileURLToPath(new URL("index.html", import.meta.url)),
+				controls: fileURLToPath(new URL("controls.html", import.meta.url)),
+			},
+		},
 	},
 });

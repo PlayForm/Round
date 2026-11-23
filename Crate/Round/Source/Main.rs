@@ -2,13 +2,21 @@
 
 //! The `round` binary: one overlay webview per monitor, then the tray icon.
 
-use pround::{Overlay, Screen::Screen, Settings::Settings, Tray};
+use pround::{Controls, Overlay, Screen::Screen, Settings::Settings, Tray};
 use tauri::{WebviewUrl, WebviewWindowBuilder};
 use tauri_plugin_store::StoreExt;
 
 fn main() {
 	tauri::Builder::default()
 		.plugin(tauri_plugin_store::Builder::new().build())
+		.invoke_handler(tauri::generate_handler![
+			Controls::state,
+			Controls::set_size,
+			Controls::set_mode,
+			Controls::set_hidden,
+			Controls::set_dock,
+			Controls::reset,
+		])
 		.setup(|app| {
 			let store = app.store(Settings::Store)?;
 
@@ -18,10 +26,12 @@ fn main() {
 
 			Overlay::dock(!settings.dock_hidden);
 
-			let script = settings.script();
-
 			app.available_monitors()?.iter().enumerate().try_for_each(|(index, monitor)| {
 				let screen = Screen::of(monitor, index);
+
+				// Per monitor: the script carries the radius THIS window should
+				// draw, so a tuned monitor paints correctly before any event.
+				let script = settings.script(&screen.label);
 
 				#[allow(unused_mut)]
 				let mut builder = WebviewWindowBuilder::new(app, &screen.label, WebviewUrl::App("index.html".into()))

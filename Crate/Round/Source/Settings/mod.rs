@@ -1,5 +1,7 @@
 //! Everything Round persists between launches.
 
+use std::collections::BTreeMap;
+
 use serde_json::json;
 use tauri::{AppHandle, Emitter, Manager, Runtime, WebviewWindow};
 use tauri_plugin_store::Store;
@@ -13,12 +15,14 @@ use crate::{
 
 /// The persisted state of the overlay.
 ///
-/// Four scalars, one of them a [`Mode`] rather than a `String`: the store's
-/// on-disk shape is this struct's serialisation, so an unknown mode cannot
-/// reach the webview through a typo.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+/// `size` is the default every monitor takes; `sizes` holds the monitors that
+/// were tuned on their own, keyed by their window label. A monitor with no entry
+/// follows the default - which is what makes "Increase" a global gesture and a
+/// slider in the controls window a per-monitor one.
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Settings {
 	pub size:i64,
+	pub sizes:BTreeMap<String, i64>,
 	pub mode:Mode,
 	pub hidden:bool,
 	/// macOS only in the UI; kept on every platform so the store shape and this
@@ -27,7 +31,9 @@ pub struct Settings {
 }
 
 impl Default for Settings {
-	fn default() -> Self { Self { size:Self::Size, mode:Mode::Dark, hidden:false, dock_hidden:false } }
+	fn default() -> Self {
+		Self { size:Self::Size, sizes:BTreeMap::new(), mode:Mode::Dark, hidden:false, dock_hidden:false }
+	}
 }
 
 impl Settings {
@@ -37,8 +43,56 @@ impl Settings {
 	/// How far one Increase/Decrease click moves the radius.
 	pub const Step:i64 = 6;
 
+	/// The largest radius the controls window offers.
+	pub const Maximum:i64 = 120;
+
 	/// The store file `tauri-plugin-store` writes under the app config dir.
 	pub const Store:&'static str = "settings.json";
+
+	/// The radius one monitor is drawn with.
+	pub fn size_for(&self, label:&str) -> i64 { self.sizes.get(label).copied().unwrap_or(self.size) }
+
+	/// Set one monitor's radius, or the default when `label` is `None`.
+	///
+	/// Setting the default drops every per-monitor override: "apply this to all
+	/// monitors" is what the caller meant, and keeping stale overrides would make
+	/// the slider appear not to work.
+	pub fn set(&mut self, label:Option<&str>, value:i64) {
+		let value = value.clamp(0, Self::Maximum);
+
+		match label {
+			Some(label) => {
+				self.sizes.insert(label.to_owned(), value);
+			},
+			None => {
+				self.size = value;
+
+				self.sizes.clear();
+			},
+		}
+	}
+
+	/// Drop one monitor's override, or every override and the default.
+	pub fn clear(&mut self, label:Option<&str>) {
+		match label {
+			Some(label) => {
+				self.sizes.remove(label);
+			},
+			None => {
+				self.size = Self::Size;
+
+				self.sizes.clear();
+			},
+		}
+	}
+
+	/// Move the default and every override together, so a global step keeps the
+	/// per-monitor relationships a user set up.
+	fn shift(&mut self, delta:i64) {
+		self.size = (self.size + delta).clamp(0, Self::Maximum);
+
+		self.sizes.iter_mut().for_each(|(_, size)| *size = (*size + delta).clamp(0, Self::Maximum));
+	}
 
 	/// Apply one tray command and say what the caller does next.
 	///
@@ -47,9 +101,9 @@ impl Settings {
 	/// [`Effect`] instead of being re-derived at the call site.
 	pub fn next(mut self, action:Action) -> (Self, Effect) {
 		match action {
-			Action::Increase => self.size = self.size.saturating_add(Self::Step),
-			Action::Decrease => self.size = self.size.saturating_sub(Self::Step).max(0),
-			Action::Reset => self.size = Self::Size,
+			Action::Increase => self.shift(Self::Step),
+			Action::Decrease => self.shift(-Self::Step),
+			Action::Reset => self.clear(None),
 			Action::Dark => self.mode = Mode::Dark,
 			Action::Light => self.mode = Mode::Light,
 			Action::Show => self.hidden = false,
@@ -57,8 +111,11 @@ impl Settings {
 			Action::Dock => {
 				self.dock_hidden = !self.dock_hidden;
 
-				return (self, Effect::Dock(self.dock_hidden));
-			}
+				let hidden = self.dock_hidden;
+
+				return (self, Effect::Dock(hidden));
+			},
+			Action::Controls => return (self, Effect::Controls),
 			Action::Exit => return (self, Effect::Exit),
 		}
 
@@ -73,6 +130,16 @@ impl Settings {
 
 		Self {
 			size:store.get("size").and_then(|value| value.as_i64()).unwrap_or(default.size),
+			sizes:store
+				.get("sizes")
+				.and_then(|value| value.as_object().cloned())
+				.map(|object| {
+					object
+						.into_iter()
+						.filter_map(|(label, value)| value.as_i64().map(|size| (label, size)))
+						.collect()
+				})
+				.unwrap_or_default(),
 			mode:store
 				.get("mode")
 				.and_then(|value| value.as_str().map(Mode::of))
@@ -88,6 +155,8 @@ impl Settings {
 	pub fn save<R:Runtime>(&self, store:&Store<R>) -> tauri_plugin_store::Result<()> {
 		store.set("size", json!(self.size));
 
+		store.set("sizes", json!(self.sizes));
+
 		store.set("mode", json!(self.mode));
 
 		store.set("hidden", json!(self.hidden));
@@ -97,10 +166,12 @@ impl Settings {
 		store.save()
 	}
 
-	/// The `window.settings` initialisation script each overlay window runs
+	/// The `window.settings` initialisation script one overlay window runs
 	/// before the frontend does, so the first paint already has the right size
 	/// and ink instead of flashing the defaults.
-	pub fn script(&self) -> String { format!("window.settings = {};", json!({ "size": self.size, "mode": self.mode })) }
+	pub fn script(&self, label:&str) -> String {
+		format!("window.settings = {};", json!({ "size": self.size_for(label), "mode": self.mode }))
+	}
 
 	/// Show or hide one overlay window to match the persisted visibility.
 	pub fn visible<R:Runtime>(&self, window:&WebviewWindow<R>) -> tauri::Result<()> {
@@ -111,13 +182,21 @@ impl Settings {
 	}
 
 	/// Push the current state to every overlay window.
+	///
+	/// The controls window is skipped: it is an ordinary window, and hiding or
+	/// resizing it with the overlays would take away the panel the user is using.
 	pub fn broadcast<R:Runtime>(&self, app:&AppHandle<R>) {
-		app.webview_windows().into_values().for_each(|window| {
-			let _ = window.emit("size", Payload { message:Message::Size(self.size) });
+		app.webview_windows()
+			.into_values()
+			.filter(|window| window.label() != crate::Controls::Label)
+			.for_each(|window| {
+				let label = window.label().to_owned();
 
-			let _ = window.emit("mode", Payload { message:Message::Mode(self.mode) });
+				let _ = window.emit("size", Payload { message:Message::Size(self.size_for(&label)) });
 
-			let _ = self.visible(&window);
-		});
+				let _ = window.emit("mode", Payload { message:Message::Mode(self.mode) });
+
+				let _ = self.visible(&window);
+			});
 	}
 }

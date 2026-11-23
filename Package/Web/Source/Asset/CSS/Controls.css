@@ -1,0 +1,200 @@
+:root {
+	--ink: #1c1c1e;
+	--muted: #6b6b70;
+	--line: #e2e2e6;
+	--surface: #ffffff;
+	--panel: #f6f6f8;
+	--accent: #0a84ff;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--ink: #f2f2f7;
+		--muted: #9a9aa1;
+		--line: #2c2c30;
+		--surface: #1c1c1e;
+		--panel: #26262a;
+		--accent: #0a84ff;
+	}
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	background: var(--surface);
+	color: var(--ink);
+	font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
+.Controls {
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+	padding: 18px 20px 24px;
+}
+
+header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+h1 {
+	margin: 0;
+	font-size: 15px;
+	font-weight: 600;
+	letter-spacing: 0.01em;
+}
+
+h2 {
+	margin: 0 0 10px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--muted);
+}
+
+section {
+	display: flex;
+	flex-direction: column;
+	padding-top: 16px;
+	border-top: 1px solid var(--line);
+}
+
+section:first-of-type {
+	border-top: 0;
+	padding-top: 0;
+}
+
+.Close {
+	width: 22px;
+	height: 22px;
+	border: 0;
+	border-radius: 6px;
+	background: transparent;
+	color: var(--muted);
+	font-size: 12px;
+	cursor: pointer;
+}
+
+.Close:hover {
+	background: var(--panel);
+	color: var(--ink);
+}
+
+.Segmented {
+	display: flex;
+	gap: 2px;
+	padding: 2px;
+	border-radius: 8px;
+	background: var(--panel);
+}
+
+.Segmented button {
+	flex: 1;
+	padding: 6px 10px;
+	border: 0;
+	border-radius: 6px;
+	background: transparent;
+	color: var(--muted);
+	font: inherit;
+	cursor: pointer;
+}
+
+.Segmented button.Active {
+	background: var(--surface);
+	color: var(--ink);
+	box-shadow: 0 1px 2px rgb(0 0 0 / 12%);
+}
+
+.Slider {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.Slider input[type="range"] {
+	flex: 1;
+	accent-color: var(--accent);
+}
+
+.Value {
+	min-width: 46px;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	color: var(--muted);
+}
+
+.Monitor {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 10px 0;
+	border-bottom: 1px solid var(--line);
+}
+
+.Monitor:last-child {
+	border-bottom: 0;
+	padding-bottom: 0;
+}
+
+.Head {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.Name {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.Badge {
+	padding: 1px 6px;
+	border-radius: 999px;
+	background: var(--panel);
+	color: var(--muted);
+	font-size: 10px;
+	letter-spacing: 0.02em;
+}
+
+.Link {
+	border: 0;
+	padding: 0;
+	background: transparent;
+	color: var(--accent);
+	font: inherit;
+	font-size: 11px;
+	cursor: pointer;
+}
+
+.Link:hover {
+	text-decoration: underline;
+}
+
+.Hint {
+	margin: 8px 0 0;
+	color: var(--muted);
+	font-size: 11px;
+}
+
+.Toggle {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 12px;
+	color: var(--ink);
+}
+
+.Empty {
+	color: var(--muted);
+}
