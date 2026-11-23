@@ -1,27 +1,21 @@
-//! The window ladder: which of Round's three layers sits over which.
+//! The ladder, one backend per platform, under one name.
 //!
-//! Three layers, bottom to top:
-//!
-//! 1. **Art** - the corner overlay, one window per monitor. Click-through, so
-//!    a click on it is a click on whatever is under it.
-//! 2. **Scrim** - the backdrop the panel is opened over. It takes the mouse:
-//!    a click that lands on it is the dismissal.
-//! 3. **Panel** - the Menu window, above the scrim, owning its own clicks.
-//!
-//! Each platform gets its own module and exactly one
-//! `art`/`scrim`/`panel`/`front`/`dock` set is re-exported, so call sites read
-//! the same everywhere and there is no runtime branch to get wrong.
+//! `#[path]` is what replaces the re-export: the three files are selected by
+//! `cfg` and all three are declared as the *same* module, so a call site writes
+//! `Overlay::Platform::Art(window)` on every platform. There is no second name
+//! for a platform function and therefore no `pub use` to keep in step - the
+//! compiler resolves `Platform` to whichever file this target compiled.
+
+pub mod Layer;
 
 #[cfg(target_os = "macos")]
-mod MacOS;
-#[cfg(target_os = "windows")]
-mod Windows;
-#[cfg(not(any(target_os = "macos", target_os = "windows")))]
-mod Linux;
+#[path = "Platform/MacOS/Struct.rs"]
+pub mod Platform;
 
-#[cfg(target_os = "macos")]
-pub use MacOS::{art, dock, front, panel, scrim};
 #[cfg(target_os = "windows")]
-pub use Windows::{art, dock, front, panel, scrim};
+#[path = "Platform/Windows/Struct.rs"]
+pub mod Platform;
+
 #[cfg(not(any(target_os = "macos", target_os = "windows")))]
-pub use Linux::{art, dock, front, panel, scrim};
+#[path = "Platform/Linux/Struct.rs"]
+pub mod Platform;

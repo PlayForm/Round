@@ -1,0 +1,23 @@
+//! Resolving a monitor into the window it gets.
+
+use tauri::Monitor;
+
+use crate::Screen::{Label, Struct::Struct};
+
+/// The overlay window a monitor gets: its label, and its bounds in the logical
+/// pixels the window builder takes.
+pub fn Fn(Monitor:&Monitor, Index:usize) -> Struct {
+	let Factor = Monitor.scale_factor();
+
+	let Size = Monitor.size().to_logical::<i32>(Factor);
+
+	let Position = Monitor.position().to_logical::<i32>(Factor);
+
+	Struct {
+		Label:Label::Fn(Monitor.name().map(String::as_str), Index),
+		Width:Size.width,
+		Height:Size.height,
+		X:Position.x,
+		Y:Position.y,
+	}
+}
