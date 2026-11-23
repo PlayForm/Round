@@ -34,13 +34,13 @@ if [[ -z "$TAURI_SIGNING_PRIVATE_KEY_PASSWORD" ]]; then
 fi
 
 # --- Prompt for release tag --------------------------------------------------
-# The version comes from `Cargo.toml`, the single source of truth: the script
-# prints it alone on stdout and the manifest table on stderr, and exits non-zero
-# when an npm manifest has drifted from it. A tag that disagrees with the crate
-# ships assets whose version is not the version crates.io receives, so a drifted
-# tree stops here instead of offering a wrong default.
-if ! VERSION=$(node Scripts/Version.mjs); then
-	echo "Error: the manifests disagree; run 'node Scripts/Version.mjs --sync'." >&2
+# The version comes from `Cargo.toml`, the single source of truth: `maintain
+# version` prints it alone on stdout and the manifest table on stderr, and exits
+# non-zero when an npm manifest has drifted from it. A tag that disagrees with
+# the crate ships assets whose version is not the version crates.io receives, so
+# a drifted tree stops here instead of offering a wrong default.
+if ! VERSION=$(cargo run --quiet -p round-maintain -- version); then
+	echo "Error: the manifests disagree; run 'cargo run --quiet -p round-maintain -- version sync'." >&2
 	exit 1
 fi
 

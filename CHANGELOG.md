@@ -13,11 +13,23 @@ the npm packages and `pround`.
 
 - One source of truth for the version: `Cargo.toml` →
   `[workspace.package].version`. `Crate/Round/tauri.conf.json` no longer carries
-  a `version` field, so the app and its bundles take `CARGO_PKG_VERSION` from the
-  workspace manifest, and `Scripts/Version.mjs` writes the two npm manifests that
-  cannot inherit it - `node Scripts/Version.mjs 0.0.11` replaces the four-place
-  edit. `Release.sh` reads the same source and refuses a drifted tree instead of
-  offering a tag that disagrees with the crate.
+  a `version` field, so the app and its bundles take `CARGO_PKG_VERSION` from
+  the workspace manifest, and the two npm manifests - which cannot inherit it -
+  are written from that source. `Release.sh` reads the same source and refuses a
+  drifted tree instead of offering a tag that disagrees with the crate.
+
+### Tooling
+
+- **`Crate/Maintain`** - a Rust CLI (`maintain`) that owns the release. It is
+  the single writer for the version (`version`, `version set`, `version bump`,
+  `version sync`, refusing drift), the local mirror of the CI gates (`check`),
+  the bundle build (`build`), and the whole ceremony in one command
+  (`release <version> [--publish] [--dry-run]` - bump, commit, tag, push, then
+  dispatch the crates.io publish). `publish = false`; it is a tool for this
+  repository.
+- The throwaway `Scripts/Version.mjs` that briefly held the version logic is
+  gone: a Node script that only edited four manifests did not belong in a
+  repository whose tooling is Rust, and it could not do anything past the bump.
 
 ---
 

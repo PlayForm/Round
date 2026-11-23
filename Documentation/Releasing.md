@@ -7,40 +7,59 @@ the bundles and the crate on the same number.
 
 ## 1. Bump the version
 
-One number, written once. `Cargo.toml` → `[workspace.package].version` is the
-source of truth, and everything else either inherits it or is written from it:
+`Cargo.toml` → `[workspace.package].version` is the truth, and everything else
+either inherits it or is written from it:
 
 - **The crate** inherits it with `version.workspace = true`, and `Publish.yml`
   reads it back through `cargo metadata` - this is the number crates.io sees.
 - **The app and its bundles** read `CARGO_PKG_VERSION`, because
   `Crate/Round/tauri.conf.json` carries no `version` field at all and Tauri
   falls back to the manifest when the field is absent. Putting a literal back is
-  supported, but it is then a copy that must be kept in step - and
-  `Scripts/Version.mjs` refuses a tree where it disagrees.
+  supported, but it is then a copy that must be kept in step - and `maintain`
+  refuses a tree where it disagrees.
 - **The two npm manifests** cannot inherit anything from a Cargo manifest, so
-  `package.json` and `Package/Web/package.json` are the only copies left. The
-  script writes both.
+  `package.json` and `Package/Web/package.json` are the only copies left.
+
+`maintain` (`Crate/Maintain`, a Rust CLI in this workspace) is the single writer
+for all of it:
 
 ```sh
-node Scripts/Version.mjs 0.0.11 # set the version everywhere
-node Scripts/Version.mjs --sync # re-propagate after editing Cargo.toml
-node Scripts/Version.mjs        # version on stdout, manifest table on stderr
+cargo install --path Crate/Maintain # once, gives you `maintain`
+
+maintain version            # version on stdout, manifest table on stderr
+maintain version bump patch # move one field, write it everywhere
+maintain version set 0.0.11 # an explicit version
 ```
 
 The bare form is also the guard: it exits non-zero when a manifest has drifted
 from `Cargo.toml`, and it prints the version alone on stdout, so
-`$(node Scripts/Version.mjs)` is exactly the tag suffix. `Release.sh` calls it
-before offering a tag and stops on drift, so a half-finished bump cannot produce
-a release whose assets and crate disagree.
+`$(maintain version)` is exactly the tag suffix.
 
 ---
 
 ## 2. Tag
 
+`maintain release` does the whole ceremony in one step - bump, commit, tag, push
+the branch, push the tag, and with `--publish` dispatch the crates.io publish:
+
 ```sh
-VERSION=$(node Scripts/Version.mjs)
+maintain release 0.0.11 --publish --dry-run # print the plan, change nothing
+maintain release 0.0.11 --publish           # do it
+```
+
+It refuses a version that does not move forward, refuses a dirty tree unless
+`--allow-dirty`, and re-reads every manifest after writing to prove the number
+landed everywhere.
+
+The manual equivalent, when you want each step under your own hand:
+
+```sh
+VERSION=$(maintain version)
+git add Cargo.toml package.json Package/Web/package.json Crate/Round/tauri.conf.json
+git commit -m "chore(release): $VERSION"
 git tag -a "Round/v$VERSION" -m "Round/v$VERSION"
-git push origin "Round/v$VERSION"
+git push Source Current
+git push Source "Round/v$VERSION"
 ```
 
 The tag is the release trigger, and only `Build.yml` listens to it.
@@ -60,7 +79,7 @@ The tag is the release trigger, and only `Build.yml` listens to it.
 crates.io versions are immutable, so publishing is a separate, explicit act:
 
 ```sh
-gh workflow run Publish.yml --ref Current -f publish_crates=true
+maintain publish # gh workflow run Publish.yml --ref Current -f publish_crates=true
 gh run watch
 ```
 

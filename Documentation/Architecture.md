@@ -1,16 +1,22 @@
 # Architecture
 
-How Round is put together: two packages, one process, one webview per monitor.
+How Round is put together: two workspace crates, one pnpm package, one process,
+one webview per monitor.
 
 ---
 
-## The two packages
+## The packages
 
 - **`Crate/Round`** - the Rust crate, published to crates.io as **`pround`**. It
   is both faces of the product: `Source/Library.rs` is the crate root (the
   overlay engine) and `Source/Main.rs` is the `round` binary (the tray app).
   `cargo add pround` gives the engine; `cargo install` from a checkout gives the
   app.
+- **`Crate/Maintain`** - the release CLI (`maintain`), a second workspace member
+  that is never published. It owns the version across every manifest, mirrors the
+  CI gates, builds the bundle, and cuts the release; see
+  [`Releasing.md`](Releasing.md). It is separate from `Crate/Round` because the
+  app must not depend on the tool that releases it.
 - **`Package/Web`** - the webview package. Solid 1.9 + Vite 8 + Tailwind 3,
   built by `@playform/build`'s tsconfig base into `Package/Web/Target`. The
   crate embeds that directory at compile time (`tauri.conf.json` →

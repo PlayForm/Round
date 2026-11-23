@@ -157,12 +157,12 @@ click meant.
   [`Releasing.md`](Documentation/Releasing.md), an
   [`Index.md`](Documentation/Index.md) map) and the architecture graphs
   (`Knowledge.dot`, `Knowledge.svg`).
-- **`Scripts`** - repository tooling. `Version.mjs` is the single writer for the
-  version: it reads `[workspace.package].version` from `Cargo.toml`, writes the
-  two npm manifests that cannot inherit it, and exits non-zero when they
-  disagree.
-- **`Release.sh`** - the local signed macOS release; the tag it offers comes from
-  the same `Scripts/Version.mjs`, so a drifted tree cannot start one.
+- **`Crate/Maintain`** - the release CLI (`maintain`). One writer for the
+  version across every manifest, the local mirror of the CI gates, the bundle
+  build, and the whole ceremony (`maintain release 0.0.11 --publish`) in one
+  command. `publish = false`: it is a tool for this repository, not a crate.
+- **`Release.sh`** - the local signed macOS release; the tag it offers comes
+  from `maintain version`, so a drifted tree cannot start one.
 - **`.github/workflows`** - `Check`, `Build`, `Publish`, `Auto`, `Dependabot`,
   `GitHub`.
 
@@ -174,8 +174,8 @@ click meant.
   startup sequence, the tray → settings → webview event flow, the webview
   contract, and where to change what.
 - **[Releasing](Documentation/Releasing.md)** - one version in `Cargo.toml`, the
-  `Scripts/Version.mjs` bump, the `Round/v*` tag, the opt-in crates.io publish,
-  and how to test a publish without burning a version.
+  `maintain` CLI that writes it everywhere, the `Round/v*` tag, the opt-in
+  crates.io publish, and how to test a publish without burning a version.
 - **[Documentation index](Documentation/Index.md)** - the map of the set.
 
 ---
@@ -192,8 +192,11 @@ pnpm run dev   # vite dev server on :1420
 pnpm tauri dev # the app against the dev server
 pnpm run Build # production webview build
 cargo build    # debug binary at Target/debug/round
-cargo clippy --workspace --all-targets -- -D warnings
-cargo fmt --all -- --check
+
+# the release CLI (Crate/Maintain)
+cargo install --path Crate/Maintain # once, gives you `maintain`
+pnpm run Version                    # maintain version: the number + drift check
+pnpm run Check                      # maintain check: fmt, clippy -D warnings, check
 ```
 
 `Cargo.lock` is deliberately untracked: the crate publishes to crates.io and
