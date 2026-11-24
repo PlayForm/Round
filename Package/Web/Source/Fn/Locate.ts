@@ -11,16 +11,20 @@ import type { Work } from "../Type/Panel.js";
  *  the height its content asks for, which is what it did before this cap.
  */
 export default async ():Promise<Work | undefined> => {
-	const monitor = await currentMonitor().catch(() => null);
+	const Monitor = await currentMonitor().catch(() => null);
 
-	if (!monitor) {
-		const height = window.screen.availHeight;
+	if (!Monitor) {
+		const Height = window.screen.availHeight;
 
-		return height > 0 ? { top:0, height:Math.floor(height), scale:window.devicePixelRatio || 1 } : undefined;
+		return Height > 0
+			? { Top:0, Height:Math.floor(Height), Scale:window.devicePixelRatio || 1 }
+			: undefined;
 	}
 
-	const scale = monitor.scaleFactor;
-	const height = monitor.workArea.size.height / scale;
+	const Scale = Monitor.scaleFactor;
+	const Height = Monitor.workArea.size.height / Scale;
 
-	return height > 0 ? { top:monitor.workArea.position.y / scale, height:Math.floor(height), scale } : undefined;
+	return Height > 0
+		? { Top:Monitor.workArea.position.y / Scale, Height:Math.floor(Height), Scale }
+		: undefined;
 };

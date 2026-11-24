@@ -3,9 +3,9 @@ import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { createEffect, createSignal, Index, onMount, Show } from "solid-js";
 
 import Context from "../Context.js";
+import Describe from "../Fn/Describe.js";
 import Fit from "../Fn/Fit.js";
-import Entry from "../Fn/Entry.js";
-import Where from "../Fn/Where.js";
+import Name from "../Fn/Name.js";
 import type { State } from "../Type/Panel.js";
 
 import Row from "./Row.jsx";
@@ -22,7 +22,7 @@ export default () => {
 	const Window = getCurrentWebviewWindow();
 
 	/** The panel's copy of the Rust state; every command returns the new one. */
-	const [State, setState] = createSignal<State>();
+	const [State, Sync] = createSignal<State>();
 
 	/** Which monitor the settings below apply to, in the select's own terms: a
 	 *  monitor's label, or the empty string for the "All monitors" entry.
@@ -30,14 +30,14 @@ export default () => {
 	 *  The empty string is the value of the select's first entry, so the control
 	 *  needs no translation of its own, and `Scope` is the single place it becomes
 	 *  the absent label that every command already reads as "every monitor". */
-	const [Selected, setSelected] = createSignal("");
+	const [Selected, Select] = createSignal("");
 
 	/** The selected monitor's label, or `undefined` for every monitor at once. */
 	const Scope = () => Selected() || undefined;
 
 	const call = async (command:string, args?:Record<string, unknown>) => {
 		try {
-			setState(await invoke<State>(command, args));
+			Sync(await invoke<State>(command, args));
 		} catch (Error) {
 			console.error(`${command} failed`, Error);
 		}
@@ -59,7 +59,7 @@ export default () => {
 		const label = Scope();
 
 		if (label !== undefined && !(State()?.monitors ?? []).some((monitor) => monitor.label === label)) {
-			setSelected("");
+			Select("");
 		}
 	});
 
@@ -93,7 +93,7 @@ export default () => {
 	});
 
 	return (
-		<Context.Provider value={{ State, call, Selected, setSelected, Scope }}>
+		<Context.Provider value={{ State, call, Selected, Select, Scope }}>
 			<div class="Panel" ref={Element}>
 				<Show when={State()} fallback={<p class="Empty">Reading settings...</p>}>
 					{(state) => (
@@ -106,17 +106,17 @@ export default () => {
 									ref={Picker}
 									title="Which monitors the settings below apply to"
 									value={Selected()}
-									onChange={(event) => setSelected(event.currentTarget.value)}>
+									onChange={(event) => Select(event.currentTarget.value)}>
 									<option value="">All monitors</option>
 
 									<Index each={state().monitors}>
 										{(monitor, index) => (
-											<option value={monitor().label}>{Entry(monitor(), index)}</option>
+											<option value={monitor().label}>{Name(monitor(), index)}</option>
 										)}
 									</Index>
 								</select>
 
-								<p class="Where">{Where(state(), Scope())}</p>
+								<p class="Where">{Describe(state(), Scope())}</p>
 							</div>
 
 							<Setting
@@ -131,7 +131,7 @@ export default () => {
 								}
 								control={(value, commit) => (
 									<>
-										<Slider value={value()} maximum={state().maximum} onCommit={commit} />
+										<Slider value={value()} maximum={state().maximum} Commit={commit} />
 										<span class="Number">{value()}</span>
 									</>
 								)}

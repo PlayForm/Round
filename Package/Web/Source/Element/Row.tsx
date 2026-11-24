@@ -11,7 +11,7 @@ export default (properties:{
 	hint:string;
 	mark?:string | undefined;
 	reset?:string | undefined;
-	onReset?:(() => void) | undefined;
+	Reset?:(() => void) | undefined;
 	children:JSX.Element;
 }) => (
 	<label class="Row">
@@ -28,7 +28,7 @@ export default (properties:{
 		{properties.children}
 		<Show when={properties.reset}>
 			{(reset) => (
-				<button class="Reset" title={reset()} onClick={() => properties.onReset?.()}>
+				<button class="Reset" title={reset()} onClick={() => properties.Reset?.()}>
 					↺
 				</button>
 			)}

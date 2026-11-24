@@ -1,7 +1,7 @@
 import { LogicalPosition, LogicalSize } from "@tauri-apps/api/dpi";
 import type { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 
-import Screen from "./Screen.js";
+import Locate from "./Locate.js";
 
 /** The width the panel is drawn at, in logical pixels - `Menu::Width`. */
 const Width = 320;
@@ -27,7 +27,7 @@ const Reserve = 6 + 2 * Margin;
  *  still a panel, so no failure aborts the render.
  */
 export default async (Element:HTMLDivElement, Window:ReturnType<typeof getCurrentWebviewWindow>) => {
-	const Area = await Screen();
+	const Area = await Locate();
 
 	// The cap goes on before the measurement, not after it: the panel scrolls
 	// inside the window, so the height it measures is the height it is drawn at.

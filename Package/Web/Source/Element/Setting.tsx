@@ -92,7 +92,7 @@ export default <T,>(properties:{
 					? "Back to the default and drop every monitor's override"
 					: "Back to the default, dropping only this monitor's override"
 			}
-			onReset={() =>
+			Reset={() =>
 				Shared().call(
 					"reset",
 					Shown() === undefined
