@@ -1,7 +1,8 @@
 .Corner {
-	--Corner: 23px;
-	width: var(--Corner);
-	height: var(--Corner);
+	/* The radius is set on `.Window` and inherited here, so a per-monitor size can
+	   change without rebuilding the sheet. */
+	width: var(--Corner, 23px);
+	height: var(--Corner, 23px);
 
 	-webkit-mask-image: radial-gradient(
 		circle at var(--Corner) var(--Corner),
