@@ -34,28 +34,28 @@ pub fn Run<R:Runtime>(App:&AppHandle<R>, Window:&str, Script:&str) -> Result<(),
 			}} catch (Failure) {{
 				Out = "ERROR: " + (Failure && Failure.message ? Failure.message : String(Failure));
 			}}
-			document.title = "round-dev:" + Out;
+			// `Report` is the one command an overlay is already granted - it is
+			// how the overlay tells the trace what it renders - so the answer
+			// travels on it rather than on a command that would need a capability.
+			await window.__TAURI_INTERNALS__.invoke("Report", {{ label: "dev", mode: Out, radius: "" }});
 		}})()"#
 	);
 
 	Webview.eval(Wrapped).map_err(|Failure| Failure.to_string())?;
 
-	// The page writes the answer, so it is read after the page has run.
-	let Named = Window.to_owned();
-	let Handle = App.clone();
-
-	std::thread::spawn(move || {
-		std::thread::sleep(Duration::from_millis(400));
-
-		let Answer = Handle
-			.get_webview_window(&Named)
-			.and_then(|Window| Window.title().ok())
-			.unwrap_or_else(|| "(no title)".to_owned());
-
-		Trace!("dev {Named} -> {}", Answer.trim_start_matches("round-dev:"));
-	});
-
 	Ok(())
+}
+
+/// Debug: open the panel without the tray icon, so a script can drive its
+/// controls. The anchor is a placeholder near the top of the primary screen; the
+/// panel only needs somewhere to open, not the icon's real rect.
+pub fn Open<R:Runtime>(App:&AppHandle<R>) -> Result<(), String> {
+	let Anchor = tauri::Rect {
+		position:tauri::Position::Physical(tauri::PhysicalPosition::new(1200, 20)),
+		size:tauri::Size::Physical(tauri::PhysicalSize::new(24, 24)),
+	};
+
+	crate::Menu::Toggle::Fn(App, Anchor).map_err(|Failure| Failure.to_string())
 }
 
 /// Watch for a script dropped at `dev-inbox.js` and run it in the panel.
@@ -96,7 +96,14 @@ pub fn Watch<R:Runtime>(App:AppHandle<R>) {
 					Value.get("script").and_then(serde_json::Value::as_str),
 				) {
 					(Some(Window), Some(Body)) => (Window.to_owned(), Body.to_owned()),
-					_ => ("menu".to_owned(), Script.clone()),
+					// `{"open": true}` is the tray click a script cannot make.
+					_ => match Value.get("open").and_then(serde_json::Value::as_bool) {
+						Some(_) => {
+							let _ = Open(&App).inspect_err(|Failure| Trace!("dev open failed: {Failure}"));
+							continue;
+						}
+						None => ("menu".to_owned(), Script.clone()),
+					},
 				},
 				Err(_) => ("menu".to_owned(), Script.clone()),
 			};
