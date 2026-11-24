@@ -185,7 +185,7 @@ idempotent.
   (`Knowledge.dot`, `Knowledge.svg`).
 - **`Crate/Maintain`** - the release CLI (`Maintain`). One writer for the
   version across every manifest, the local mirror of the CI gates, the bundle
-  build, and the whole ceremony (`Maintain release 0.0.13 --publish`) in one
+  build, and the whole ceremony (`Maintain release 0.0.14 --publish`) in one
   command. `publish = false`: it is a tool for this repository, not a crate.
 - **`Release.sh`** - the local signed macOS release; the tag it offers comes from
   `Maintain version`, so a drifted tree cannot start one.

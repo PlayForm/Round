@@ -28,7 +28,7 @@ cargo install --path Crate/Maintain # once, gives you `Maintain`
 
 Maintain version            # version on stdout, manifest table on stderr
 Maintain version bump patch # move one field, write it everywhere
-Maintain version set 0.0.13 # an explicit version
+Maintain version set 0.0.14 # an explicit version
 ```
 
 The bare form is also the guard: it exits non-zero when a manifest has drifted
@@ -43,8 +43,8 @@ from `Cargo.toml`, and it prints the version alone on stdout, so
 the branch, push the tag, and with `--publish` dispatch the crates.io publish:
 
 ```sh
-Maintain release 0.0.13 --publish --dry-run # print the plan, change nothing
-Maintain release 0.0.13 --publish           # do it
+Maintain release 0.0.14 --publish --dry-run # print the plan, change nothing
+Maintain release 0.0.14 --publish           # do it
 ```
 
 It refuses a version that does not move forward, refuses a dirty tree unless
