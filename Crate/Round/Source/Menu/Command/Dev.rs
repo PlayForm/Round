@@ -18,8 +18,9 @@ use crate::Trace;
 /// Evaluate `Script` in `Window` and record its answer in the trace.
 ///
 /// The script's last expression is the answer, awaited if it is a promise, and
-/// JSON-serialised. `window.__TAURI_INTERNALS__.invoke` is the same bridge the
-/// panel uses, so a page that can call a command can be driven this way.
+/// JSON-serialised. It comes back through `document.title`, not through a command:
+/// an overlay's capability list does not grant arbitrary commands, and widening it
+/// for a diagnostic would be the tail wagging the dog. A title needs no permission.
 pub fn Run<R:Runtime>(App:&AppHandle<R>, Window:&str, Script:&str) -> Result<(), String> {
 	let Webview = App
 		.get_webview_window(Window)
@@ -33,17 +34,28 @@ pub fn Run<R:Runtime>(App:&AppHandle<R>, Window:&str, Script:&str) -> Result<(),
 			}} catch (Failure) {{
 				Out = "ERROR: " + (Failure && Failure.message ? Failure.message : String(Failure));
 			}}
-			await window.__TAURI_INTERNALS__.invoke("answer", {{ window: {Window:?}, value: Out }});
+			document.title = "round-dev:" + Out;
 		}})()"#
 	);
 
-	Webview.eval(Wrapped).map_err(|Failure| Failure.to_string())
-}
+	Webview.eval(Wrapped).map_err(|Failure| Failure.to_string())?;
 
-/// The answer coming back from [`Run`], recorded where the trace already goes.
-#[tauri::command]
-pub fn Answer(Window:String, Value:String) {
-	Trace!("dev {Window} -> {Value}");
+	// The page writes the answer, so it is read after the page has run.
+	let Named = Window.to_owned();
+	let Handle = App.clone();
+
+	std::thread::spawn(move || {
+		std::thread::sleep(Duration::from_millis(400));
+
+		let Answer = Handle
+			.get_webview_window(&Named)
+			.and_then(|Window| Window.title().ok())
+			.unwrap_or_else(|| "(no title)".to_owned());
+
+		Trace!("dev {Named} -> {}", Answer.trim_start_matches("round-dev:"));
+	});
+
+	Ok(())
 }
 
 /// Watch for a script dropped at `dev-inbox.js` and run it in the panel.

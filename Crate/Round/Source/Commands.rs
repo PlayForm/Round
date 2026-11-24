@@ -27,7 +27,6 @@ macro_rules! Commands {
 			$crate::Menu::Command::Quit::Quit,
 			$crate::Menu::Command::Report::Report,
 			$crate::Menu::Command::Benchmark::Benchmark,
-			$crate::Menu::Command::Dev::Answer,
 		]
 	};
 }
