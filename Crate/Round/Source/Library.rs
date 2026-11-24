@@ -43,5 +43,6 @@ pub mod Radius;
 pub mod Screen;
 pub mod Settings;
 pub mod Tray;
+pub mod Trace;
 pub mod Visibility;
 pub mod Window;

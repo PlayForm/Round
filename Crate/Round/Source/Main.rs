@@ -5,7 +5,7 @@
 //! The `round` binary: one overlay webview per monitor, then the tray icon.
 
 use pround::{
-	Menu::Command::{Dismiss, Dock, Hidden, Mode, Quit, Reset, Size, State},
+	Menu::Command::{Dismiss, Dock, Hidden, Mode, Quit, Report, Reset, Size, State},
 	Overlay::{Layer::Trait::Trait as _, Platform::Struct as Platform},
 	Per::Of as PerOf,
 	Screen::All as ScreenAll,
@@ -29,6 +29,7 @@ fn main() {
 			Reset::Reset,
 			Dismiss::Dismiss,
 			Quit::Quit,
+			Report::Report,
 		])
 		.setup(|App| {
 			let Storage = App.store(StoreFile)?;
@@ -54,6 +55,13 @@ fn main() {
 			Platform::Dock(Preferences.Dock);
 
 			Screens.iter().try_for_each(|Screen| {
+				pround::Trace::Fn(&format!(
+					"window {} radius={:?} ink={:?}",
+					Screen.Label,
+					pround::Per::Of::Fn(&Preferences.Radius, &Screen.Label),
+					pround::Per::Of::Fn(&Preferences.Ink, &Screen.Label)
+				));
+
 				// Per monitor: the script carries the radius and ink THIS window
 				// should draw, so a tuned monitor paints correctly before any
 				// event.
