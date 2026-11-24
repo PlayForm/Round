@@ -1,0 +1,15 @@
+# ncu config. npm-check-updates reads .ncurc / .ncurc.{json,yaml,yml,js,mjs,cjs}
+# next to package.json; there is no package.json key for it in v23.
+#
+# solid-js: @astrojs/solid-js 7.1.6 declares peer `solid-js: ^1.9.13`, and
+# solid-js 2.x dropped the `./web` subpath export, so a 2.x bump fails
+# `astro build` with `"./web" is not exported under the conditions [...] from
+# package solid-js`. Drop this reject once @astrojs/solid-js supports 2.x.
+#
+# tailwindcss: 3.x is this design system's compiler; 4.x is a different config
+# model. Fn/Update/NPM.sh already passes -x tailwindcss - repeating it here
+# keeps a bare `ncu -u` safe too.
+
+reject:
+  - solid-js
+  - tailwindcss
