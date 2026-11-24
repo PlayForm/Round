@@ -117,6 +117,37 @@ the npm packages and `pround`.
 - `vite.config.ts` builds it as a third entry beside `index.html` and
   `menu.html`.
 
+### Fixed
+
+- **Per-monitor settings now stay per monitor.** Four separate faults stacked on
+  the same symptom, so "change this display's ink" moved every display:
+  `Emitter::emit` on a window is not scoped to it (the trait's default reaches
+  every webview, so a loop over monitors delivered each value to all of them and
+  the last write won) - the broadcast uses `emit_to(label, ...)`; the overlay's
+  `listen` had no target, which the API resolves to a **global** listener that a
+  targeted emit can never match - it now names its window; `Corner.tsx` pinned
+  its own `--Corner`, overriding the window's, so the radius never changed - the
+  corner inherits it; and every command re-enumerated the monitors and re-resolved
+  their labels, which can produce a label no window carries - the set is now
+  resolved once at launch (`Screen::Registry`) and read by every command.
+- The panel's scope selector was proven to send the monitor's label on every
+  command (`set_mode {"label":"Monitor26344","mode":"light"}`), so the selector
+  itself needed no change - the faults were all downstream of it.
+- `sizes`, `size`, `mode` and `hidden` from the pre-per-monitor store are folded
+  into the new shape on load, so an existing install keeps its tuning.
+
+### Tooling
+
+- `cargo test` covers the command path: each test drives a real IPC request into
+  the same handler the binary registers (`Commands!`) against Tauri's mock
+  runtime, then reads the store the command wrote - command → load → write → save
+  → broadcast → state, which no unit test of `Per::Set` can reach.
+- `Trace!` records one line per stage of that path in a debug build only. The
+  gate is `cfg!(debug_assertions)` **around** the `format!`, so a release build
+  carries neither the call nor the format string.
+- `turbo` drives `Build`, `dev` and `serve` (`turbo.json`; `pnpm-workspace.yaml`
+  already listed `Package/Web`), matching the other PlayForm repositories.
+
 ### Dependencies
 
 - `solid-js` pinned back to 1.9.20. 2.0.3 removed the `solid-js/web` entry point
