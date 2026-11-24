@@ -31,6 +31,8 @@ pub fn Fn(Monitor:&Monitor, Index:usize) -> Struct {
 		Label:Claim.Label.clone(),
 		Qualified:Suffix::Fn(&Claim),
 		Legacy:Legacy::Fn(Name, Index),
+		Name:Name.unwrap_or_default().to_owned(),
+		Pixels:(Monitor.size().width as i32, Monitor.size().height as i32),
 		Width:Size.width,
 		Height:Size.height,
 		X:Position.x,

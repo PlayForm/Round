@@ -1,7 +1,7 @@
 //! Leaving.
 
-use tauri::AppHandle;
+use tauri::{AppHandle, Runtime};
 
 /// Quit the whole process.
 #[tauri::command(rename = "quit")]
-pub fn Quit(App:AppHandle) { App.exit(0); }
+pub fn Quit<R:Runtime>(App:AppHandle<R>) { App.exit(0); }

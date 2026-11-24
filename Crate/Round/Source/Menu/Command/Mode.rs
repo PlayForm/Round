@@ -1,6 +1,6 @@
 //! Setting the ink.
 
-use tauri::AppHandle;
+use tauri::{AppHandle, Runtime};
 
 use crate::{
 	Menu::{
@@ -15,7 +15,7 @@ use crate::{
 /// Set the ink one monitor's corners are drawn in, or every monitor's when
 /// `Label` is absent.
 #[tauri::command(rename = "set_mode")]
-pub fn Mode(App:AppHandle, Label:Option<String>, Mode:String) -> Result<State, String> {
+pub fn Mode<R:Runtime>(App:AppHandle<R>, Label:Option<String>, Mode:String) -> Result<State, String> {
 	let mut Preferences:Settings = Load::Fn(&App)?;
 
 	PerSet::Fn(&mut Preferences.Ink, Label.as_deref(), ModeOf::Fn(&Mode));

@@ -1,12 +1,12 @@
 //! The state the panel renders.
 
-use tauri::AppHandle;
+use tauri::{AppHandle, Runtime};
 use tauri_plugin_store::StoreExt;
 
 use crate::{
 	Menu::{Monitor::Struct as Monitor, State::Struct as State, Value::Of as ValueOf},
 	Radius::Maximum,
-	Screen::All as ScreenAll,
+	Screen::Registry,
 	Settings::{Load as SettingsLoad, Store},
 };
 
@@ -20,35 +20,38 @@ use crate::{
 /// two displays of the same name have to arrive here under two of them or the
 /// second entry shows the first one's settings.
 #[tauri::command(rename = "state")]
-pub fn State(App:AppHandle) -> Result<State, String> {
+pub fn State<R:Runtime>(App:AppHandle<R>) -> Result<State, String> {
+	use tauri::Manager;
+
 	let Storage = App.store(Store::Const).map_err(|Error| Error.to_string())?;
 
-	let Devices = App.available_monitors().map_err(|Error| Error.to_string())?;
-
-	let Screens = ScreenAll::Fn(&Devices);
+	// The set the windows were built from, not a fresh enumeration: a label is
+	// unique only within a set, so resolving it twice is how the panel ends up
+	// naming a monitor no window answers to.
+	let Screens = App
+		.try_state::<Registry::Struct>()
+		.map(|Held| Held.0.clone())
+		.unwrap_or_default();
 
 	let Preferences = SettingsLoad::Fn(&Storage, &Screens);
 
-	let Monitors = Devices
+	let Monitors = Screens
 		.iter()
-		.zip(Screens)
 		.enumerate()
-		.map(|(Index, (Device, Screen))| {
-			let Label = Screen.Label;
-
-			// The physical pixels, for the panel to print beside the name: the
-			// overlay's own bounds in `Screen` are logical and would name a
-			// display by a number its owner does not recognise.
-			let Extent = Device.size();
+		.map(|(Index, Screen)| {
+			let Label = Screen.Label.clone();
 
 			Monitor {
 				Radius:ValueOf::Fn(&Preferences.Radius, &Label),
 				Ink:ValueOf::Fn(&Preferences.Ink, &Label),
 				Hidden:ValueOf::Fn(&Preferences.Visible, &Label),
 				Label,
-				Name:Device.name().cloned().unwrap_or_else(|| format!("Monitor {}", Index + 1)),
-				Width:Extent.width,
-				Height:Extent.height,
+				Name:match Screen.Name.is_empty() {
+					true => format!("Monitor {}", Index + 1),
+					false => Screen.Name.clone(),
+				},
+				Width:Screen.Pixels.0 as u32,
+				Height:Screen.Pixels.1 as u32,
 			}
 		})
 		.collect();

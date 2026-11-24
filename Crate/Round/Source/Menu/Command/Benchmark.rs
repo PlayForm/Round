@@ -4,7 +4,7 @@
 //! so `generate_handler!` can name it unconditionally, and the release body is a
 //! single `Err` - the same `cfg(debug_assertions)` split the trace module uses.
 
-use tauri::AppHandle;
+use tauri::{AppHandle, Runtime};
 
 #[cfg(debug_assertions)]
 use crate::{
@@ -22,7 +22,7 @@ use crate::{
 /// costs.
 #[cfg(debug_assertions)]
 #[tauri::command]
-pub fn Benchmark(App:AppHandle, Count:u32) -> Result<String, String> {
+pub fn Benchmark<R:Runtime>(App:AppHandle<R>, Count:u32) -> Result<String, String> {
 	let Labels = ["Monitor26344", "Monitor22763"];
 
 	let Count = Count.max(1);
@@ -70,6 +70,6 @@ pub fn Benchmark(App:AppHandle, Count:u32) -> Result<String, String> {
 /// The release build's copy: registered, and answers without doing anything.
 #[cfg(not(debug_assertions))]
 #[tauri::command]
-pub fn Benchmark(_App:AppHandle, _Count:u32) -> Result<String, String> {
+pub fn Benchmark<R:Runtime>(_App:AppHandle<R>, _Count:u32) -> Result<String, String> {
 	Err("Benchmark is a debug-build feature".into())
 }

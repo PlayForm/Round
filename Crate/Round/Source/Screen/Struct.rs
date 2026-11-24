@@ -23,10 +23,18 @@
 /// monitor knows them, and they are what
 /// [`Settings::Migrate::Label`](crate::Settings::Migrate::Label::Fn) moves the
 /// stored settings off.
+#[derive(Clone, Debug)]
 pub struct Struct {
 	pub Label:String,
 	pub Qualified:String,
 	pub Legacy:String,
+	/// The display's own name, for the panel to print: a label is an identity and
+	/// is not meant to be read.
+	pub Name:String,
+	/// The display's own pixels, for the panel to print. `Width`/`Height` below
+	/// are the logical bounds the window builder takes, which would name a display
+	/// by a number its owner does not recognise.
+	pub Pixels:(i32, i32),
 	pub Width:i32,
 	pub Height:i32,
 	pub X:i32,

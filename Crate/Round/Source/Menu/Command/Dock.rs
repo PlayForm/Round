@@ -1,6 +1,6 @@
 //! Showing or hiding the dock icon.
 
-use tauri::AppHandle;
+use tauri::{AppHandle, Runtime};
 
 use crate::{
 	Menu::{
@@ -18,7 +18,7 @@ use crate::{
 /// back from the store, so the icon changes on the click instead of on the next
 /// launch.
 #[tauri::command(rename = "set_dock")]
-pub fn Dock(App:AppHandle, Hidden:bool) -> Result<State, String> {
+pub fn Dock<R:Runtime>(App:AppHandle<R>, Hidden:bool) -> Result<State, String> {
 	let mut Preferences:Settings = Load::Fn(&App)?;
 
 	Preferences.Dock = VisibilityOf::Fn(Hidden);

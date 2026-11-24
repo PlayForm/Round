@@ -1,6 +1,6 @@
 //! Dropping an override.
 
-use tauri::AppHandle;
+use tauri::{AppHandle, Runtime};
 
 use crate::{
 	Menu::{
@@ -17,7 +17,7 @@ use crate::{
 /// `hidden`); absent means all three, which is what a reset with no section
 /// named has always meant.
 #[tauri::command(rename = "reset")]
-pub fn Reset(App:AppHandle, Setting:Option<String>, Label:Option<String>) -> Result<State, String> {
+pub fn Reset<R:Runtime>(App:AppHandle<R>, Setting:Option<String>, Label:Option<String>) -> Result<State, String> {
 	let mut Preferences:Settings = Load::Fn(&App)?;
 
 	SettingClear::Fn(&mut Preferences, Setting.as_deref(), Label.as_deref())?;

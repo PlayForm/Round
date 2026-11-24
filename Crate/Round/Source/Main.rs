@@ -5,22 +5,21 @@
 //! The `round` binary: one overlay webview per monitor, then the tray icon.
 
 use pround::{
-	Menu::Command::Handler,
 	Overlay::{Layer::Trait::Trait as _, Platform::Struct as Platform},
 	Per::Of as PerOf,
-	Screen::All as ScreenAll,
+	Screen::{All as ScreenAll, Registry},
 	Settings::{Load as SettingsLoad, Save as SettingsSave, Script, Store::Const as StoreFile},
 	Tray::Install,
 	Visibility::Apply as VisibilityApply,
 	Window::Chrome,
 };
-use tauri::{WebviewUrl, WebviewWindowBuilder};
+use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 use tauri_plugin_store::StoreExt;
 
 fn main() {
 	tauri::Builder::default()
 		.plugin(tauri_plugin_store::Builder::new().build())
-		.invoke_handler(Handler::Fn())
+		.invoke_handler(pround::Commands!())
 		.setup(|App| {
 			let Storage = App.store(StoreFile)?;
 
@@ -31,6 +30,11 @@ fn main() {
 			let Devices = App.available_monitors()?;
 
 			let Screens = ScreenAll::Fn(&Devices);
+
+			// The one set every command will read a label from. Resolved here,
+			// beside the windows it names, so a command can never disagree with
+			// them about which monitor carries which label.
+			App.manage(Registry::Struct(Screens.clone()));
 
 			// Read, then write back: that round trip is how a fresh install gets
 			// its defaults on disk before anything reads them again, and how a

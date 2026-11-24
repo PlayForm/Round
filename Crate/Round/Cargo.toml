@@ -39,6 +39,12 @@ serde_json = "1.0.154"
 tauri = { version = "2.12.7", features = ["tray-icon", "macos-private-api"] }
 tauri-plugin-store = "2.5.1"
 
+# The `test` feature gives `tauri::test`, whose mock runtime can drive a real IPC
+# request into the same handler the binary registers. Features are additive, so
+# this does not change what the binary links.
+[dev-dependencies]
+tauri = { version = "2.12.7", features = ["tray-icon", "macos-private-api", "test"] }
+
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2 = "0.6.5"
 

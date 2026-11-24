@@ -4,6 +4,7 @@ pub mod Clean;
 pub mod Label;
 pub mod Legacy;
 pub mod Of;
+pub mod Registry;
 pub mod Struct;
 pub mod Suffix;
 pub mod Tally;

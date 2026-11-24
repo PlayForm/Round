@@ -34,6 +34,7 @@
 
 pub mod Backdrop;
 pub mod Bounds;
+pub mod Commands;
 pub mod Menu;
 pub mod Message;
 pub mod Mode;

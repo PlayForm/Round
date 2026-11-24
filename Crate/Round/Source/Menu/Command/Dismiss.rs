@@ -1,6 +1,6 @@
 //! Closing the panel from the scrim.
 
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, Runtime};
 
 use crate::{
 	Backdrop::Close as BackdropClose,
@@ -13,7 +13,7 @@ use crate::{
 /// on its own: a pointer-down delivered to a window of this app that is not the
 /// panel. Nothing about it reads focus, activation, timing or geometry.
 #[tauri::command(rename = "dismiss")]
-pub fn Dismiss(App:AppHandle) {
+pub fn Dismiss<R:Runtime>(App:AppHandle<R>) {
 	match App.get_webview_window(Label::Const) {
 		Some(Window) => {
 			let _ =

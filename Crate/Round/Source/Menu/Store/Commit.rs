@@ -1,6 +1,6 @@
 //! Writing the store and answering the panel.
 
-use tauri::AppHandle;
+use tauri::{AppHandle, Runtime};
 use tauri_plugin_store::StoreExt;
 
 use crate::{
@@ -13,7 +13,7 @@ use crate::{
 ///
 /// One order, in one place: every command ends here, so no command can save
 /// without broadcasting or broadcast without having saved.
-pub fn Fn(App:&AppHandle, Preferences:&Settings) -> Result<State, String> {
+pub fn Fn<R:Runtime>(App:&AppHandle<R>, Preferences:&Settings) -> Result<State, String> {
 	let Storage = App.store(Store::Const).map_err(|Error| Error.to_string())?;
 
 	SettingsSave::Fn(Preferences, &Storage).map_err(|Error| Error.to_string())?;
