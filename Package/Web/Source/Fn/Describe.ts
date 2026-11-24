@@ -1,6 +1,6 @@
 import type { State } from "../Type/Panel.js";
 
-import Size from "./Size.js";
+import Measure from "./Measure.js";
 
 /** The scope in full, spelled out under the selector.
  *
@@ -15,5 +15,5 @@ export default (state:State, label:string | undefined) => {
 
 	return monitor === undefined
 		? `All monitors · ${state.monitors.length} connected`
-		: `${index + 1} of ${state.monitors.length} · ${monitor.name} · ${Size(monitor)}`;
+		: `${index + 1} of ${state.monitors.length} · ${monitor.name} · ${Measure(monitor)}`;
 };

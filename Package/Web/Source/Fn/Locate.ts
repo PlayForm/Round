@@ -14,17 +14,13 @@ export default async ():Promise<Work | undefined> => {
 	const monitor = await currentMonitor().catch(() => null);
 
 	if (!monitor) {
-		const Height = window.screen.availHeight;
+		const height = window.screen.availHeight;
 
-		return Height > 0
-			? { Top:0, Height:Math.floor(Height), Scale:window.devicePixelRatio || 1 }
-			: undefined;
+		return height > 0 ? { top:0, height:Math.floor(height), scale:window.devicePixelRatio || 1 } : undefined;
 	}
 
-	const Scale = monitor.scaleFactor;
-	const Height = monitor.workArea.size.height / Scale;
+	const scale = monitor.scaleFactor;
+	const height = monitor.workArea.size.height / scale;
 
-	return Height > 0
-		? { Top:monitor.workArea.position.y / Scale, Height:Math.floor(Height), Scale }
-		: undefined;
+	return height > 0 ? { top:monitor.workArea.position.y / scale, height:Math.floor(height), scale } : undefined;
 };
