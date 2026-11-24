@@ -214,10 +214,11 @@ Prerequisites: the Rust **nightly** toolchain from `rust-toolchain.toml`
 
 ```sh
 pnpm install   # workspace install, Package/Web included
-pnpm run dev   # vite dev server on :1420
+pnpm run dev   # vite dev server on :1420 (turbo run dev)
 pnpm tauri dev # the app against the dev server
-pnpm run Build # production webview build
+pnpm run Build # production webview build (turbo run Build)
 cargo build    # debug binary at Target/debug/round
+cargo test     # the control-flow tests: IPC -> command -> store
 
 # the release CLI (Crate/Maintain)
 cargo install --path Crate/Maintain # once, gives you `Maintain`
@@ -228,6 +229,26 @@ pnpm run Check                      # Maintain check: fmt, clippy -D warnings, c
 `Cargo.lock` is deliberately untracked: the crate publishes to crates.io and
 every consumer resolves its own graph. `Target/` and `Package/Web/Target/` are
 build output and are ignored.
+
+### Debugging a running build
+
+A debug build (`pnpm tauri dev`, or `tauri build --debug`) writes one line per
+event to stderr and to
+`~/Library/Application Support/app.roundedcorners.binary/trace.log`:
+
+```
+click set_mode label=Some("Monitor26344") mode=light
+changed   ink=Struct { Default: Dark, Monitor: {"Monitor26344": Light} }
+persisted {"ink":{"default":"dark","monitor":{"Monitor26344":"light"}}}
+broadcast -> Monitor26344 radius=23 ink=Light visible=Shown
+broadcast -> Monitor22763 radius=23 ink=Dark  visible=Shown
+```
+
+That is the whole path in order - what arrived, what changed, what was stored,
+what each window was told - so a break names its stage. `intercepted dismiss`
+appears instead of `click` when a click lands on the scrim rather than the panel.
+All of it is behind `cfg!(debug_assertions)` in the `Trace!` macro, format
+strings included, so a release build carries none of it.
 
 ---
 

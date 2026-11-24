@@ -16,22 +16,10 @@ use pround::{
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 use tauri_plugin_store::StoreExt;
 
-/// The command surface for this build.
-///
-/// Two concrete functions rather than one with a `#[cfg]` inside: a release build
-/// must not be able to name the debug commands at all, and `generate_handler!`
-/// has to expand against a concrete runtime, which rules out a generic wrapper.
-#[cfg(debug_assertions)]
-fn Handler() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Sync + 'static { pround::Commands!() }
-
-/// The shipping surface: no `Benchmark`.
-#[cfg(not(debug_assertions))]
-fn Handler() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Sync + 'static { pround::CommandsRelease!() }
-
 fn main() {
 	tauri::Builder::default()
 		.plugin(tauri_plugin_store::Builder::new().build())
-		.invoke_handler(Handler())
+		.invoke_handler(pround::Commands!())
 		.setup(|App| {
 			let Storage = App.store(StoreFile)?;
 
