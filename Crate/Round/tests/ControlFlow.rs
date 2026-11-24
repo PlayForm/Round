@@ -150,10 +150,13 @@ fn reset_drops_only_the_named_monitor() {
 
 #[test]
 fn the_answer_carries_every_monitor_with_its_origin() {
-	let (App, Window) = App();
+	let (_App, Window) = App();
 
 	let Answer = Call(&Window, "state", json!({}));
 
 	assert!(Answer["maximum"].is_number(), "the slider's range travels with the state");
-	assert!(Answer["monitors"].is_array(), "the panel draws one entry per monitor");
+	assert!(
+		Answer["monitors"].as_array().is_some_and(|Each| Each.len() == 2),
+		"one entry per monitor"
+	);
 }
