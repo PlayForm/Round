@@ -1,4 +1,3 @@
-import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { createSignal, For } from "solid-js";
@@ -29,32 +28,10 @@ await appWindow.setIgnoreCursorEvents(true);
  */
 const Target = { target: appWindow.label };
 
-/** Debug: report what this overlay is actually rendering. `import.meta.env.DEV`
- *  is Vite's compile-time gate, so a production bundle drops the call entirely -
- *  the same `cfg` discipline the Rust side uses. */
-const Report = () => {
-	if (!import.meta.env.DEV) {
-		return;
-	}
-
-	const Element = document.querySelector(".Window");
-
-	void invoke("Report", {
-		label: appWindow.label,
-		mode: String(Element?.getAttribute("data-mode")),
-		radius:
-			Element === null
-				? "?"
-				: getComputedStyle(Element).getPropertyValue("--Corner").trim(),
-	});
-};
-
 await listen<ModeMessage>(
 	"mode",
 	({ payload }) => {
 		Mode[1](payload.message.Mode);
-
-		Report();
 	},
 	Target,
 );
@@ -63,8 +40,6 @@ await listen<SizeMessage>(
 	"size",
 	({ payload }) => {
 		Radius[1](payload.message.Size);
-
-		Report();
 	},
 	Target,
 );
@@ -83,6 +58,3 @@ render(
 	),
 	document.getElementById("window") as HTMLElement,
 );
-
-// Debug: the state after the first paint, before any event.
-requestAnimationFrame(Report);
