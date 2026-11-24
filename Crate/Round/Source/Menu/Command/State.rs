@@ -30,12 +30,19 @@ pub fn State(App:AppHandle) -> Result<State, String> {
 
 			let Label = Screen.Label;
 
+			// The physical pixels, for the panel to print beside the name: the
+			// overlay's own bounds in `Screen` are logical and would name a
+			// display by a number its owner does not recognise.
+			let Extent = Device.size();
+
 			Monitor {
 				Radius:ValueOf::Fn(&Preferences.Radius, &Label),
 				Ink:ValueOf::Fn(&Preferences.Ink, &Label),
 				Hidden:ValueOf::Fn(&Preferences.Visible, &Label),
 				Label,
 				Name:Device.name().cloned().unwrap_or_else(|| format!("Monitor {}", Index + 1)),
+				Width:Extent.width,
+				Height:Extent.height,
 			}
 		})
 		.collect();

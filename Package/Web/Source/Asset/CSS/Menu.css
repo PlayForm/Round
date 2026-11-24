@@ -21,9 +21,11 @@ body {
 	border-radius: 8px;
 
 	/* The panel is capped at the work area of the monitor it opened on, and the
-	 * cap is applied as a `max-height` from the script that measured it. What is
-	 * left is the scroll: a four-monitor panel is taller than any screen, and
-	 * scrolling it is what keeps the last control on it reachable. */
+	 * cap is applied as a `max-height` from the script that measured it. Nothing
+	 * in the panel grows with the number of monitors: the scope selector is the
+	 * only control that lists them, and a closed select renders no entry. So the
+	 * cap is a safety net for a screen shorter than the panel, not a height the
+	 * panel is expected to reach. */
 	overflow-y: auto;
 	overscroll-behavior: contain;
 }
@@ -58,6 +60,40 @@ body {
 	opacity: 0.6;
 }
 
+/* The scope, spelled out. A select truncates its closed value to the width it
+ * has, and the name is what it truncates first: two displays both reading
+ * "Monitor #26..." is exactly the state this line exists for, so it wraps
+ * instead of truncating. */
+.Where {
+	margin: 0;
+	font-size: 11px;
+	line-height: 1.35;
+	overflow-wrap: anywhere;
+	opacity: 0.75;
+}
+
+/* The scope selector. A native select is the one control that scales to a
+ * thousand entries: the OS draws and scrolls the menu, type-ahead finds an
+ * entry, and nothing is rendered until the menu is opened. */
+.Picker {
+	box-sizing: border-box;
+	width: 100%;
+	font: inherit;
+	padding: 2px 6px;
+	border: 1px solid #c9c9c9;
+	border-radius: 5px;
+	background: transparent;
+	color: inherit;
+}
+
+/* The one break in the panel: above it every control is drawn for the selected
+ * scope, below it the rows belong to the application. */
+.Divider {
+	margin: 1px 0;
+	border: 0;
+	border-top: 1px solid #e2e2e2;
+}
+
 @media (prefers-color-scheme: dark) {
 	.Panel {
 		background: #1f1f1f;
@@ -67,6 +103,15 @@ body {
 
 	.Row .Mark {
 		color: #8ab0ff;
+	}
+
+	.Picker,
+	button {
+		border-color: #454545;
+	}
+
+	.Divider {
+		border-top-color: #3a3a3a;
 	}
 }
 
@@ -94,7 +139,7 @@ body {
 	min-width: 0;
 }
 
-/* Drawn only on a monitor that carries its own value. */
+/* Drawn only on a row that has something of its own to say. */
 .Row .Mark {
 	flex: 0 0 auto;
 	color: #2f6fed;
@@ -119,12 +164,6 @@ button {
 	background: transparent;
 	color: inherit;
 	cursor: pointer;
-}
-
-@media (prefers-color-scheme: dark) {
-	button {
-		border-color: #454545;
-	}
 }
 
 button.On {

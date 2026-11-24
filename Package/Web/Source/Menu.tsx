@@ -12,10 +12,17 @@ import "./Asset/CSS/Menu.css";
  *  tuned to exactly the default is still an override - so Rust sends both. */
 type Value<T> = { value: T; origin: "inherit" | "override" };
 
-/** One monitor, with every setting already resolved for it. */
+/** One monitor, with every setting already resolved for it.
+ *
+ *  `width`/`height` are the display's own pixels, and they are the only facts
+ *  here that no setting reads: a name does not identify a display - two of them
+ *  routinely arrive with the same one - so the panel needs a second fact to tell
+ *  the entries of the scope selector apart. */
 type Monitor = {
 	label: string;
 	name: string;
+	width: number;
+	height: number;
 	radius: Value<number>;
 	ink: Value<"dark" | "light">;
 	hidden: Value<boolean>;
@@ -36,6 +43,17 @@ type State = {
 /** The panel's copy of the Rust state; every command returns the new one. */
 const [State, setState] = createSignal<State>();
 
+/** Which monitor the settings below apply to, in the select's own terms: a
+ *  monitor's label, or the empty string for the "All monitors" entry.
+ *
+ *  The empty string is the value of the select's first entry, so the control
+ *  needs no translation of its own, and `Scope` is the single place it becomes
+ *  the absent label that every command already reads as "every monitor". */
+const [Selected, setSelected] = createSignal("");
+
+/** The selected monitor's label, or `undefined` for every monitor at once. */
+const Scope = () => Selected() || undefined;
+
 async function call(command: string, args?: Record<string, unknown>) {
 	try {
 		setState(await invoke<State>(command, args));
@@ -50,6 +68,9 @@ const appWindow = getCurrentWebviewWindow();
  *  transparent window still swallows clicks, so empty space under the content
  *  must not exist or the panel would eat clicks meant for the desktop. */
 let Panel: HTMLDivElement | undefined;
+
+/** The scope selector, so the selection can be re-stated after a redraw. */
+let Picker: HTMLSelectElement | undefined;
 
 /** The width the panel is drawn at, in logical pixels - `Menu::Width`. */
 const Width = 320;
@@ -135,6 +156,7 @@ async function Fit() {
 
 createEffect(() => {
 	State();
+	Scope();
 
 	requestAnimationFrame(() => void Fit());
 });
@@ -158,50 +180,89 @@ function Slider(properties: { value: number; maximum: number; onCommit: (value: 
 	);
 }
 
+/** A monitor's resolution, as the panel prints it. */
+const Size = (monitor: Monitor) => `${monitor.width} × ${monitor.height}`;
+
+/** How one monitor is named in the scope selector: its own name, then the index
+ *  the system gave it and the pixels it draws at, because a name alone does not
+ *  identify a display - two of them routinely arrive with the same one, and the
+ *  select truncates whatever does not fit. */
+const Entry = (monitor: Monitor, index: number) => `${index + 1}. ${monitor.name} · ${Size(monitor)}`;
+
+/** The scope in full, spelled out under the selector.
+ *
+ *  The closed select shows one truncated line, and the part it truncates first
+ *  is the name: two displays both reading "Monitor #26..." is exactly the state
+ *  the selector has to be usable in. So the panel repeats the selection here,
+ *  where it can wrap, with the facts that tell the entries apart. */
+const Where = (state: State, label: string | undefined) => {
+	const index = label === undefined ? -1 : state.monitors.findIndex((monitor) => monitor.label === label);
+
+	const monitor = index < 0 ? undefined : state.monitors[index];
+
+	return monitor === undefined
+		? `All monitors · ${state.monitors.length} connected`
+		: `${index + 1} of ${state.monitors.length} · ${monitor.name} · ${Size(monitor)}`;
+};
+
 /** One row: a label, that row's controls, and the reset that undoes them.
  *
- *  `override` marks a monitor that carries a value of its own. The mark is
- *  drawn inside the label's own column, after the name, so it survives a name
- *  too long for the column and every row's controls still line up.
+ *  `mark` is the row's "own value" bullet, drawn inside the label's own column
+ *  after the name so it survives a name too long for the column and every row's
+ *  controls still line up. `reset` is absent on a row with nothing to reset.
  */
 function Row(properties: {
 	label: string;
 	hint: string;
-	override?: boolean;
-	reset: string;
-	onReset: () => void;
+	mark?: string | undefined;
+	reset?: string | undefined;
+	onReset?: (() => void) | undefined;
 	children: JSX.Element;
 }) {
 	return (
 		<label class="Row">
 			<span title={properties.hint}>
 				<span class="Name">{properties.label}</span>
-				<Show when={properties.override}>
-					<span class="Mark" title="This monitor has a value of its own; the reset drops it">
-						•
-					</span>
+				<Show when={properties.mark}>
+					{(mark) => (
+						<span class="Mark" title={mark()}>
+							•
+						</span>
+					)}
 				</Show>
 			</span>
 			{properties.children}
-			<button class="Reset" title={properties.reset} onClick={properties.onReset}>
-				↺
-			</button>
+			<Show when={properties.reset}>
+				{(reset) => (
+					<button class="Reset" title={reset()} onClick={() => properties.onReset?.()}>
+						↺
+					</button>
+				)}
+			</Show>
 		</label>
 	);
 }
 
-/** One per-monitor setting: the "All monitors" row, then a row per monitor.
+/** One per-monitor setting, drawn once for the scope the panel is showing.
  *
- *  The three sections differ only in their controls and in the command behind
- *  them, so the rows are built once here: a setting cannot end up with a default
- *  row that resets differently from its monitor rows, or with a mark on one
- *  section and not another.
+ *  The monitor is the panel's navigation axis, not a row: a row per monitor
+ *  would be three settings times one default plus every monitor, which is nine
+ *  rows with two displays and three thousand with a thousand. So the selector at
+ *  the top picks the scope and this draws one row for it - the default when the
+ *  scope is "All monitors", that monitor's own value when it is one display.
+ *
+ *  All three settings come through here, so a setting cannot end up resetting
+ *  differently from its neighbours, or marking an override on one row and not
+ *  another.
  */
 function Setting<T>(properties: {
 	title: string;
 	/** The value a monitor without an override of its own is drawn with. */
 	value: T;
 	monitors: Monitor[];
+	/** The scope the panel is showing: a monitor's label, or `undefined` for
+	 *  every monitor. */
+	scope: string | undefined;
 	/** One monitor's own copy of this setting. */
 	pick: (monitor: Monitor) => Value<T>;
 	/** Draws one row's controls for the value it is drawn with. */
@@ -212,41 +273,99 @@ function Setting<T>(properties: {
 	/** The word `reset` knows this setting by. */
 	word: string;
 }) {
+	/** The monitor the panel is showing, when it is showing one. */
+	const Shown = () => {
+		const label = properties.scope;
+
+		return label === undefined ? undefined : properties.monitors.find((monitor) => monitor.label === label);
+	};
+
+	/** The value this row is drawn with. */
+	const Drawn = () => {
+		const monitor = Shown();
+
+		return monitor === undefined ? properties.value : properties.pick(monitor).value;
+	};
+
+	/** The mark this row carries, if any.
+	 *
+	 *  One monitor in scope marks its own value, which is the fact a value alone
+	 *  cannot state. Every monitor in scope marks how many monitors a write here
+	 *  would drop: writing the default clears every override, so the count is the
+	 *  warning that the control itself does not give. */
+	const Mark = () => {
+		const monitor = Shown();
+
+		if (monitor !== undefined) {
+			return properties.pick(monitor).origin === "override"
+				? "This monitor has a value of its own; the reset drops it"
+				: undefined;
+		}
+
+		const count = properties.monitors.filter((each) => properties.pick(each).origin === "override").length;
+
+		if (count === 0) return undefined;
+
+		const monitors = count === 1 ? "1 monitor has a value" : `${count} monitors have values`;
+		const dropped = count === 1 ? "it" : "them";
+
+		return `${monitors} of their own; setting or resetting here drops ${dropped}`;
+	};
+
 	return (
-		<div class="Section">
-			<h2 class="Title">{properties.title}</h2>
-
-			<Row
-				label="All monitors"
-				hint="Every monitor without a value of its own"
-				reset="Back to the default and drop every monitor's override"
-				onReset={() => call("reset", { setting: properties.word })}
-			>
-				{properties.control(
-					() => properties.value,
-					(next) => properties.set(undefined, next),
-				)}
-			</Row>
-
-			<Index each={properties.monitors}>
-				{(monitor) => (
-					<Row
-						label={monitor().name}
-						hint={monitor().name}
-						override={properties.pick(monitor()).origin === "override"}
-						reset="Back to the default"
-						onReset={() => call("reset", { setting: properties.word, label: monitor().label })}
-					>
-						{properties.control(
-							() => properties.pick(monitor()).value,
-							(next) => properties.set(monitor().label, next),
-						)}
-					</Row>
-				)}
-			</Index>
-		</div>
+		<Row
+			label={properties.title}
+			hint={
+				Shown() === undefined
+					? "The value every monitor without one of its own is drawn with"
+					: "This monitor's own value, or the default it follows"
+			}
+			mark={Mark()}
+			reset={
+				Shown() === undefined
+					? "Back to the default and drop every monitor's override"
+					: "Back to the default, dropping only this monitor's override"
+			}
+			onReset={() =>
+				call(
+					"reset",
+					Shown() === undefined
+						? { setting: properties.word }
+						: { setting: properties.word, label: properties.scope },
+				)
+			}
+		>
+			{properties.control(Drawn, (next) => properties.set(properties.scope, next))}
+		</Row>
 	);
 }
+
+/** A scope whose monitor is gone - unplugged while the panel was open, or the
+ *  panel left open across a display change - falls back to every monitor: the
+ *  rows below would otherwise keep writing to a monitor that is no longer
+ *  there. */
+createEffect(() => {
+	const label = Scope();
+
+	if (label !== undefined && !(State()?.monitors ?? []).some((monitor) => monitor.label === label)) {
+		setSelected("");
+	}
+});
+
+/** Re-state the selection whenever the panel redraws.
+ *
+ *  The select is a native control holding a value of its own, and `<Index>`
+ *  reuses its option nodes: a select whose options were rebuilt under it can
+ *  fall back to its first entry while the rows below still show the old scope.
+ *  Writing the value the panel holds costs one property assignment and makes the
+ *  two agree whichever of them moved. */
+createEffect(() => {
+	const value = Selected();
+
+	State();
+
+	if (Picker) Picker.value = value;
+});
 
 onMount(() => {
 	void call("state");
@@ -258,11 +377,34 @@ render(
 			<Show when={State()} fallback={<p class="Empty">Reading settings...</p>}>
 				{(state) => (
 					<>
+						<div class="Section">
+							<h2 class="Title">Scope</h2>
+
+							<select
+								class="Picker"
+								ref={Picker}
+								title="Which monitors the settings below apply to"
+								value={Selected()}
+								onChange={(event) => setSelected(event.currentTarget.value)}
+							>
+								<option value="">All monitors</option>
+
+								<Index each={state().monitors}>
+									{(monitor, index) => (
+										<option value={monitor().label}>{Entry(monitor(), index)}</option>
+									)}
+								</Index>
+							</select>
+
+							<p class="Where">{Where(state(), Scope())}</p>
+						</div>
+
 						<Setting
 							title="Radius"
 							word="radius"
 							value={state().radius}
 							monitors={state().monitors}
+							scope={Scope()}
 							pick={(monitor) => monitor.radius}
 							set={(label, value) => call("set_size", label === undefined ? { value } : { label, value })}
 							control={(value, commit) => (
@@ -278,6 +420,7 @@ render(
 							word="ink"
 							value={state().ink}
 							monitors={state().monitors}
+							scope={Scope()}
 							pick={(monitor) => monitor.ink}
 							set={(label, mode) => call("set_mode", label === undefined ? { mode } : { label, mode })}
 							control={(value, commit) => (
@@ -297,6 +440,7 @@ render(
 							word="hidden"
 							value={state().hidden}
 							monitors={state().monitors}
+							scope={Scope()}
 							pick={(monitor) => monitor.hidden}
 							set={(label, hidden) => call("set_hidden", label === undefined ? { hidden } : { label, hidden })}
 							control={(value, commit) => (
@@ -311,17 +455,16 @@ render(
 							)}
 						/>
 
+						<hr class="Divider" />
+
 						<div class="Section">
-							<label class="Row">
-								<span title="The dock icon belongs to the application, not to a monitor">
-									<span class="Name">Dock icon</span>
-								</span>
+							<Row label="Dock icon" hint="The dock icon belongs to the application, not to a monitor">
 								<input
 									type="checkbox"
 									checked={!state().dock_hidden}
 									onChange={(event) => call("set_dock", { hidden: !event.currentTarget.checked })}
 								/>
-							</label>
+							</Row>
 							<p class="Note">One icon for the whole application - there is no per-monitor dock icon.</p>
 						</div>
 

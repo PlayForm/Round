@@ -109,7 +109,9 @@ The module tree **is** the API. There is no facade that renames anything:
   activation, a timer or geometry.
   - `Toggle`, `Open`, `Hide`, `Build`, `Place` - the window's life.
   - `State` - the struct the panel renders, one `Serialize` field per control.
-  - `Monitor` - one row of the panel's per-monitor list.
+  - `Monitor` - one entry in the panel's scope selector: its label and name, the
+    physical pixels that tell two displays of the same name apart, and its three
+    settings with the origin of each.
   - `Label`, `Width`, `Height`, `Gap` - the window label and the three
     measurements placement needs.
   - `Store` - `Load` (settings as they are on disk) and `Commit` (save, then
@@ -277,10 +279,22 @@ decisions - including the reset value and the clamp - live in Rust.
   channels; both are externally tagged serde enums, which is why the payload key
   is capitalised.
 - The `State` a command returns is
-  `{ size, mode, hidden, dock_hidden, maximum, monitors: [{ label, name, size,
-  overridden }] }`. Every one of those keys is pinned with a per-field
-  `#[serde(rename = "...")]`: the fields are PascalCase and the keys are not, so
-  deriving one from the other is the one thing the struct cannot do.
+  `{ radius, maximum, ink, hidden, dock_hidden, monitors: [{ label, name, width,
+  height, radius, ink, hidden }] }`, where each per-monitor setting is
+  `{ value, origin }` and `origin` is `"inherit"` or `"override"`. `width` and
+  `height` are the display's physical pixels, and they travel for one reason: a
+  name does not identify a display. Every one of those keys is pinned with a
+  per-field `#[serde(rename = "...")]`: the fields are PascalCase and the keys
+  are not, so deriving one from the other is the one thing the struct cannot do.
+- The panel is one scope selector and one row per setting. The monitor is the
+  navigation axis, not a row: a row per monitor would be three settings times one
+  default plus every monitor, so the panel draws three setting rows plus the dock
+  toggle and Quit however many monitors are attached. The selector is a native
+  `<select>` - the OS draws and scrolls its menu, and no entry is rendered until
+  it is opened - and every row below it writes for whichever scope it names.
+  `reset` with a label drops that monitor's override; with no label it restores
+  the default and drops every override, which is what `Per::Set` does to the
+  default too.
 - `data-mode` on the `.Window` element switches the corner ink
   (`.Window[data-mode="light"] .Corner` paints white, the default is black).
 - `--Corner` is set inline per corner from the size signal; `Corner.css` derives
