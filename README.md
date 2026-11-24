@@ -27,7 +27,7 @@
 [![star](https://img.shields.io/github/stars/PlayForm/Round?label=star&logo=github&color=black)](https://github.com/PlayForm/Round)
 [![download](https://img.shields.io/github/downloads/PlayForm/Round/total?label=download&color=black)](https://github.com/PlayForm/Round/releases)
 
-![`Round`](https://PlayForm.Cloud/Image/GitHub/Round/Cover.png?v=2)
+![`Round`](https://PlayForm.Cloud/Image/GitHub/Round/Cover.png?v=3)
 
 ---
 
