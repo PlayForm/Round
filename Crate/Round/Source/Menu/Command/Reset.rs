@@ -18,6 +18,8 @@ use crate::{
 /// named has always meant.
 #[tauri::command(rename = "reset")]
 pub fn Reset<R:Runtime>(App:AppHandle<R>, Setting:Option<String>, Label:Option<String>) -> Result<State, String> {
+	crate::Trace::Fn(&format!("click reset setting={Setting:?} label={Label:?}"));
+
 	let mut Preferences:Settings = Load::Fn(&App)?;
 
 	SettingClear::Fn(&mut Preferences, Setting.as_deref(), Label.as_deref())?;
