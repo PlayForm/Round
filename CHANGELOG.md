@@ -7,6 +7,18 @@ the npm packages and `pround`.
 
 ---
 
+## 0.0.14
+
+### Fixed
+
+- **The panel's `↺` reset buttons did nothing.** `useContext` resolves through the
+  reactive owner, and there is no owner inside a click handler - calling it there
+  returned the context's empty default, so the button ran `undefined.call`. The
+  context is now read once during the component's setup and captured, which is the
+  only place it resolves.
+
+---
+
 ## 0.0.13
 
 ### Webview (`@application/round-web`)

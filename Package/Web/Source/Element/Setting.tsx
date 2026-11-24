@@ -35,9 +35,11 @@ export default <T,>(properties:{
 	/** The word `reset` knows this setting by. */
 	word:string;
 }) => {
-	/** The panel's context: the reset command writes through it, so a row does not
-	 *  need a signal of its own to reach the backend. */
-	const Shared = () => useContext(Context);
+	/** The panel's context, read once at setup: `useContext` resolves through the
+	 *  reactive owner, and an owner does not exist inside a click handler - a lazy
+	 *  `useContext(Context)` there returns the context's empty default, which is a
+	 *  reset button that does nothing. */
+	const Shared = useContext(Context);
 
 	/** The monitor the panel is showing, when it is showing one. */
 	const Shown = () => {
@@ -93,7 +95,7 @@ export default <T,>(properties:{
 					: "Back to the default, dropping only this monitor's override"
 			}
 			Reset={() =>
-				Shared().call(
+				Shared?.call(
 					"reset",
 					Shown() === undefined
 						? { setting:properties.word }
