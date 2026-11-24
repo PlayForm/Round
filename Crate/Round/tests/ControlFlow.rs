@@ -25,10 +25,18 @@ use tauri_plugin_store::StoreExt;
 
 const STORE:&str = "settings.json";
 
+/// The surface this build registers - the same split the binary makes, so a
+/// `--release` test run exercises the shipping list rather than a debug one.
+#[cfg(debug_assertions)]
+fn Handler() -> impl Fn(tauri::ipc::Invoke<MockRuntime>) -> bool + Send + Sync + 'static { pround::Commands!() }
+
+#[cfg(not(debug_assertions))]
+fn Handler() -> impl Fn(tauri::ipc::Invoke<MockRuntime>) -> bool + Send + Sync + 'static { pround::CommandsRelease!() }
+
 fn App() -> (tauri::App<MockRuntime>, tauri::WebviewWindow<MockRuntime>) {
 	let App = mock_builder()
 		.plugin(tauri_plugin_store::Builder::new().build())
-		.invoke_handler(pround::Commands!())
+		.invoke_handler(Handler())
 		.build(mock_context(noop_assets()))
 		.expect("a mock app");
 
