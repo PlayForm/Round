@@ -5,7 +5,7 @@
 //! The `round` binary: one overlay webview per monitor, then the tray icon.
 
 use pround::{
-	Menu::Command::{Dismiss, Dock, Hidden, Mode, Quit, Report, Reset, Size, State},
+	Menu::Command::{Benchmark, Dismiss, Dock, Hidden, Mode, Quit, Report, Reset, Size, State},
 	Overlay::{Layer::Trait::Trait as _, Platform::Struct as Platform},
 	Per::Of as PerOf,
 	Screen::All as ScreenAll,
@@ -30,6 +30,7 @@ fn main() {
 			Dismiss::Dismiss,
 			Quit::Quit,
 			Report::Report,
+			Benchmark::Benchmark,
 		])
 		.setup(|App| {
 			let Storage = App.store(StoreFile)?;

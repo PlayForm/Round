@@ -1,5 +1,7 @@
+pub mod Benchmark;
 pub mod Dismiss;
 pub mod Dock;
+pub mod Handler;
 pub mod Hidden;
 pub mod Mode;
 pub mod Quit;
