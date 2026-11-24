@@ -8,7 +8,7 @@
 
 ---
 
-# [Round] ⬜
+# [Round] ⬜
 
 > [!NOTE]
 >
@@ -142,8 +142,8 @@ closed.
 - **All monitors** - one slider for the default corner radius (_23px_ on a fresh
   install). Moving it drops the per-monitor overrides, because "all monitors" is
   what you meant.
-- **A row per monitor** - that monitor's radius, read while you drag it, and a
-  ↺ that hands the monitor back to the default.
+- **A row per monitor** - that monitor's radius, read while you drag it, and a ↺
+  that hands the monitor back to the default.
 - **Appearance** - **Dark** or **Light**: draw the corners in black or white.
 - **Overlay** - **Show** or **Hide** every overlay at once.
 - **Dock icon** - macOS only; unticking it hides the dock icon through
@@ -155,25 +155,25 @@ Each control is one Tauri command on `pround::Menu::Command` - `state`,
 returns the state the panel should now render, so the panel never keeps a second
 copy of the truth. The function lives in the leaf named after it
 (`Menu::Command::Size::Size`) and pins the name the webview invokes with
-`#[tauri::command(rename = "set_size")]`, so the tree can be PascalCase while the
-wire stays snake_case. `Settings` remains the only place the values live. The one
-command that is not a control is `dismiss`, which the backdrop's own document
-invokes on a pointer-down: it hides the panel and the backdrop together, and is
-idempotent.
+`#[tauri::command(rename = "set_size")]`, so the tree can be PascalCase while
+the wire stays snake_case. `Settings` remains the only place the values live.
+The one command that is not a control is `dismiss`, which the backdrop's own
+document invokes on a pointer-down: it hides the panel and the backdrop
+together, and is idempotent.
 
 ---
 
 ## Repository layout
 
 - **`Crate/Round`** - the Rust crate, published to crates.io as **`pround`**.
-  `Source/Library.rs` is the crate root (the overlay engine) and `Source/Main.rs`
-  is the `round` binary. Each domain is its own PascalCase directory -
-  `Backdrop`, `Bounds`, `Menu`, `Message`, `Mode`, `Overlay`, `Screen`,
-  `Settings`, `Tray`, `Visibility`, `Window` - and the tree is the API: a leaf
-  exports one item named by its kind (`Struct`, `Enum`, `Fn`, `Trait`, `Const`)
-  and the path says what it is for, so `Menu::Place::Fn` is the one function that
-  places the panel. A `mod.rs` declares its children and nothing else, and
-  nothing is re-exported anywhere.
+  `Source/Library.rs` is the crate root (the overlay engine) and
+  `Source/Main.rs` is the `round` binary. Each domain is its own PascalCase
+  directory - `Backdrop`, `Bounds`, `Menu`, `Message`, `Mode`, `Overlay`,
+  `Screen`, `Settings`, `Tray`, `Visibility`, `Window` - and the tree is the
+  API: a leaf exports one item named by its kind (`Struct`, `Enum`, `Fn`,
+  `Trait`, `Const`) and the path says what it is for, so `Menu::Place::Fn` is
+  the one function that places the panel. A `mod.rs` declares its children and
+  nothing else, and nothing is re-exported anywhere.
 - **`Package/Web`** - the webview package: Solid 1.9 + Vite 8 + Tailwind 3,
   built by `@playform/build`'s tsconfig base into `Package/Web/Target`. The
   crate embeds that directory at compile time; it is never copied into the
@@ -187,8 +187,8 @@ idempotent.
   version across every manifest, the local mirror of the CI gates, the bundle
   build, and the whole ceremony (`Maintain release 0.0.14 --publish`) in one
   command. `publish = false`: it is a tool for this repository, not a crate.
-- **`Release.sh`** - the local signed macOS release; the tag it offers comes from
-  `Maintain version`, so a drifted tree cannot start one.
+- **`Release.sh`** - the local signed macOS release; the tag it offers comes
+  from `Maintain version`, so a drifted tree cannot start one.
 - **`.github/workflows`** - `Check`, `Build`, `Publish`, `Auto`, `Dependabot`,
   `GitHub`.
 
@@ -246,9 +246,9 @@ broadcast -> Monitor22763 radius=23 ink=Dark  visible=Shown
 
 That is the whole path in order - what arrived, what changed, what was stored,
 what each window was told - so a break names its stage. `intercepted dismiss`
-appears instead of `click` when a click lands on the scrim rather than the panel.
-All of it is behind `cfg!(debug_assertions)` in the `Trace!` macro, format
-strings included, so a release build carries none of it.
+appears instead of `click` when a click lands on the scrim rather than the
+panel. All of it is behind `cfg!(debug_assertions)` in the `Trace!` macro,
+format strings included, so a release build carries none of it.
 
 ---
 
