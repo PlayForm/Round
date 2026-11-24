@@ -2,7 +2,17 @@ import { invoke } from "@tauri-apps/api/core";
 import { LogicalPosition, LogicalSize } from "@tauri-apps/api/dpi";
 import { currentMonitor } from "@tauri-apps/api/window";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { createEffect, createSignal, Index, onMount, Show, type JSX } from "solid-js";
+import {
+	createContext,
+	createEffect,
+	createSignal,
+	Index,
+	onMount,
+	Show,
+	useContext,
+	type Accessor,
+	type JSX,
+} from "solid-js";
 import { render } from "solid-js/web";
 
 import "./Asset/CSS/Menu.css";
@@ -40,37 +50,23 @@ type State = {
 	monitors: Monitor[];
 };
 
-/** The panel's copy of the Rust state; every command returns the new one. */
-const [State, setState] = createSignal<State>();
-
-/** Which monitor the settings below apply to, in the select's own terms: a
- *  monitor's label, or the empty string for the "All monitors" entry.
+/** What every row in the panel shares: the Rust state, the command that writes
+ *  it, and the scope the rows apply to.
  *
- *  The empty string is the value of the select's first entry, so the control
- *  needs no translation of its own, and `Scope` is the single place it becomes
- *  the absent label that every command already reads as "every monitor". */
-const [Selected, setSelected] = createSignal("");
+ *  It travels through a context rather than module scope. A module signal is a
+ *  singleton with no owner - nothing can dispose it, and a component that
+ *  imported it could not be mounted twice or unmounted at all - while a value in
+ *  a context belongs to the component that provides it, and every consumer reads
+ *  it reactively. */
+type Shared = {
+	State: Accessor<State | undefined>;
+	call: (command: string, args?: Record<string, unknown>) => Promise<void>;
+	Selected: Accessor<string>;
+	setSelected: (value: string) => void;
+	Scope: () => string | undefined;
+};
 
-/** The selected monitor's label, or `undefined` for every monitor at once. */
-const Scope = () => Selected() || undefined;
-
-async function call(command: string, args?: Record<string, unknown>) {
-	try {
-		setState(await invoke<State>(command, args));
-	} catch (error) {
-		console.error(`${command} failed`, error);
-	}
-}
-
-const appWindow = getCurrentWebviewWindow();
-
-/** The panel itself: the window hugs it, the way a menu hugs its items. A
- *  transparent window still swallows clicks, so empty space under the content
- *  must not exist or the panel would eat clicks meant for the desktop. */
-let Panel: HTMLDivElement | undefined;
-
-/** The scope selector, so the selection can be re-stated after a redraw. */
-let Picker: HTMLSelectElement | undefined;
+const Context = createContext<Shared>();
 
 /** The width the panel is drawn at, in logical pixels - `Menu::Width`. */
 const Width = 320;
@@ -123,24 +119,22 @@ async function Screen(): Promise<Work | undefined> {
  *  Every step here is a nicety: a panel that could not be measured or moved is
  *  still a panel, so no failure aborts the render.
  */
-async function Fit() {
-	if (!Panel) return;
-
+async function Fit(Element: HTMLDivElement, Window: ReturnType<typeof getCurrentWebviewWindow>) {
 	const Area = await Screen();
 
 	// The cap goes on before the measurement, not after it: the panel scrolls
 	// inside the window, so the height it measures is the height it is drawn at.
-	Panel.style.maxHeight = Area ? `${Math.max(Area.Height - Reserve, 2 * Margin)}px` : "";
+	Element.style.maxHeight = Area ? `${Math.max(Area.Height - Reserve, 2 * Margin)}px` : "";
 
-	const Height = Math.ceil(Panel.getBoundingClientRect().height) + 2 * Margin;
+	const Height = Math.ceil(Element.getBoundingClientRect().height) + 2 * Margin;
 
-	await appWindow
-		.setSize(new LogicalSize(Width, Height))
-		.catch((error) => console.warn("round: the panel could not be resized", error));
+	await Window.setSize(new LogicalSize(Width, Height)).catch((error) =>
+		console.warn("round: the panel could not be resized", error),
+	);
 
 	if (!Area) return;
 
-	const Position = await appWindow.outerPosition().catch(() => null);
+	const Position = await Window.outerPosition().catch(() => null);
 
 	if (!Position) return;
 
@@ -149,17 +143,10 @@ async function Fit() {
 
 	if (Math.abs(Top - Y) < 1) return;
 
-	await appWindow
-		.setPosition(new LogicalPosition(Position.x / Area.Scale, Top))
-		.catch((error) => console.warn("round: the panel could not be moved back on screen", error));
+	await Window.setPosition(new LogicalPosition(Position.x / Area.Scale, Top)).catch((error) =>
+		console.warn("round: the panel could not be moved back on screen", error),
+	);
 }
-
-createEffect(() => {
-	State();
-	Scope();
-
-	requestAnimationFrame(() => void Fit());
-});
 
 /** A range input that reports once, on release, so one drag is one write. */
 function Slider(properties: { value: number; maximum: number; onCommit: (value: number) => void }) {
@@ -273,6 +260,10 @@ function Setting<T>(properties: {
 	/** The word `reset` knows this setting by. */
 	word: string;
 }) {
+	/** The panel's context: the reset command writes through it, so a row does not
+	 *  need a signal of its own to reach the backend. */
+	const Shared = () => useContext(Context);
+
 	/** The monitor the panel is showing, when it is showing one. */
 	const Shown = () => {
 		const label = properties.scope;
@@ -327,7 +318,7 @@ function Setting<T>(properties: {
 					: "Back to the default, dropping only this monitor's override"
 			}
 			onReset={() =>
-				call(
+				Shared().call(
 					"reset",
 					Shown() === undefined
 						? { setting: properties.word }
@@ -340,40 +331,89 @@ function Setting<T>(properties: {
 	);
 }
 
-/** A scope whose monitor is gone - unplugged while the panel was open, or the
- *  panel left open across a display change - falls back to every monitor: the
- *  rows below would otherwise keep writing to a monitor that is no longer
- *  there. */
-createEffect(() => {
-	const label = Scope();
-
-	if (label !== undefined && !(State()?.monitors ?? []).some((monitor) => monitor.label === label)) {
-		setSelected("");
-	}
-});
-
-/** Re-state the selection whenever the panel redraws.
+/** The panel: the scope selector, one row per setting, and the two controls that
+ *  are not per monitor.
  *
- *  The select is a native control holding a value of its own, and `<Index>`
- *  reuses its option nodes: a select whose options were rebuilt under it can
- *  fall back to its first entry while the rows below still show the old scope.
- *  Writing the value the panel holds costs one property assignment and makes the
- *  two agree whichever of them moved. */
-createEffect(() => {
-	const value = Selected();
+ *  The state, the command that writes it and the selected scope are created here
+ *  and handed down through a context, so they are owned by this component: the
+ *  effects below are disposed with it, and no signal outlives the panel. */
+function PanelView() {
+	const Window = getCurrentWebviewWindow();
 
-	State();
+	/** The panel's copy of the Rust state; every command returns the new one. */
+	const [State, setState] = createSignal<State>();
 
-	if (Picker) Picker.value = value;
-});
+	/** Which monitor the settings below apply to, in the select's own terms: a
+	 *  monitor's label, or the empty string for the "All monitors" entry.
+	 *
+	 *  The empty string is the value of the select's first entry, so the control
+	 *  needs no translation of its own, and `Scope` is the single place it becomes
+	 *  the absent label that every command already reads as "every monitor". */
+	const [Selected, setSelected] = createSignal("");
 
-onMount(() => {
-	void call("state");
-});
+	/** The selected monitor's label, or `undefined` for every monitor at once. */
+	const Scope = () => Selected() || undefined;
 
-render(
-	() => (
-		<div class="Panel" ref={Panel}>
+	const call = async (command: string, args?: Record<string, unknown>) => {
+		try {
+			setState(await invoke<State>(command, args));
+		} catch (Error) {
+			console.error(`${command} failed`, Error);
+		}
+	};
+
+	/** The panel itself: the window hugs it, the way a menu hugs its items. A
+	 *  transparent window still swallows clicks, so empty space under the content
+	 *  must not exist or the panel would eat clicks meant for the desktop. */
+	let Element: HTMLDivElement | undefined;
+
+	/** The scope selector, so the selection can be re-stated after a redraw. */
+	let Picker: HTMLSelectElement | undefined;
+
+	/** A scope whose monitor is gone - unplugged while the panel was open, or the
+	 *  panel left open across a display change - falls back to every monitor: the
+	 *  rows below would otherwise keep writing to a monitor that is no longer
+	 *  there. */
+	createEffect(() => {
+		const label = Scope();
+
+		if (label !== undefined && !(State()?.monitors ?? []).some((monitor) => monitor.label === label)) {
+			setSelected("");
+		}
+	});
+
+	/** Re-state the selection whenever the panel redraws.
+	 *
+	 *  The select is a native control holding a value of its own, and `<Index>`
+	 *  reuses its option nodes: a select whose options were rebuilt under it can
+	 *  fall back to its first entry while the rows below still show the old scope.
+	 *  Writing the value the panel holds costs one property assignment and makes the
+	 *  two agree whichever of them moved. */
+	createEffect(() => {
+		const value = Selected();
+
+		State();
+
+		if (Picker) Picker.value = value;
+	});
+
+	/** Size the window to the panel whenever what it draws changes. */
+	createEffect(() => {
+		State();
+		Scope();
+
+		const Measured = Element;
+
+		if (Measured) requestAnimationFrame(() => void Fit(Measured, Window));
+	});
+
+	onMount(() => {
+		void call("state");
+	});
+
+	return (
+		<Context.Provider value={{ State, call, Selected, setSelected, Scope }}>
+			<div class="Panel" ref={Element}>
 			<Show when={State()} fallback={<p class="Empty">Reading settings...</p>}>
 				{(state) => (
 					<>
@@ -474,7 +514,9 @@ render(
 					</>
 				)}
 			</Show>
-		</div>
-	),
-	document.getElementById("menu") as HTMLElement,
-);
+			</div>
+		</Context.Provider>
+	);
+}
+
+render(() => <PanelView />, document.getElementById("menu") as HTMLElement);
