@@ -115,8 +115,16 @@ jobs:
                   cd /tmp/probe
                   cargo add pround --path "$GITHUB_WORKSPACE/Crate/Round"
                   cat >> src/lib.rs <<'RS'
-                  pub fn probe() -> pround::Settings::Settings {
-                      pround::Settings::Settings::default()
+                  pub fn probe() -> pround::Settings::Struct::Struct {
+                      let mut Settings = pround::Settings::Struct::Struct::default();
+
+                      pround::Per::Set::Fn(
+                          &mut Settings.Radius,
+                          Some("probe"),
+                          pround::Radius::Struct::Struct::from(23),
+                      );
+
+                      Settings
                   }
                   RS
                   cargo build
