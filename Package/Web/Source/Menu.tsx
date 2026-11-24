@@ -89,6 +89,13 @@ render(
 								onCommit={(value) => call("set_size", { value })}
 							/>
 							<span class="Number">{state().size}</span>
+							<button
+								class="Reset"
+								title="Back to the default and drop every monitor's override"
+								onClick={() => call("reset")}
+							>
+								↺
+							</button>
 						</label>
 
 						<For each={state().monitors}>
