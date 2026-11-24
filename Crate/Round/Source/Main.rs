@@ -5,7 +5,7 @@
 //! The `round` binary: one overlay webview per monitor, then the tray icon.
 
 use pround::{
-	Menu::Command::{Benchmark, Dismiss, Dock, Hidden, Mode, Quit, Report, Reset, Size, State},
+	Menu::Command::Handler,
 	Overlay::{Layer::Trait::Trait as _, Platform::Struct as Platform},
 	Per::Of as PerOf,
 	Screen::All as ScreenAll,
@@ -20,18 +20,7 @@ use tauri_plugin_store::StoreExt;
 fn main() {
 	tauri::Builder::default()
 		.plugin(tauri_plugin_store::Builder::new().build())
-		.invoke_handler(tauri::generate_handler![
-			State::State,
-			Size::Size,
-			Mode::Mode,
-			Hidden::Hidden,
-			Dock::Dock,
-			Reset::Reset,
-			Dismiss::Dismiss,
-			Quit::Quit,
-			Report::Report,
-			Benchmark::Benchmark,
-		])
+		.invoke_handler(Handler::Fn())
 		.setup(|App| {
 			let Storage = App.store(StoreFile)?;
 
