@@ -19,16 +19,17 @@
 	},
 	"type": "module",
 	"scripts": {
-		"Build": "pnpm --filter @application/round-web run Build",
+		"Build": "turbo run Build",
 		"Check": "cargo run --quiet -p Maintain -- check",
 		"Version": "cargo run --quiet -p Maintain -- version",
-		"dev": "pnpm --filter @application/round-web run dev",
-		"serve": "pnpm --filter @application/round-web run serve",
-		"start": "pnpm --filter @application/round-web run dev",
+		"dev": "turbo run dev",
+		"serve": "turbo run serve",
+		"start": "turbo run dev",
 		"tauri": "tauri"
 	},
 	"devDependencies": {
-		"@tauri-apps/cli": "2.12.6"
+		"@tauri-apps/cli": "2.12.6",
+		"turbo": "2.11.10"
 	},
 	"packageManager": "pnpm@12.16.1",
 	"engines": {

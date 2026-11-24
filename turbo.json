@@ -1,0 +1,17 @@
+{
+	"$schema": "https://v2-9-6.turborepo.dev/schema.json",
+	"ui": "stream",
+	"tasks": {
+		"Build": {
+			"outputs": ["Target/**"]
+		},
+		"dev": {
+			"cache": false,
+			"persistent": true
+		},
+		"serve": {
+			"cache": false,
+			"persistent": true
+		}
+	}
+}

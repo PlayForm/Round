@@ -1,5 +1,5 @@
-import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { createSignal, For } from "solid-js";
 import { render } from "solid-js/web";
@@ -29,15 +29,23 @@ await appWindow.setIgnoreCursorEvents(true);
  */
 const Target = { target: appWindow.label };
 
-/** Debug: report what this overlay is actually rendering. The Rust side drops
- *  the line unless `ROUND_TRACE` is set, so a release build stays silent. */
+/** Debug: report what this overlay is actually rendering. `import.meta.env.DEV`
+ *  is Vite's compile-time gate, so a production bundle drops the call entirely -
+ *  the same `cfg` discipline the Rust side uses. */
 const Report = () => {
+	if (!import.meta.env.DEV) {
+		return;
+	}
+
 	const Element = document.querySelector(".Window");
 
 	void invoke("Report", {
 		label: appWindow.label,
 		mode: String(Element?.getAttribute("data-mode")),
-		radius: Element === null ? "?" : getComputedStyle(Element).getPropertyValue("--Corner").trim(),
+		radius:
+			Element === null
+				? "?"
+				: getComputedStyle(Element).getPropertyValue("--Corner").trim(),
 	});
 };
 
@@ -69,8 +77,7 @@ render(
 			class="Window"
 			data-label={appWindow.label}
 			data-mode={Mode[0]()}
-			style={`--Corner: ${Radius[0]()}px`}
-		>
+			style={`--Corner: ${Radius[0]()}px`}>
 			<For each={Corners}>{(corner) => <Corner id={corner} />}</For>
 		</div>
 	),

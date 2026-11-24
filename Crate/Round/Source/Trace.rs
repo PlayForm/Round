@@ -1,21 +1,19 @@
-//! Debug tracing, gated on the `ROUND_TRACE` environment variable.
+//! Debug tracing, compiled out of release builds.
 //!
-//! Nothing is written unless `ROUND_TRACE` is set: a release build carries the
-//! calls and produces no output, and `tauri dev` with the variable set gets one
-//! line per event on stderr (visible in the dev terminal) and in the trace file.
+//! The gate is `cfg(debug_assertions)` - a compile-time constant - so a release
+//! build keeps the call sites and dead-codes the format, the stderr write and the
+//! file sink, the way Mountain's `dev_log!` wraps its body in
+//! `if cfg!(debug_assertions)`. A `tauri dev` build writes one line per event to
+//! stderr (the dev terminal) and to the trace file.
 
+// The import is part of the debug build too: without this gate a release build
+// warns `unused import`, and CI runs `-D warnings`.
+#[cfg(debug_assertions)]
 use std::io::Write;
 
-/// Whether tracing is on for this process.
-pub fn On() -> bool { std::env::var_os("ROUND_TRACE").is_some() }
-
-/// Record one line, if tracing is on. Every failure is swallowed - a diagnostic
-/// must never be the reason the app misbehaves.
+/// Record one line. Present in a debug build, absent from a release build.
+#[cfg(debug_assertions)]
 pub fn Fn(Message:&str) {
-	if !On() {
-		return;
-	}
-
 	eprintln!("[round] {Message}");
 
 	let Some(Home) = std::env::var_os("HOME") else {
@@ -30,3 +28,7 @@ pub fn Fn(Message:&str) {
 		let _ = writeln!(File, "{Message}");
 	}
 }
+
+/// The release build's copy: same signature, nothing to do.
+#[cfg(not(debug_assertions))]
+pub fn Fn(_Message:&str) {}

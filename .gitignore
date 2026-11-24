@@ -17,3 +17,7 @@ Round.pub
 
 # macOS ----------------------------------------------------------------------
 .DS_Store
+
+# Turbo ----------------------------------------------------------------------
+# The task cache and daemon logs are machine-local build state, never content.
+.turbo
