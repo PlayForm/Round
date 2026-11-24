@@ -19,10 +19,11 @@ use crate::Screen::Struct::Struct as Screen;
 /// the same string; a reader that took either would be reading one key twice,
 /// and a writer that retired the wrong one would retire the label in use.
 pub fn Fn(Screen:&Screen) -> Vec<String> {
-	[&Screen.Label, &Screen.Qualified, &Screen.Legacy]
-		.into_iter()
-		.fold(Vec::new(), |Former:Vec<String>, Label:&String| match Former.contains(Label) {
+	[&Screen.Label, &Screen.Qualified, &Screen.Legacy].into_iter().fold(
+		Vec::new(),
+		|Former:Vec<String>, Label:&String| match Former.contains(Label) {
 			true => Former,
 			false => Former.into_iter().chain(Some(Label.clone())).collect(),
-		})
+		},
+	)
 }

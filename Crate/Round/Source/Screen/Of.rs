@@ -2,7 +2,7 @@
 
 use tauri::Monitor;
 
-use crate::Screen::{Claim::Struct::Struct as Claim, Label, Legacy, Struct::Struct as Struct, Suffix};
+use crate::Screen::{Claim::Struct::Struct as Claim, Label, Legacy, Struct::Struct, Suffix};
 
 /// The overlay window a monitor gets: its label, the two labels it has been
 /// stored under before, and its bounds in the logical pixels the window builder
