@@ -1,25 +1,24 @@
-//! Retiring a label no monitor answers to any more.
+//! Retiring the labels a display no longer answers to.
 
 use std::collections::BTreeMap;
 
-use crate::Screen::Struct::Struct as Screen;
+use crate::{Screen::Struct::Struct as Screen, Settings::Migrate::Label::Former};
 
-/// `Monitor` without this screen's former label.
+/// `Monitor` without any of this screen's former labels.
 ///
-/// A label the screen still answers to is left alone: a monitor whose name was
-/// already unique has the same label before and after, and the value under it is
-/// the value this setting holds. Every other former label has been offered to
-/// the screen's own label by
-/// [`Adopt`](crate::Settings::Migrate::Label::Adopt::Fn) and is dropped, or the
-/// next read would adopt it again and undo a reset.
+/// The label the screen carries now is kept: it is the value this setting holds,
+/// and a monitor whose name no other display shares has the same label before
+/// and after. Every other label it has answered to has been offered to that
+/// label by [`Adopt`](crate::Settings::Migrate::Label::Adopt::Fn) and is
+/// dropped, or the next read would adopt it again and undo a reset.
 ///
-/// A former label that no connected monitor answers to is not this function's
-/// to drop - it belongs to a display that is not here right now.
+/// A label no connected monitor answers to is not this function's to drop - it
+/// belongs to a display that is not here right now.
 pub fn Fn<T>(Monitor:BTreeMap<String, T>, Screen:&Screen) -> BTreeMap<String, T> {
-	let Retired = (Screen.Legacy != Screen.Label).then(|| Screen.Legacy.clone());
+	let Former = Former::Fn(Screen);
 
-	match Retired {
-		Some(Retired) => Monitor.into_iter().filter(|(Label, _)| *Label != Retired).collect(),
-		None => Monitor,
-	}
+	Monitor
+		.into_iter()
+		.filter(|(Label, _)| *Label == Screen.Label || !Former.contains(Label))
+		.collect()
 }

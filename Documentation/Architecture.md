@@ -196,7 +196,10 @@ The module tree **is** the API. There is no facade that renames anything:
   many monitors answered to a label, `Clean` keeps ASCII alphanumerics only
   (Tauri rejects the rest), `Label` is the label a name asks for (`monitor` when
   there is no name), `Legacy` is the label the release before this one stored
-  that monitor's overrides under, and `Struct` is the result.
+  that monitor's overrides under, and `Struct` is the result - which carries both
+  former labels beside the one in use, because plugging a twin in or pulling one
+  out moves a display between its bare name and its qualified one, and its
+  overrides have to follow it in both directions.
 - **`Settings`** - the persisted state. `Struct` holds the three per-monitor
   settings (`Radius`, `Ink`, `Visible`, each a `Per`) and the one setting with no
   per-monitor dimension (`Dock`); `Load` and `Save` are the store round trip with
@@ -343,10 +346,13 @@ holds no signals, which is what lets its window stay invisible.
 - **What a monitor is called** - `Screen::Label` (a display's name cleaned into
   a label), `Screen::Unique` (a label two monitors asked for, settled by the
   monitor's position through `Screen::Suffix`) and `Screen::Legacy` (the label
-  the store was written under, which `Settings::Migrate::Label` moves an override
-  off). Nothing else may key on a display's name: the store, the broadcast, the
-  scrim windows and the overlay windows all address a screen by the label this
-  one leaf produced.
+  the store was written under). `Settings::Migrate::Label` moves an override off
+  every former label onto the one in use: `Former` is the ordered, de-duplicated
+  list of the labels a display has answered to, `Adopt` reads the first the store
+  holds and `Clear` retires the rest, so a reset is not undone by the next read.
+  Nothing else may key on a display's name: the store, the broadcast, the scrim
+  windows and the overlay windows all address a screen by the label this one leaf
+  produced.
 - **A new persisted setting** - a field on `Settings::Struct`, its key in
   `Settings::Load::Fn`/`Settings::Save::Fn`, and (if the webview needs it) a
   field in `window.settings` plus the matching TypeScript type in

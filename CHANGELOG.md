@@ -78,6 +78,23 @@ the npm packages and `pround`.
   renamed `art` and `front`, and `clickable` is gone with the guard that asked
   it. The panel now sits above the corner art as well as above the backdrop, so
   the corners no longer draw over it.
+- A monitor's label is unique, and every stored override survives the change. A
+  label is the identity of a display: it names its overlay window, keys its
+  per-monitor overrides and values its entry in the panel's scope selector. It
+  used to be the display's name with the punctuation stripped, so two displays of
+  the same model shared one label - one set of settings between them, one overlay
+  window between them (Tauri refuses a second window under a label it already
+  holds, so the second display drew no corner art at all) and two selector entries
+  that could not be told apart. `Screen::Unique` now settles the set: a name one
+  monitor asked for is kept exactly as it was, and a name two or more asked for is
+  qualified with that monitor's own position on the desktop, which is a fact about
+  the display rather than about the order the system enumerated it in. The index
+  is the last resort, for two displays showing one picture. Nothing is renamed out
+  from under the store: `Screen::Struct` carries every label a display has
+  answered to - its bare name, its qualified one and the `monitor<index>` an
+  unnamed display used to take - and `Settings::Migrate::Label` moves the stored
+  override onto the label in use on every read, so a twin plugged in or pulled out
+  costs nothing either way.
 
 ### Webview (`@application/round-web`)
 
