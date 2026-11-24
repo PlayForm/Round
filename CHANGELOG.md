@@ -7,6 +7,28 @@ the npm packages and `pround`.
 
 ---
 
+## 0.0.13
+
+### Webview (`@application/round-web`)
+
+- **Every reactive, messaging and prop-in concern is Solid's.** The panel's state,
+  the command that writes it and the selected scope live in one `createContext`
+  provided by `Element/Panel` and read by `Element/Setting`; the overlay registers
+  its `mode`/`size` listeners in `onMount` and disposes them with `onCleanup`; the
+  scrim - which renders no markup - runs inside an explicit `createRoot` so its
+  `pointerdown` listener has an owner to dispose it. Nothing reactive is created
+  at module scope: a module signal is a singleton with no owner, and a listener
+  registered there can never be removed.
+- `Package/Web/Source` is now the house tree, mirroring the crate: `Element/` one
+  component per file, `Fn/` one function per file (`Entry`, `Where`, `Size`,
+  `Screen`, `Fit`), `Type/Panel.ts` for the shapes and `Context.ts` for the one
+  context. Every element and function is an anonymous `export default`, so a call
+  site names what it imports. `Menu.tsx` is eight lines: it mounts `Panel`.
+- The corner no longer carries a `--Corner` of its own. It inherits the one
+  `.Window` sets, which is what lets a per-monitor radius reach the pixels.
+
+---
+
 ## 0.0.12
 
 ### Crate (`pround`)

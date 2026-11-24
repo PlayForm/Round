@@ -320,8 +320,11 @@ decisions - including the reset value and the clamp - live in Rust.
   default too.
 - `data-mode` on the `.Window` element switches the corner ink
   (`.Window[data-mode="light"] .Corner` paints white, the default is black).
-- `--Corner` is set inline per corner from the size signal; `Corner.css` derives
-  width, height and the radial-gradient mask from it.
+- `--Corner` is set on `.Window` from the size signal and inherited by every
+  corner; `Corner.css` derives width, height and the radial-gradient mask from
+  it. A corner must not carry a `--Corner` of its own: an inline value on the
+  corner wins over the window's, which pins the radius and makes a per-monitor
+  size appear to do nothing.
 - `data-corner` (`BottomLeft`, `BottomRight`, `TopLeft`, `TopRight`) positions
   and rotates the four corners.
 
@@ -334,15 +337,50 @@ holds no signals, which is what lets its window stay invisible.
 
 ---
 
+## The webview tree
+
+`Package/Web/Source` mirrors the Rust crate's shape: one item per leaf, named by
+its kind, with the path carrying the domain.
+
+- `Element/` - one component per file, each an anonymous `export default`, so the
+  name a call site gives it is the name it has there (`import Panel from
+  "./Element/Panel.jsx"`). `Panel` owns the state, `Setting` draws one
+  per-monitor row, `Row` is the label/controls/reset line, `Slider` the range
+  input, `Corner` one corner.
+- `Fn/` - one function per file, also anonymous defaults: `Entry` and `Where`
+  (how a monitor is named), `Size` (its resolution), `Screen` (the work area of
+  the monitor the panel is on) and `Fit` (size the window to the panel, then pull
+  it back inside the work area).
+- `Type/Panel.ts` - the panel's shapes: `Value`, `Monitor`, `State`, `Shared`,
+  `Work`.
+- `Context.ts` - the one context: `{ State, call, Selected, setSelected, Scope }`,
+  provided by `Element/Panel` and read by `Element/Setting`.
+- `Menu.tsx`, `Index.tsx`, `Backdrop.ts` - the three entries. Each mounts one
+  component; none of them holds state.
+
+**Everything reactive belongs to a component.** No module-level `createSignal`,
+`createEffect` or `listen`: a signal created at module scope is a singleton with
+no owner (nothing can dispose it, and the component that imported it can never be
+unmounted), and a listener registered there can never be taken down. The overlay
+registers its `mode`/`size` listeners in `onMount` and disposes them through
+`onCleanup`; the scrim, which renders no markup, runs inside an explicit
+`createRoot` for the same reason.
+
+The one thing a module may own is a *context*, because a context is not state -
+it is the pipe the providing component pours its state into.
+
+---
+
 ## Where to change what
 
 - **A new control** - a leaf under `Menu/Command/` holding the function (named
   after the leaf, with `#[tauri::command(rename = "<wire name>")]` pinning what
   the webview invokes) that mutates `Settings` and returns the
   `Menu::State::Struct` the panel should render, its entry in the
-  `invoke_handler` in `Main.rs`, and the row in `Package/Web/Source/Menu.tsx`
-  that calls it. Add the field to `Menu::State::Struct` - with its
-  `#[serde(rename = "...")]` - when the panel has to display it.
+  `Commands!` macro in `Source/Commands.rs`, and the row in
+  `Package/Web/Source/Element/Panel.tsx` that calls it. Add the field to
+  `Menu::State::Struct` - with its `#[serde(rename = "...")]` - when the panel
+  has to display it.
 - **What a monitor is called** - `Screen::Label` (a display's name cleaned into
   a label), `Screen::Unique` (a label two monitors asked for, settled by the
   monitor's position through `Screen::Suffix`) and `Screen::Legacy` (the label
