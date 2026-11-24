@@ -1,12 +1,10 @@
 //! Debug: pumping the command path to measure it.
 //!
-//! A benchmark belongs in the debug build only. Both profiles define the command
-//! so `generate_handler!` can name it unconditionally, and the release body is a
-//! single `Err` - the same `cfg(debug_assertions)` split the trace module uses.
+//! Debug build only - the module is not declared at all in a release build, so
+//! this code is never compiled and the command cannot be called.
 
 use tauri::{AppHandle, Runtime};
 
-#[cfg(debug_assertions)]
 use crate::{
 	Menu::Store::{Commit, Load},
 	Mode::Of as ModeOf,
@@ -20,7 +18,6 @@ use crate::{
 /// the store, write one monitor's ink, commit (save + broadcast + rebuild the
 /// state the panel renders). That makes the number the one a click actually
 /// costs.
-#[cfg(debug_assertions)]
 #[tauri::command]
 pub fn Benchmark<R:Runtime>(App:AppHandle<R>, Count:u32) -> Result<String, String> {
 	let Labels = ["Monitor26344", "Monitor22763"];
@@ -65,11 +62,4 @@ pub fn Benchmark<R:Runtime>(App:AppHandle<R>, Count:u32) -> Result<String, Strin
 		At(0.95),
 		Samples[Samples.len() - 1]
 	))
-}
-
-/// The release build's copy: registered, and answers without doing anything.
-#[cfg(not(debug_assertions))]
-#[tauri::command]
-pub fn Benchmark<R:Runtime>(_App:AppHandle<R>, _Count:u32) -> Result<String, String> {
-	Err("Benchmark is a debug-build feature".into())
 }
