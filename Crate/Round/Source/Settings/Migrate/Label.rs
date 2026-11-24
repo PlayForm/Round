@@ -23,10 +23,10 @@ use crate::{Per::Struct::Struct as Per, Screen::Struct::Struct as Screen};
 /// back on - the alternative is dropping the settings of every display that
 /// happened to be unplugged the first time the new build ran.
 ///
-/// Which key a monitor's settings are under is asked through
-/// [`Former`](crate::Settings::Migrate::Label::Former), because a display can
-/// have been stored under more than the one it carries now: its bare name, its
-/// position-qualified name, or the name the release before unique labels used.
+/// Which key a monitor's settings are under is asked through [`Former`], because
+/// a display can have been stored under more than the one it carries now: its
+/// bare name, its position-qualified name, or the name the release before unique
+/// labels used.
 pub fn Fn<T:Clone>(Value:Per<T>, Screens:&[Screen]) -> Per<T> {
 	let Carried:Vec<(String, T)> = Screens.iter().filter_map(|Screen| Adopt::Fn(&Value.Monitor, Screen)).collect();
 
