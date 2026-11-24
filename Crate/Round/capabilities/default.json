@@ -8,6 +8,7 @@
 		"core:window:allow-set-ignore-cursor-events",
 		"core:window:allow-close",
 		"core:window:allow-set-size",
+		"core:window:allow-set-position",
 		"core:event:allow-listen"
 	]
 }

@@ -19,6 +19,43 @@ body {
 	color: #111111;
 	border: 1px solid #c9c9c9;
 	border-radius: 8px;
+
+	/* The panel is capped at the work area of the monitor it opened on, and the
+	 * cap is applied as a `max-height` from the script that measured it. What is
+	 * left is the scroll: a four-monitor panel is taller than any screen, and
+	 * scrolling it is what keeps the last control on it reachable. */
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+
+/* Rows keep the height they were drawn at: a panel taller than its window
+ * scrolls, rather than compressing every row until the controls no longer fit
+ * in them. */
+.Panel > * {
+	flex: 0 0 auto;
+}
+
+/* One setting, or the application's own rows: a title and the rows under it. */
+.Section {
+	display: flex;
+	flex-direction: column;
+	gap: 7px;
+}
+
+.Title {
+	margin: 2px 0 0;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	opacity: 0.55;
+}
+
+/* The one line saying why a control has no per-monitor row. */
+.Note {
+	margin: 0;
+	font-size: 11px;
+	opacity: 0.6;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -26,6 +63,10 @@ body {
 		background: #1f1f1f;
 		color: #eeeeee;
 		border-color: #454545;
+	}
+
+	.Row .Mark {
+		color: #8ab0ff;
 	}
 }
 
@@ -35,11 +76,28 @@ body {
 	gap: 8px;
 }
 
+/* The label column is one fixed width so every row's controls line up. The name
+ * inside it is what truncates, not the column: the mark that says "this monitor
+ * has a value of its own" has to survive a name too long to fit. */
 .Row > span:first-child {
 	flex: 0 0 92px;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	min-width: 0;
+}
+
+.Row .Name {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	min-width: 0;
+}
+
+/* Drawn only on a monitor that carries its own value. */
+.Row .Mark {
+	flex: 0 0 auto;
+	color: #2f6fed;
 }
 
 .Row input[type="range"] {
