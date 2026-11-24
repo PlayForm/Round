@@ -18,7 +18,7 @@ use crate::{
 /// past this point can hold a radius the panel could not have produced.
 #[tauri::command(rename = "set_size")]
 pub fn Size<R:Runtime>(App:AppHandle<R>, Label:Option<String>, Value:i64) -> Result<State, String> {
-	crate::Trace::Fn(&format!("click set_size label={Label:?} value={Value}"));
+	crate::Trace!("click set_size label={Label:?} value={Value}");
 
 	let mut Preferences:Settings = Load::Fn(&App)?;
 

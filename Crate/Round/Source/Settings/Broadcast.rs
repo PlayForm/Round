@@ -35,12 +35,12 @@ pub fn Fn<R:Runtime>(State:&Struct, App:&AppHandle<R>) {
 		.for_each(|Window| {
 			let Label = Window.label().to_owned();
 
-			crate::Trace::Fn(&format!(
+			crate::Trace!(
 				"broadcast -> {Label} radius={:?} ink={:?} visible={:?}",
 				PerOf::Fn(&State.Radius, &Label),
 				PerOf::Fn(&State.Ink, &Label),
 				PerOf::Fn(&State.Visible, &Label)
-			));
+			);
 
 			let _ = Window.emit_to(
 				Label.as_str(),

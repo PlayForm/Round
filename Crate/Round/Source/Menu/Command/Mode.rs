@@ -16,7 +16,7 @@ use crate::{
 /// `Label` is absent.
 #[tauri::command(rename = "set_mode")]
 pub fn Mode<R:Runtime>(App:AppHandle<R>, Label:Option<String>, Mode:String) -> Result<State, String> {
-	crate::Trace::Fn(&format!("click set_mode label={Label:?} mode={Mode}"));
+	crate::Trace!("click set_mode label={Label:?} mode={Mode}");
 
 	let mut Preferences:Settings = Load::Fn(&App)?;
 

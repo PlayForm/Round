@@ -20,19 +20,22 @@ pub fn Fn<R:Runtime>(App:&AppHandle<R>, Preferences:&Settings) -> Result<State, 
 
 	// What the command changed, and what is now on disk: the two facts that
 	// separate "the click reached the backend" from "the write survived".
-	crate::Trace::Fn(&format!(
+	crate::Trace!(
 		"changed radius={:?} ink={:?} visible={:?} dock={:?}",
-		Preferences.Radius, Preferences.Ink, Preferences.Visible, Preferences.Dock
-	));
+		Preferences.Radius,
+		Preferences.Ink,
+		Preferences.Visible,
+		Preferences.Dock
+	);
 
-	crate::Trace::Fn(&format!(
+	crate::Trace!(
 		"persisted {}",
 		serde_json::json!({
 			"radius": Storage.get("radius"),
 			"ink": Storage.get("ink"),
 			"hidden": Storage.get("hidden"),
 		})
-	));
+	);
 
 	Broadcast::Fn(Preferences, App);
 

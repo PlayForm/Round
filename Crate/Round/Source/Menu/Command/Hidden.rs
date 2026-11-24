@@ -16,7 +16,7 @@ use crate::{
 /// absent.
 #[tauri::command(rename = "set_hidden")]
 pub fn Hidden<R:Runtime>(App:AppHandle<R>, Label:Option<String>, Hidden:bool) -> Result<State, String> {
-	crate::Trace::Fn(&format!("click set_hidden label={Label:?} hidden={Hidden}"));
+	crate::Trace!("click set_hidden label={Label:?} hidden={Hidden}");
 
 	let mut Preferences:Settings = Load::Fn(&App)?;
 

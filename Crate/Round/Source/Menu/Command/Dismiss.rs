@@ -14,7 +14,7 @@ use crate::{
 /// panel. Nothing about it reads focus, activation, timing or geometry.
 #[tauri::command(rename = "dismiss")]
 pub fn Dismiss<R:Runtime>(App:AppHandle<R>) {
-	crate::Trace::Fn("intercepted dismiss - a click outside the panel");
+	crate::Trace!("intercepted dismiss - a click outside the panel");
 
 	match App.get_webview_window(Label::Const) {
 		Some(Window) => {

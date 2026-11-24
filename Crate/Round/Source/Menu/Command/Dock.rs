@@ -19,7 +19,7 @@ use crate::{
 /// launch.
 #[tauri::command(rename = "set_dock")]
 pub fn Dock<R:Runtime>(App:AppHandle<R>, Hidden:bool) -> Result<State, String> {
-	crate::Trace::Fn(&format!("click set_dock hidden={Hidden}"));
+	crate::Trace!("click set_dock hidden={Hidden}");
 
 	let mut Preferences:Settings = Load::Fn(&App)?;
 
