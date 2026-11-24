@@ -43,7 +43,5 @@ pub mod Radius;
 pub mod Screen;
 pub mod Settings;
 pub mod Tray;
-// TEMPORARY: one diagnosis run. Delete with its two call sites.
-pub mod Trace;
 pub mod Visibility;
 pub mod Window;
