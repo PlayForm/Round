@@ -1,0 +1,46 @@
+# Lychee link checker - Round
+#
+# Run from the repository root:
+#
+#   lychee --config .lychee.toml .
+#
+# It checks every link in the documentation and in the source comments, which is
+# where this repository's links live: the README, the changelog, `Documentation/`
+# and the URLs quoted in Rust and TypeScript comments.
+
+# Files to check for links
+extensions = [".md", ".rs", ".ts", ".tsx", ".js", ".json"]
+
+# Exclude certain patterns
+exclude = [
+	# A development server is not a public link
+	"http://localhost:*",
+	"http://127.0.0.1:*",
+
+	# Email links are not fetchable
+	"mailto:*",
+
+	# Placeholder links in examples
+	"example.com",
+]
+
+# Allow redirects
+scheme = ["https", "http"]
+
+# Request timeout in seconds
+timeout = 30
+
+# Max number of parallel network requests
+max_concurrency = 10
+
+# Build output and dependencies are not documentation
+exclude_path = ["node_modules", "target", "Target", ".git", "Package/Web/Target"]
+
+# Accepted status codes - 429 is rate limiting, not a missing page
+accept = [200, 204, 301, 302, 307, 308, 429]
+
+# Retry failed requests
+max_retries = 3
+
+# Output format
+format = "compact"
