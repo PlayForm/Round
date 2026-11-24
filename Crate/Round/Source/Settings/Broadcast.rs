@@ -26,6 +26,14 @@ pub fn Fn<R:Runtime>(State:&Struct, App:&AppHandle<R>) {
 		.for_each(|Window| {
 			let Label = Window.label().to_owned();
 
+			// TEMPORARY: what this window is called and what it is being handed.
+			crate::Trace::Fn(&format!(
+				"broadcast label={Label} radius={:?} ink={:?} visible={:?}",
+				PerOf::Fn(&State.Radius, &Label),
+				PerOf::Fn(&State.Ink, &Label),
+				PerOf::Fn(&State.Visible, &Label)
+			));
+
 			let _ = Window.emit("size", Payload { Message:Message::Size(PerOf::Fn(&State.Radius, &Label)) });
 
 			let _ = Window.emit("mode", Payload { Message:Message::Mode(PerOf::Fn(&State.Ink, &Label)) });

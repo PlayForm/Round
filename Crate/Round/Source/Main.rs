@@ -54,6 +54,15 @@ fn main() {
 			Platform::Dock(Preferences.Dock);
 
 			Screens.iter().try_for_each(|Screen| {
+				// TEMPORARY: the label this window is created under, and what its
+				// boot script carries.
+				pround::Trace::Fn(&format!(
+					"window label={} radius={:?} ink={:?}",
+					Screen.Label,
+					pround::Per::Of::Fn(&Preferences.Radius, &Screen.Label),
+					pround::Per::Of::Fn(&Preferences.Ink, &Screen.Label)
+				));
+
 				// Per monitor: the script carries the radius and ink THIS window
 				// should draw, so a tuned monitor paints correctly before any
 				// event.
