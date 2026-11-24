@@ -7,10 +7,8 @@
 //! single list while letting each caller pick its own runtime: `Wry` in the binary,
 //! `MockRuntime` in a test.
 //!
-//! Two lists, because two commands exist only in a debug build: `Report` is the
-//! overlay telling the trace what it renders, and `Benchmark` pumps the command
-//! path. A release build does not merely skip them - it has no such commands, so
-//! nothing can call one.
+//! Two lists, because `Benchmark` exists only in a debug build. A release build
+//! does not merely skip it - it has no such command, so nothing can call it.
 
 /// Every command the panel and the overlay may call, debug build.
 #[macro_export]
@@ -25,7 +23,6 @@ macro_rules! Commands {
 			$crate::Menu::Command::Reset::Reset,
 			$crate::Menu::Command::Dismiss::Dismiss,
 			$crate::Menu::Command::Quit::Quit,
-			$crate::Menu::Command::Report::Report,
 			$crate::Menu::Command::Benchmark::Benchmark,
 		]
 	};

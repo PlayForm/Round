@@ -24,7 +24,7 @@ use tauri_plugin_store::StoreExt;
 #[cfg(debug_assertions)]
 fn Handler() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Sync + 'static { pround::Commands!() }
 
-/// The shipping surface: no `Report`, no `Benchmark`.
+/// The shipping surface: no `Benchmark`.
 #[cfg(not(debug_assertions))]
 fn Handler() -> impl Fn(tauri::ipc::Invoke<tauri::Wry>) -> bool + Send + Sync + 'static { pround::CommandsRelease!() }
 
@@ -33,10 +33,6 @@ fn main() {
 		.plugin(tauri_plugin_store::Builder::new().build())
 		.invoke_handler(Handler())
 		.setup(|App| {
-			// Debug: the channel that lets a shell drive this app while it runs.
-			#[cfg(debug_assertions)]
-			pround::Menu::Command::Dev::Watch(App.handle().clone());
-
 			let Storage = App.store(StoreFile)?;
 
 			// The monitors come before the settings: every override is keyed by
