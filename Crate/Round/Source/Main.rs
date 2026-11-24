@@ -8,7 +8,7 @@ use pround::{
 	Menu::Command::{Dismiss, Dock, Hidden, Mode, Quit, Reset, Size, State},
 	Overlay::{Layer::Trait::Trait as _, Platform::Struct as Platform},
 	Per::Of as PerOf,
-	Screen::Of as ScreenOf,
+	Screen::All as ScreenAll,
 	Settings::{Load as SettingsLoad, Save as SettingsSave, Script, Store::Const as StoreFile},
 	Tray::Install,
 	Visibility::Apply as VisibilityApply,
@@ -33,11 +33,19 @@ fn main() {
 		.setup(|App| {
 			let Storage = App.store(StoreFile)?;
 
+			// The monitors come before the settings: every override is keyed by
+			// the label a monitor is given, and a label is unique only against
+			// the rest of the set, so the set is what decides where a stored
+			// setting lands.
+			let Devices = App.available_monitors()?;
+
+			let Screens = ScreenAll::Fn(&Devices);
+
 			// Read, then write back: that round trip is how a fresh install gets
 			// its defaults on disk before anything reads them again, and how a
 			// store an older build wrote is folded into the per-monitor shape
 			// once, at launch, instead of on every command.
-			let Preferences = SettingsLoad::Fn(&Storage);
+			let Preferences = SettingsLoad::Fn(&Storage, &Screens);
 
 			SettingsSave::Fn(&Preferences, &Storage)?;
 
@@ -45,9 +53,7 @@ fn main() {
 			// before any window exists.
 			Platform::Dock(Preferences.Dock);
 
-			App.available_monitors()?.iter().enumerate().try_for_each(|(Index, Device)| {
-				let Screen = ScreenOf::Fn(Device, Index);
-
+			Screens.iter().try_for_each(|Screen| {
 				// Per monitor: the script carries the radius and ink THIS window
 				// should draw, so a tuned monitor paints correctly before any
 				// event.

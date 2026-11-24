@@ -181,16 +181,31 @@ The module tree **is** the API. There is no facade that renames anything:
   without the key change (and still works while the app is inactive, where
   `makeKeyAndOrderFront:` does nothing).
 - **`Screen`** - one monitor resolved to the window label and the logical bounds
-  a webview window takes. `Of` resolves it, `Label` keeps ASCII alphanumerics
-  only (Tauri rejects the rest) and turns an unnamed monitor into
-  `monitor<index>`, and `Struct` is the result.
-- **`Settings`** - the persisted state. `Struct` holds `Size`, `Sizes`, `Mode`,
-  `Hidden` and `Dock`; `Default`, `Maximum` and `Store` are the three constants
-  (radius on a fresh install, the largest radius the panel offers, the store
-  file); `Radius`, `Set` and `Clear` are the per-monitor arithmetic; `Load` and
-  `Save` are the store round trip with every key spelled out; `Script` is the
-  `window.settings` init script; `Visible` and `Broadcast` are what every
-  command pushes to the overlay windows.
+  a webview window takes. `Of` resolves one monitor and `All` resolves the set -
+  the one a launch is built from, because a label is unique only against the
+  other monitors. It has to be: a label names that monitor's overlay window, keys
+  its overrides and values its entry in the panel's scope selector, and a
+  display's name is not an identity - two of the same model report the same one,
+  and two names can differ only in the punctuation a label strips. `Unique`
+  settles it: a name one monitor asked for is left exactly as it is, and a name
+  two or more asked for is qualified with the monitor's own position on the
+  desktop (`Suffix`), which is a fact about the display rather than about the
+  order the system enumerated it in - so the label survives a relaunch, and the
+  index is the last resort only for two displays showing one picture. `Claim` is
+  one monitor's label and position before the set settles it, `Tally` counts how
+  many monitors answered to a label, `Clean` keeps ASCII alphanumerics only
+  (Tauri rejects the rest), `Label` is the label a name asks for (`monitor` when
+  there is no name), `Legacy` is the label the release before this one stored
+  that monitor's overrides under, and `Struct` is the result.
+- **`Settings`** - the persisted state. `Struct` holds the three per-monitor
+  settings (`Radius`, `Ink`, `Visible`, each a `Per`) and the one setting with no
+  per-monitor dimension (`Dock`); `Load` and `Save` are the store round trip with
+  every key spelled out; `Migrate` folds a store an older build wrote - `Radius`
+  and `Ink` from the shapes before per-monitor overrides existed, and `Label`
+  from the keys written before a label was unique, which is the only place a
+  stored override is carried from one key to another; `Script` is the
+  `window.settings` init script; `Broadcast` is what every command pushes to the
+  overlay windows.
 - **`Tray`** - the tray icon and its click, nothing else. `Install` builds the
   icon and calls `Menu::Toggle::Fn`. No native menu is attached, so the tray
   owns no command, no label and no state.
@@ -211,18 +226,23 @@ the same map with the edges drawn.
 ## Startup
 
 1. `tauri-plugin-store` opens `settings.json` under the app config dir.
-2. `Settings::Load::Fn` reads the five keys, falling back per field to the
-   default (`size` 23, `mode` dark, `hidden` false, `dock_hidden` false), then
-   `Settings::Save::Fn` writes the result back - which is how a fresh install
-   gets its defaults.
-3. `Overlay::Platform::Dock(settings.Dock)` applies the saved activation policy
+2. `Screen::All::Fn` resolves every monitor: one label per display, unique within
+   the set, plus the label the release before this one stored that display's
+   overrides under.
+3. `Settings::Load::Fn` reads the five keys, falling back per field to the
+   default (`size` 23, `mode` dark, `hidden` false, `dock_hidden` false), and
+   carries every per-monitor override from the label it was stored under onto the
+   label that monitor carries now; `Settings::Save::Fn` writes the result back -
+   which is how a fresh install gets its defaults, and how a migrated store stops
+   holding the old keys.
+4. `Overlay::Platform::Dock(settings.Dock)` applies the saved activation policy
    before any window exists.
-4. For every monitor: `Screen::Of::Fn` resolves the label and bounds,
+5. For every monitor: `Screen::Struct` already holds the label and bounds,
    `Settings::Script::Fn` builds the init script
    (`window.settings = {"size":23,"mode":"dark"};`), `Window::Chrome::Fn` applies
    the shared flags, the window is built hidden, `Overlay::Platform::Art` lifts
    it, then `Settings::Visible::Fn` fronts it unless the saved state is hidden.
-5. `Tray::Install::Fn` builds the icon and wires its click to `Menu::Toggle::Fn`.
+6. `Tray::Install::Fn` builds the icon and wires its click to `Menu::Toggle::Fn`.
    The panel and the scrims are built on the first click, not at startup, so a
    launch that never opens the panel never pays for them.
 
@@ -320,6 +340,13 @@ holds no signals, which is what lets its window stay invisible.
   `invoke_handler` in `Main.rs`, and the row in `Package/Web/Source/Menu.tsx`
   that calls it. Add the field to `Menu::State::Struct` - with its
   `#[serde(rename = "...")]` - when the panel has to display it.
+- **What a monitor is called** - `Screen::Label` (a display's name cleaned into
+  a label), `Screen::Unique` (a label two monitors asked for, settled by the
+  monitor's position through `Screen::Suffix`) and `Screen::Legacy` (the label
+  the store was written under, which `Settings::Migrate::Label` moves an override
+  off). Nothing else may key on a display's name: the store, the broadcast, the
+  scrim windows and the overlay windows all address a screen by the label this
+  one leaf produced.
 - **A new persisted setting** - a field on `Settings::Struct`, its key in
   `Settings::Load::Fn`/`Settings::Save::Fn`, and (if the webview needs it) a
   field in `window.settings` plus the matching TypeScript type in
