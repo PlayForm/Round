@@ -1,6 +1,6 @@
 {
 	"name": "@application/round",
-	"version": "0.0.11",
+	"version": "0.0.12",
 	"private": true,
 	"description": "Repository root: the Rust crate lives in Crate/Round, the webview frontend in Package/Web.",
 	"homepage": "https://github.com/PlayForm/Round#readme",

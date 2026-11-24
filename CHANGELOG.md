@@ -7,7 +7,7 @@ the npm packages and `pround`.
 
 ---
 
-## Unreleased
+## 0.0.12
 
 ### Crate (`pround`)
 
