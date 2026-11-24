@@ -2,6 +2,8 @@
 // not compile them and cannot be asked to run them.
 #[cfg(debug_assertions)]
 pub mod Benchmark;
+#[cfg(debug_assertions)]
+pub mod Dev;
 pub mod Dismiss;
 pub mod Dock;
 pub mod Hidden;
