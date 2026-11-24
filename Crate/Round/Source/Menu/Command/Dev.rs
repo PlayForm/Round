@@ -33,7 +33,7 @@ pub fn Run<R:Runtime>(App:&AppHandle<R>, Window:&str, Script:&str) -> Result<(),
 			}} catch (Failure) {{
 				Out = "ERROR: " + (Failure && Failure.message ? Failure.message : String(Failure));
 			}}
-			await window.__TAURI_INTERNALS__.invoke("dev_answer", {{ window: {Window:?}, value: Out }});
+			await window.__TAURI_INTERNALS__.invoke("answer", {{ window: {Window:?}, value: Out }});
 		}})()"#
 	);
 
