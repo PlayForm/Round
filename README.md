@@ -20,7 +20,7 @@
 
 [![release](https://img.shields.io/github/v/release/PlayForm/Round?label=release&color=blue)](https://github.com/PlayForm/Round/releases)
 [![crate](https://img.shields.io/static/v1?label=crate&message=pround&color=orange)](https://crates.io/crates/pround)
-[![rust](https://img.shields.io/static/v1?label=rust&message=1.90%2B&color=orange)](https://www.rust-lang.org)
+[![rust](https://img.shields.io/static/v1?label=rust&message=1.90%2B&color=orange)](https://rust-lang.org/)
 [![license](https://img.shields.io/static/v1?label=license&message=CC0-1.0&color=lightgrey)](LICENSE)
 [![update](https://img.shields.io/github/last-commit/PlayForm/Round?label=update&color=black)](https://github.com/PlayForm/Round)
 [![issue](https://img.shields.io/github/issues/PlayForm/Round?label=issue&color=black)](https://github.com/PlayForm/Round/issues)
@@ -229,6 +229,20 @@ pnpm run Check                      # Maintain check: fmt, clippy -D warnings, c
 `Cargo.lock` is deliberately untracked: the crate publishes to crates.io and
 every consumer resolves its own graph. `Target/` and `Package/Web/Target/` are
 build output and are ignored.
+
+### Checking links
+
+Every link in the documentation and in the source comments is checked by
+[lychee](https://lychee.cli.rs), configured in `.lychee.toml`:
+
+```sh
+lychee --config .lychee.toml 'README.md' 'CHANGELOG.md' 'Documentation/*.md' \
+	'Crate/**/*.rs' 'Package/Web/Source/**/*.ts' 'Package/Web/Source/**/*.tsx'
+```
+
+`scheme` includes `file` on purpose: a relative link between documents is the one
+kind this repository can break on its own - a renamed file leaves a dead link that
+no external check would ever see.
 
 ### Debugging a running build
 

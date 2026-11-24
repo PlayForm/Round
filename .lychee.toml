@@ -24,8 +24,10 @@ exclude = [
 	"example.com",
 ]
 
-# Allow redirects
-scheme = ["https", "http"]
+# Allow redirects. `file` is here on purpose: a relative link between documents is
+# the one kind this repository can actually break, and leaving it out is how a
+# renamed file goes unnoticed (Land's config has this gap).
+scheme = ["https", "http", "file"]
 
 # Request timeout in seconds
 timeout = 30
