@@ -20,10 +20,15 @@ the npm packages and `pround`.
   at module scope: a module signal is a singleton with no owner, and a listener
   registered there can never be removed.
 - `Package/Web/Source` is now the house tree, mirroring the crate: `Element/` one
-  component per file, `Fn/` one function per file (`Entry`, `Where`, `Size`,
-  `Screen`, `Fit`), `Type/Panel.ts` for the shapes and `Context.ts` for the one
+  component per file, `Fn/` one function per file - `Name` and `Describe` (how a
+  monitor is named), `Measure` (its resolution), `Locate` (the work area of the
+  monitor the panel is on) and `Fit` (size the window, then pull it back inside
+  the work area) - `Type/Panel.ts` for the shapes and `Context.ts` for the one
   context. Every element and function is an anonymous `export default`, so a call
   site names what it imports. `Menu.tsx` is eight lines: it mounts `Panel`.
+- Identifiers follow the house rule throughout: PascalCase, one word, present
+  tense - `Commit` and `Reset` for the two callbacks, `Sync` and `Select` for the
+  setters, `Write` for the slider's own value.
 - The corner no longer carries a `--Corner` of its own. It inherits the one
   `.Window` sets, which is what lets a per-monitor radius reach the pixels.
 
