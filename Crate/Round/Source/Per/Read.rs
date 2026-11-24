@@ -2,7 +2,7 @@
 
 use serde_json::Value;
 
-use crate::Per::Struct::Struct;
+use crate::Per::{Build, Struct::Struct};
 
 /// Read one setting, or `None` when the store holds nothing usable.
 ///
@@ -32,6 +32,6 @@ pub fn Fn<T>(Source:Option<&Value>, Parse:impl Fn(&Value) -> Option<T>) -> Optio
 				})
 				.unwrap_or_default(),
 		},
-		None => Struct::from(Parse(Source)?),
+		None => Build::Fn(Parse(Source)?),
 	})
 }

@@ -7,9 +7,11 @@
 use pround::{
 	Menu::Command::{Dismiss, Dock, Hidden, Mode, Quit, Reset, Size, State},
 	Overlay::{Layer::Trait::Trait as _, Platform::Struct as Platform},
+	Per::Of as PerOf,
 	Screen::Of as ScreenOf,
-	Settings::{Load as SettingsLoad, Save as SettingsSave, Script, Store::Const as StoreFile, Visible},
+	Settings::{Load as SettingsLoad, Save as SettingsSave, Script, Store::Const as StoreFile},
 	Tray::Install,
+	Visibility::Apply as VisibilityApply,
 	Window::Chrome,
 };
 use tauri::{WebviewUrl, WebviewWindowBuilder};
@@ -32,7 +34,9 @@ fn main() {
 			let Storage = App.store(StoreFile)?;
 
 			// Read, then write back: that round trip is how a fresh install gets
-			// its defaults on disk before anything reads them again.
+			// its defaults on disk before anything reads them again, and how a
+			// store an older build wrote is folded into the per-monitor shape
+			// once, at launch, instead of on every command.
 			let Preferences = SettingsLoad::Fn(&Storage);
 
 			SettingsSave::Fn(&Preferences, &Storage)?;
@@ -44,8 +48,9 @@ fn main() {
 			App.available_monitors()?.iter().enumerate().try_for_each(|(Index, Device)| {
 				let Screen = ScreenOf::Fn(Device, Index);
 
-				// Per monitor: the script carries the radius THIS window should
-				// draw, so a tuned monitor paints correctly before any event.
+				// Per monitor: the script carries the radius and ink THIS window
+				// should draw, so a tuned monitor paints correctly before any
+				// event.
 				let Script = Script::Fn(&Preferences, &Screen.Label);
 
 				let Builder = Chrome::Fn(
@@ -71,7 +76,7 @@ fn main() {
 
 				Platform::Art(&Window);
 
-				Visible::Fn(&Preferences, &Window)
+				VisibilityApply::Fn(PerOf::Fn(&Preferences.Visible, &Screen.Label), &Window)
 			})?;
 
 			Install::Fn(App.handle())?;

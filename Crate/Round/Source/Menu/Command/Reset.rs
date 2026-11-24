@@ -4,18 +4,23 @@ use tauri::AppHandle;
 
 use crate::{
 	Menu::{
+		Setting::Clear as SettingClear,
 		State::Struct as State,
 		Store::{Commit, Load},
 	},
-	Settings::{Clear, Struct::Struct as Settings},
+	Settings::Struct::Struct as Settings,
 };
 
 /// Drop one monitor's override, or every override and the default.
+///
+/// `Setting` names the panel section the button belongs to (`radius`, `ink`,
+/// `hidden`); absent means all three, which is what a reset with no section
+/// named has always meant.
 #[tauri::command(rename = "reset")]
-pub fn Reset(App:AppHandle, Label:Option<String>) -> Result<State, String> {
+pub fn Reset(App:AppHandle, Setting:Option<String>, Label:Option<String>) -> Result<State, String> {
 	let mut Preferences:Settings = Load::Fn(&App)?;
 
-	Clear::Fn(&mut Preferences, Label.as_deref());
+	SettingClear::Fn(&mut Preferences, Setting.as_deref(), Label.as_deref())?;
 
 	Commit::Fn(&App, &Preferences)
 }

@@ -3,41 +3,38 @@
 use tauri::Runtime;
 use tauri_plugin_store::Store;
 
-use crate::{Mode::Of as ModeOf, Settings::Struct::Struct, Visibility::Of as VisibilityOf};
+use crate::{
+	Mode::Of as ModeOf,
+	Per::Read as PerRead,
+	Radius::Of as RadiusOf,
+	Settings::{Migrate, Struct::Struct},
+	Visibility::Of as VisibilityOf,
+};
 
-/// Read the settings back, falling back per field to [`Struct::default`].
+/// Read the settings back, falling back per setting to [`Struct::default`].
 ///
 /// A hand-edited or truncated store can therefore cost one setting, never the
-/// launch. Every key is spelled out rather than derived: they are the shape of
-/// `settings.json`, which an older build of Round wrote and a newer one reads.
+/// launch. The per-monitor keys are read by [`PerRead`], which owns the "default
+/// plus overrides" shape; what is spelled out here is the store's own key names,
+/// because they are the shape of `settings.json` that an older build of Round
+/// wrote and a newer one reads. A key the current shape does not hold is
+/// answered by [`Migrate`], which folds the store an older build wrote.
 pub fn Fn<R:Runtime>(Storage:&Store<R>) -> Struct {
-	let Default = Struct::default();
-
 	Struct {
-		Size:Storage.get("size").and_then(|Value| Value.as_i64()).unwrap_or(Default.Size),
-		Sizes:Storage
-			.get("sizes")
-			.and_then(|Value| Value.as_object().cloned())
-			.map(|Object| {
-				Object
-					.into_iter()
-					.filter_map(|(Label, Value)| Value.as_i64().map(|Size| (Label, Size)))
-					.collect()
-			})
+		Radius:PerRead::Fn(Storage.get("radius").as_ref(), RadiusOf::Fn)
+			.or_else(|| Migrate::Radius::Fn(Storage))
 			.unwrap_or_default(),
-		Mode:Storage
-			.get("mode")
-			.and_then(|Value| Value.as_str().map(ModeOf::Fn))
-			.unwrap_or(Default.Mode),
-		Hidden:Storage
-			.get("hidden")
-			.and_then(|Value| Value.as_bool())
-			.map(VisibilityOf::Fn)
-			.unwrap_or(Default.Hidden),
+		Ink:PerRead::Fn(Storage.get("ink").as_ref(), |Value| Value.as_str().map(ModeOf::Fn))
+			.or_else(|| Migrate::Ink::Fn(Storage))
+			.unwrap_or_default(),
+		// The old key is the new key: `hidden` held a bare boolean, which
+		// `PerRead` already reads as a default with no overrides.
+		Visible:PerRead::Fn(Storage.get("hidden").as_ref(), |Value| Value.as_bool().map(VisibilityOf::Fn))
+			.unwrap_or_default(),
 		Dock:Storage
 			.get("dock_hidden")
 			.and_then(|Value| Value.as_bool())
 			.map(VisibilityOf::Fn)
-			.unwrap_or(Default.Dock),
+			.unwrap_or_default(),
 	}
 }

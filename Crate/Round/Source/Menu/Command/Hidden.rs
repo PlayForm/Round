@@ -7,16 +7,18 @@ use crate::{
 		State::Struct as State,
 		Store::{Commit, Load},
 	},
+	Per::Set as PerSet,
 	Settings::Struct::Struct as Settings,
 	Visibility::Of as VisibilityOf,
 };
 
-/// Show or hide every corner overlay.
+/// Show or hide one monitor's corners, or every monitor's when `Label` is
+/// absent.
 #[tauri::command(rename = "set_hidden")]
-pub fn Hidden(App:AppHandle, Hidden:bool) -> Result<State, String> {
+pub fn Hidden(App:AppHandle, Label:Option<String>, Hidden:bool) -> Result<State, String> {
 	let mut Preferences:Settings = Load::Fn(&App)?;
 
-	Preferences.Hidden = VisibilityOf::Fn(Hidden);
+	PerSet::Fn(&mut Preferences.Visible, Label.as_deref(), VisibilityOf::Fn(Hidden));
 
 	Commit::Fn(&App, &Preferences)
 }

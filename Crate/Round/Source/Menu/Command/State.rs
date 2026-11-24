@@ -4,9 +4,10 @@ use tauri::AppHandle;
 use tauri_plugin_store::StoreExt;
 
 use crate::{
-	Menu::{Monitor::Struct as Monitor, State::Struct as State},
+	Menu::{Monitor::Struct as Monitor, State::Struct as State, Value::Of as ValueOf},
+	Radius::Maximum,
 	Screen::Of as ScreenOf,
-	Settings::{Load as SettingsLoad, Maximum, Radius, Store},
+	Settings::{Load as SettingsLoad, Store},
 };
 
 /// The whole of what the panel draws.
@@ -30,8 +31,9 @@ pub fn State(App:AppHandle) -> Result<State, String> {
 			let Label = Screen.Label;
 
 			Monitor {
-				Size:Radius::Fn(&Preferences, &Label),
-				Override:Preferences.Sizes.contains_key(&Label),
+				Radius:ValueOf::Fn(&Preferences.Radius, &Label),
+				Ink:ValueOf::Fn(&Preferences.Ink, &Label),
+				Hidden:ValueOf::Fn(&Preferences.Visible, &Label),
 				Label,
 				Name:Device.name().cloned().unwrap_or_else(|| format!("Monitor {}", Index + 1)),
 			}
@@ -39,11 +41,11 @@ pub fn State(App:AppHandle) -> Result<State, String> {
 		.collect();
 
 	Ok(State {
-		Size:Preferences.Size,
-		Mode:Preferences.Mode,
-		Hidden:Preferences.Hidden,
-		Dock:Preferences.Dock,
+		Radius:Preferences.Radius.Default,
 		Maximum:Maximum::Const,
+		Ink:Preferences.Ink.Default,
+		Hidden:Preferences.Visible.Default,
+		Dock:Preferences.Dock,
 		Monitors,
 	})
 }

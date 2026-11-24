@@ -9,10 +9,10 @@
 //!
 //! * the `round` binary (`Source/Main.rs`) - the tray application;
 //! * this library - [`Settings::Struct`](Settings::Struct::Struct),
-//!   [`Mode::Enum`](Mode::Enum::Enum), [`Overlay`], the
-//!   [`Tray::Install`](Tray::Install::Fn) icon, the [`Menu`] panel that drives
-//!   them and the [`Backdrop`] it is dismissed by, for anyone embedding the same
-//!   overlay in their own Tauri app (`cargo add pround`).
+//!   [`Mode::Enum`](Mode::Enum::Enum), [`Radius::Struct`](Radius::Struct::Struct),
+//!   [`Overlay`], the [`Tray::Install`](Tray::Install::Fn) icon, the [`Menu`]
+//!   panel that drives them and the [`Backdrop`] it is dismissed by, for anyone
+//!   embedding the same overlay in their own Tauri app (`cargo add pround`).
 //!
 //! House style: module directories and item names are PascalCase, so the
 //! snake_case module lint is switched off crate-wide rather than renamed away
@@ -38,6 +38,8 @@ pub mod Menu;
 pub mod Message;
 pub mod Mode;
 pub mod Overlay;
+pub mod Per;
+pub mod Radius;
 pub mod Screen;
 pub mod Settings;
 pub mod Tray;

@@ -1,37 +1,28 @@
 //! The persisted state of the overlay.
 
-use std::collections::BTreeMap;
-
-use crate::{Mode::Enum::Enum as Mode, Visibility::Enum::Enum as Visibility};
+use crate::{
+	Mode::Enum::Enum as Ink,
+	Per::Struct::Struct as Per,
+	Radius::Struct::Struct as Radius,
+	Visibility::Enum::Enum as Visible,
+};
 
 /// Everything Round persists between launches.
 ///
-/// `Size` is the default every monitor takes; `Sizes` holds the monitors that
-/// were tuned on their own, keyed by their window label. A monitor with no entry
-/// follows the default - which is what makes the all-monitors slider one gesture
-/// and a per-monitor slider a local one.
+/// The three per-monitor settings are [`Per`] rather than a default and a map
+/// written out three times: each holds the value every monitor takes and the
+/// monitors tuned on their own, so a monitor with no entry follows the default
+/// and one gesture changes all of them at once.
 ///
-/// `Hidden` and `Dock` are [`Visibility`] rather than `bool`: each one is a
-/// two-state decision, and a `bool` field is that decision left unwritten.
-#[derive(Clone, Debug, PartialEq, Eq)]
+/// `Dock` is the one setting with no per-monitor dimension: the dock icon
+/// belongs to the application, not to a monitor, so there is nothing to override
+/// per screen.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Struct {
-	pub Size:i64,
-	pub Sizes:BTreeMap<String, i64>,
-	pub Mode:Mode,
-	pub Hidden:Visibility,
+	pub Radius:Per<Radius>,
+	pub Ink:Per<Ink>,
+	pub Visible:Per<Visible>,
 	/// macOS only in the UI; kept on every platform so the store shape and this
 	/// struct never diverge by target.
-	pub Dock:Visibility,
-}
-
-impl Default for Struct {
-	fn default() -> Self {
-		Self {
-			Size:crate::Settings::Default::Const,
-			Sizes:BTreeMap::new(),
-			Mode:Mode::default(),
-			Hidden:Visibility::default(),
-			Dock:Visibility::default(),
-		}
-	}
+	pub Dock:Visible,
 }

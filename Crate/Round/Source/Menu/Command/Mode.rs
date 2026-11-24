@@ -8,15 +8,17 @@ use crate::{
 		Store::{Commit, Load},
 	},
 	Mode::Of as ModeOf,
+	Per::Set as PerSet,
 	Settings::Struct::Struct as Settings,
 };
 
-/// Set the ink every corner is drawn in.
+/// Set the ink one monitor's corners are drawn in, or every monitor's when
+/// `Label` is absent.
 #[tauri::command(rename = "set_mode")]
-pub fn Mode(App:AppHandle, Mode:String) -> Result<State, String> {
+pub fn Mode(App:AppHandle, Label:Option<String>, Mode:String) -> Result<State, String> {
 	let mut Preferences:Settings = Load::Fn(&App)?;
 
-	Preferences.Mode = ModeOf::Fn(&Mode);
+	PerSet::Fn(&mut Preferences.Ink, Label.as_deref(), ModeOf::Fn(&Mode));
 
 	Commit::Fn(&App, &Preferences)
 }

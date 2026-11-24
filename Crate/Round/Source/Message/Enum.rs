@@ -2,7 +2,7 @@
 
 use serde::Serialize;
 
-use crate::Mode::Enum::Enum as Mode;
+use crate::{Mode::Enum::Enum as Mode, Radius::Struct::Struct as Radius};
 
 /// A state change pushed to every window.
 ///
@@ -12,5 +12,5 @@ use crate::Mode::Enum::Enum as Mode;
 #[derive(Clone, Copy, Debug, Serialize)]
 pub enum Enum {
 	Mode(Mode),
-	Size(i64),
+	Size(Radius),
 }
