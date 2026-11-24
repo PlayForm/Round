@@ -81,6 +81,17 @@ the npm packages and `pround`.
 
 ### Webview (`@application/round-web`)
 
+- The panel's monitor is its navigation axis, not a row. A scope selector at the
+  top - a native `<select>` holding "All monitors" and then one entry per
+  display, each carrying the index the system gave it and the pixels it draws at
+  - chooses what the three setting rows below apply to, so the panel draws the
+  same rows with one monitor as with a thousand. Each row marks the selected
+  monitor's own value and its `↺` drops only that override; with "All monitors"
+  selected a row marks how many monitors a write there would drop, and `↺`
+  restores the default and clears every override. The selection is spelled out
+  under the selector, where it can wrap, because a closed select truncates the
+  name that tells two displays apart. `Menu::Monitor` carries the display's
+  physical `width`/`height` for that reason alone.
 - `backdrop.html` and `Source/Backdrop.ts`: the backdrop's document. It paints
   nothing, has no input and no state, and does one thing - a `pointerdown`
   listener in the capture phase that invokes `dismiss`, for any button. Its
